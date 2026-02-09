@@ -37,7 +37,7 @@ Please read this before making any commits.
 
 - **Development branch (`dev`)**
     - Integration branch
-    - All feature work is merged here
+    - All work is merged here
     - Default working branch
 
 - **Feature/Bugfix branches (`<type>/<short-description>`)**
@@ -89,7 +89,7 @@ All work must branch out of dev:
 ```bash
 git checkout dev
 git pull origin dev
-git checkout -b feature/<short-description>
+git checkout -b <type>/<short-description>
 ```
 ## Before You Commit
 Before committing every time, do the following:
