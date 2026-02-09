@@ -28,11 +28,9 @@ mvn spring-boot:run
 This section explains how to work with the repository as a team.
 Please read this before making any commits.
 
----
-
 ## Repository Overview
 
-- **Main branch (`main`)**
+- **Master branch (`master`)**
     - Stable, demo-ready code only
     - Used for submissions and presentations
     - Do NOT commit directly to this branch
@@ -95,7 +93,7 @@ git checkout -b feature/<short-description>
 ```
 ## Before You Commit
 Before committing every time, do the following:
-### 1. Make sure you are NOT on `main`
+### 1. Make sure you are NOT on `master`
 ```bash
 git branch
 ```
@@ -114,7 +112,7 @@ Only commit files you intentionally changed.
 ## Pushing Your Work
 Push your branch:
 ```bash
-git push origin feature/<branch-name>
+git push origin <type>/<branch-name>
 ```
 Then open a Pull Request:
 
