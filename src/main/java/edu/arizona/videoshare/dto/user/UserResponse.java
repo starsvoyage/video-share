@@ -2,6 +2,7 @@ package edu.arizona.videoshare.dto.user;
 
 import edu.arizona.videoshare.model.enums.UserRole;
 import edu.arizona.videoshare.model.enums.UserStatus;
+import lombok.Data;
 
 import java.time.LocalDateTime;
 
@@ -14,6 +15,7 @@ import java.time.LocalDateTime;
  * Does NOT include passwordHash or credential data.
  * Only exposes profile + system metadata fields.
  */
+@Data
 public class UserResponse {
     /**
      * Database-generated primary key.

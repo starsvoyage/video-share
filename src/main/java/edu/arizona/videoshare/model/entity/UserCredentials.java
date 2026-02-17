@@ -3,6 +3,8 @@ package edu.arizona.videoshare.model.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
@@ -15,7 +17,9 @@ import java.time.LocalDateTime;
  * Stores authentication-related fields separately from {@link User} profile data.
  * Shared Primary Key association (UserCredentials.id == User.id)
  * Implemented with @MapsId to ensure the credentials row shares the same PK as its user.
+ * Not using @Data on JPA entities to prevent unintended equals/hashCode behavior.
  */
+@Getter
 @Entity
 @Table(name = "user_credentials")
 public class UserCredentials {
@@ -29,6 +33,7 @@ public class UserCredentials {
     /**
      * Owning side of the 1:1 relationship.
      */
+    @Setter
     @OneToOne(optional = false)
     @MapsId
     @JoinColumn(
@@ -42,6 +47,7 @@ public class UserCredentials {
     /**
      * Secure one-way hash of the user's password.
      */
+    @Setter
     @NotBlank
     @Size(min = 20, max = 100) // BCrypt hashes are typically 60 chars
     @Column(nullable = false, length = 100)
@@ -50,23 +56,27 @@ public class UserCredentials {
     /**
      * Timestamp of when the password was last set/updated.
      */
+    @Setter
     private LocalDateTime passwordUpdatedAt;
 
     /**
      * Number of consecutive failed authentication attempts.
      */
+    @Setter
     @Column(nullable = false)
     private int failedLoginAttempts = 0;
 
     /**
      * Lock flag (or lock indicator). TO be combined with lockedUntil.
      */
+    @Setter
     @Column(nullable = false)
     private boolean locked = false;
 
     /**
      * Temporary lockout expiration time.
      */
+    @Setter
     private LocalDateTime lockedUntil;
 
     public UserCredentials() {}
@@ -81,25 +91,4 @@ public class UserCredentials {
         }
     }
 
-    // ---- Getters / Setters ----
-
-    public Long getId() { return id; }
-
-    public User getUser() { return user; }
-    public void setUser(User user) { this.user = user; }
-
-    public String getPasswordHash() { return passwordHash; }
-    public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
-
-    public LocalDateTime getPasswordUpdatedAt() { return passwordUpdatedAt; }
-    public void setPasswordUpdatedAt(LocalDateTime passwordUpdatedAt) { this.passwordUpdatedAt = passwordUpdatedAt; }
-
-    public int getFailedLoginAttempts() { return failedLoginAttempts; }
-    public void setFailedLoginAttempts(int failedLoginAttempts) { this.failedLoginAttempts = failedLoginAttempts; }
-
-    public boolean isLocked() { return locked; }
-    public void setLocked(boolean locked) { this.locked = locked; }
-
-    public LocalDateTime getLockedUntil() { return lockedUntil; }
-    public void setLockedUntil(LocalDateTime lockedUntil) { this.lockedUntil = lockedUntil; }
 }
