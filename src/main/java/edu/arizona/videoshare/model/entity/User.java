@@ -7,6 +7,8 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
@@ -19,7 +21,9 @@ import java.time.LocalDateTime;
  * Authentication secrets are NOT stored here; these are in {@link UserCredentials}.
  * This is to help keep user profile concerns separate from security concerns, reducing
  * the chance of accidentally exposing credential data in REST responses.
+ * Not using @Data on JPA entities to prevent unintended equals/hashCode behavior.
  */
+@Getter
 @Entity
 @Table(
         name = "users",
@@ -42,6 +46,7 @@ public class User {
     /**
      * Unique identifier for display/URLs.
      */
+    @Setter
     @NotBlank
     @Size(min = 3, max = 50)
     @Column(nullable = false, length = 50)
@@ -50,6 +55,7 @@ public class User {
     /**
      * Unique identifier for account.
      */
+    @Setter
     @NotBlank
     @Email
     @Size(max = 254)
@@ -59,6 +65,7 @@ public class User {
     /**
      * Display label shown in UI (not unique).
      */
+    @Setter
     @NotBlank
     @Size(max = 100)
     @Column(nullable = false, length = 100)
@@ -75,6 +82,7 @@ public class User {
     /**
      * Account status for moderation/availability.
      */
+    @Setter
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private UserStatus status = UserStatus.ACTIVE;
@@ -82,10 +90,12 @@ public class User {
     /**
      * Optional profile fields.
      */
+    @Setter
     @Size(max = 500)
     @Column(length = 500)
     private String bio;
 
+    @Setter
     @Size(max = 500)
     @Column(length = 500)
     private String avatarUrl;
@@ -93,6 +103,7 @@ public class User {
     /**
      * Platform role for authorization. USerRole.VIEWER is default.
      */
+    @Setter
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private UserRole role = UserRole.VIEWER;
@@ -130,40 +141,11 @@ public class User {
     }
 
     /**
-     * Helper to keep both sides of the bi-directional 1:1 association consistent.
+     * Helper to keep both sides of the bidirectional 1:1 association consistent.
      */
     public void attachCredentials(UserCredentials creds) {
         this.credentials = creds;
         creds.setUser(this);
     }
 
-    // ---- Getters / Setters ----
-
-    public Long getId() { return id; }
-
-    public String getUsername() { return username; }
-    public void setUsername(String username) { this.username = username; }
-
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
-
-    public String getDisplayName() { return displayName; }
-    public void setDisplayName(String displayName) { this.displayName = displayName; }
-
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-
-    public UserStatus getStatus() { return status; }
-    public void setStatus(UserStatus status) { this.status = status; }
-
-    public String getBio() { return bio; }
-    public void setBio(String bio) { this.bio = bio; }
-
-    public String getAvatarUrl() { return avatarUrl; }
-    public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
-
-    public UserRole getRole() { return role; }
-    public void setRole(UserRole role) { this.role = role; }
-
-    public UserCredentials getCredentials() { return credentials; }
 }

@@ -3,6 +3,7 @@ package edu.arizona.videoshare.dto.user;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.Data;
 
 /**
  * UserRequest DTO
@@ -13,6 +14,7 @@ import jakarta.validation.constraints.Size;
  * Raw passwords are accepted here but never persisted directly.
  * The service layer hashes passwords using BCrypt before storage.
  */
+@Data
 public class UserRequest {
 
     /**

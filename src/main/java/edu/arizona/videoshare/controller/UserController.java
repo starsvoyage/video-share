@@ -6,6 +6,7 @@ import edu.arizona.videoshare.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
@@ -15,15 +16,16 @@ import java.util.List;
  * Exposes REST endpoints for managing User resources.
  * Base path: /api/users
  */
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
 
     private final UserService service;
 
-    public UserController(UserService service) {
-        this.service = service;
-    }
+//    public UserController(UserService service) {
+//        this.service = service;
+//    }
 
     /**
      * POST /api/users

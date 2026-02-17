@@ -9,6 +9,7 @@ import edu.arizona.videoshare.repository.UserRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
@@ -18,16 +19,17 @@ import java.util.List;
  * This class implements business use-cases around User accounts.
  *
  */
+@RequiredArgsConstructor
 @Service
 public class UserService {
 
     private final UserRepository users;
     private final BCryptPasswordEncoder encoder;
 
-    public UserService(UserRepository users, BCryptPasswordEncoder encoder) {
-        this.users = users;
-        this.encoder = encoder;
-    }
+//    public UserService(UserRepository users, BCryptPasswordEncoder encoder) {
+//        this.users = users;
+//        this.encoder = encoder;
+//    }
 
     /**
      * CREATE: Registers a new user account.
