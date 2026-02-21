@@ -1,5 +1,6 @@
 package edu.arizona.videoshare.service;
 
+import edu.arizona.videoshare.dto.comment.CreateCommentResponse;
 import edu.arizona.videoshare.model.entity.*;
 import edu.arizona.videoshare.repository.CommentRepository;
 import edu.arizona.videoshare.repository.UserRepository;
@@ -15,7 +16,7 @@ public class CommentService {
         private final UserRepository userRepository;
 
         @Transactional
-        public Comment addComment(Long videoId, Long userId, String content, Long parentId) {
+        public CreateCommentResponse addComment(Long videoId, Long userId, String content, Long parentId) {
                 User user = userRepository.findById(userId)
                                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
 
@@ -28,13 +29,23 @@ public class CommentService {
 
                 Comment comment = Comment.builder()
                                 .user(user)
-                                .videoId(videoId) // ✅ changed
+                                .videoId(videoId)
                                 .parent(parent)
                                 .content(content)
                                 .status(CommentStatus.ACTIVE)
                                 .build();
 
-                return commentRepository.save(comment);
+                Comment saved = commentRepository.save(comment);
+
+                return CreateCommentResponse.builder()
+                                .id(saved.getId())
+                                .userId(saved.getUser().getId())
+                                .videoId(saved.getVideoId())
+                                .parentId(saved.getParent() != null ? saved.getParent().getId() : null)
+                                .content(saved.getContent())
+                                .createdAt(saved.getCreatedAt())
+                                .updatedAt(saved.getUpdatedAt())
+                                .build();
         }
 
         @Transactional

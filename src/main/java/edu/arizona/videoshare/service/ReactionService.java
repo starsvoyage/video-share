@@ -1,5 +1,6 @@
 package edu.arizona.videoshare.service;
 
+import edu.arizona.videoshare.dto.reaction.ReactResponse;
 import edu.arizona.videoshare.model.entity.*;
 import edu.arizona.videoshare.repository.CommentRepository;
 import edu.arizona.videoshare.repository.ReactionRepository;
@@ -17,36 +18,53 @@ public class ReactionService {
         private final CommentRepository commentRepository;
 
         @Transactional
-        public Reaction reactToVideo(Long videoId, Long userId, ReactionType type) {
+        public ReactResponse reactToVideo(Long videoId, Long userId, ReactionType type) {
                 User user = userRepository.findById(userId)
                                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
 
-                // One reaction per user per video (upsert)
-                Reaction reaction = reactionRepository.findByUserIdAndVideoId(userId, videoId)
+                Reaction reaction = reactionRepository.findByUser_IdAndVideoId(userId, videoId)
                                 .orElseGet(() -> Reaction.builder()
                                                 .user(user)
-                                                .videoId(videoId) // ✅ changed
+                                                .videoId(videoId)
                                                 .build());
 
                 reaction.setType(type);
-                return reactionRepository.save(reaction);
+                Reaction saved = reactionRepository.save(reaction);
+
+                return ReactResponse.builder()
+                                .id(saved.getId())
+                                .userId(saved.getUser().getId())
+                                .videoId(saved.getVideoId())
+                                .commentId(saved.getComment() != null ? saved.getComment().getId() : null)
+                                .type(saved.getType())
+                                .createdAt(saved.getCreatedAt())
+                                .build();
         }
 
         @Transactional
-        public Reaction reactToComment(Long commentId, Long userId, ReactionType type) {
+        public ReactResponse reactToComment(Long commentId, Long userId, ReactionType type) {
                 User user = userRepository.findById(userId)
                                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
 
                 Comment comment = commentRepository.findById(commentId)
                                 .orElseThrow(() -> new IllegalArgumentException("Comment not found: " + commentId));
 
-                Reaction reaction = reactionRepository.findByUserIdAndCommentId(userId, commentId)
+                Reaction reaction = reactionRepository.findByUser_IdAndComment_Id(userId, commentId)
                                 .orElseGet(() -> Reaction.builder()
                                                 .user(user)
                                                 .comment(comment)
                                                 .build());
 
                 reaction.setType(type);
-                return reactionRepository.save(reaction);
+                Reaction saved = reactionRepository.save(reaction);
+
+                return ReactResponse.builder()
+                                .id(saved.getId())
+                                .userId(saved.getUser().getId())
+                                .videoId(saved.getVideoId())
+                                .commentId(saved.getComment() != null ? saved.getComment().getId() : null)
+                                .type(saved.getType())
+                                .createdAt(saved.getCreatedAt())
+                                .build();
         }
 }

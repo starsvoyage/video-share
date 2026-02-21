@@ -1,8 +1,9 @@
 package edu.arizona.videoshare.controller;
 
 import edu.arizona.videoshare.dto.comment.CreateCommentRequest;
-import edu.arizona.videoshare.model.entity.Comment;
+import edu.arizona.videoshare.dto.comment.CreateCommentResponse;
 import edu.arizona.videoshare.service.CommentService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,7 +15,8 @@ public class CommentController {
         private final CommentService commentService;
 
         @PostMapping
-        public Comment create(@PathVariable Long videoId, @RequestBody CreateCommentRequest req) {
+        public CreateCommentResponse create(@PathVariable Long videoId,
+                        @Valid @RequestBody CreateCommentRequest req) {
                 return commentService.addComment(videoId, req.getUserId(), req.getContent(), req.getParentId());
         }
 

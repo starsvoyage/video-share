@@ -1,19 +1,20 @@
 package edu.arizona.videoshare.dto.reaction;
 
 import edu.arizona.videoshare.model.entity.ReactionType;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
+
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ReactRequest {
-
-    @NotNull
+public class ReactResponse {
+    private Long id;
     private Long userId;
-
-    @NotNull
+    private Long videoId;
+    private Long commentId;
     private ReactionType type;
+    private LocalDateTime createdAt;
 }
