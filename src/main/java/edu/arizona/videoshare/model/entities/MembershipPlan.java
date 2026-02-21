@@ -1,4 +1,4 @@
-package edu.arizona.videoshare.model;
+package edu.arizona.videoshare.model.entities;
 
 import jakarta.persistence.*;
 import lombok.*;

@@ -3,7 +3,7 @@ package edu.arizona.videoshare.service;
 import edu.arizona.videoshare.dto.membershipPlan.MembershipPlanRequest;
 import edu.arizona.videoshare.exception.ConflictException;
 import edu.arizona.videoshare.exception.NotFoundException;
-import edu.arizona.videoshare.model.MembershipPlan;
+import edu.arizona.videoshare.model.entities.MembershipPlan;
 import edu.arizona.videoshare.repository.MembershipPlanRepository;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;

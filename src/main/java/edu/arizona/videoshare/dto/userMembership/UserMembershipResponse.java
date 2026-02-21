@@ -1,6 +1,6 @@
 package edu.arizona.videoshare.dto.userMembership;
 
-import edu.arizona.videoshare.model.UserMembership;
+import edu.arizona.videoshare.model.entities.UserMembership;
 import edu.arizona.videoshare.model.enums.MembershipStatus;
 import lombok.Data;
 
