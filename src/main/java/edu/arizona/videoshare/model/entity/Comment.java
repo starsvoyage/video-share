@@ -30,10 +30,9 @@ public class Comment {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    // video the comment is on
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "video_id", nullable = false)
-    private Video video;
+    // TEMP: Video entity not finalized yet, store FK only
+    @Column(name = "video_id", nullable = false)
+    private Long videoId;
 
     // parent comment
     @ManyToOne(fetch = FetchType.LAZY)

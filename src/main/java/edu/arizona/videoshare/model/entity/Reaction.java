@@ -29,10 +29,17 @@ public class Reaction {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    // target video
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "video_id")
-    private Video video;
+    // Temp: video entity not finalized yet, store FK only
+    @Column(name = "video_id")
+    private Long videoId;
+    /*
+     * target video - commented until video is done
+     * 
+     * @ManyToOne(fetch = FetchType.LAZY)
+     * 
+     * @JoinColumn(name = "video_id")
+     * private Video video;
+     */
 
     // target comment
     @ManyToOne(fetch = FetchType.LAZY)
@@ -52,7 +59,7 @@ public class Reaction {
     }
 
     public boolean isValidTarget() {
-        boolean hasVideo = (video != null);
+        boolean hasVideo = (videoId != null);
         boolean hasComment = (comment != null);
         return hasVideo ^ hasComment;
     }
