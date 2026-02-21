@@ -20,7 +20,7 @@ public class UserMembershipController {
         return UserMembershipResponse.of(service.subscribe(req));
     }
 
-    @GetMapping("/api/users/{userId}/membership")
+    @GetMapping("/users/{userId}/membership")
     public UserMembershipResponse getCurrent(@PathVariable Long userId) {
         return UserMembershipResponse.of(service.getCurrentMembership(userId));
     }
