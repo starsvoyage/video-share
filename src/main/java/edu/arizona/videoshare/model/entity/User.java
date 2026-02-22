@@ -12,27 +12,26 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-
 /**
  * User entity
  *
  * Represents a platform account profile (public).
  *
- * Authentication secrets are NOT stored here; these are in {@link UserCredentials}.
- * This is to help keep user profile concerns separate from security concerns, reducing
+ * Authentication secrets are NOT stored here; these are in
+ * {@link UserCredentials}.
+ * This is to help keep user profile concerns separate from security concerns,
+ * reducing
  * the chance of accidentally exposing credential data in REST responses.
- * Not using @Data on JPA entities to prevent unintended equals/hashCode behavior.
+ * Not using @Data on JPA entities to prevent unintended equals/hashCode
+ * behavior.
  */
 @Getter
 @Entity
-@Table(
-        name = "users",
-        uniqueConstraints = {
-                // Database-level enforcement of business rule: unique username and email
-                @UniqueConstraint(name = "uk_users_username", columnNames = "username"),
-                @UniqueConstraint(name = "uk_users_email", columnNames = "email")
-        }
-)
+@Table(name = "users", uniqueConstraints = {
+        // Database-level enforcement of business rule: unique username and email
+        @UniqueConstraint(name = "uk_users_username", columnNames = "username"),
+        @UniqueConstraint(name = "uk_users_email", columnNames = "email")
+})
 
 public class User {
 
@@ -72,7 +71,8 @@ public class User {
     private String displayName;
 
     /**
-     * Account timestamps. createdAt is always set; updatedAt is nullable until first update.
+     * Account timestamps. createdAt is always set; updatedAt is nullable until
+     * first update.
      */
     @Column(nullable = false)
     private LocalDateTime createdAt;
@@ -112,17 +112,12 @@ public class User {
      * 1:1 relationship to credentials (authentication data).
      * Business Rule: Each User should have exactly one UserCredentials record.
      */
-    @OneToOne(
-            mappedBy = "user",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true,
-            optional = false,
-            fetch = FetchType.LAZY
-    )
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, optional = false, fetch = FetchType.LAZY)
 
     private UserCredentials credentials;
 
-    public User() {}
+    public User() {
+    }
 
     /**
      * Set creation timestamp automatically when the row is first inserted.
