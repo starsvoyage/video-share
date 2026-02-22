@@ -1,6 +1,7 @@
 package edu.arizona.videoshare.service;
 
 import edu.arizona.videoshare.dto.reaction.ReactResponse;
+import edu.arizona.videoshare.exception.NotFoundException;
 import edu.arizona.videoshare.model.entity.*;
 import edu.arizona.videoshare.repository.CommentRepository;
 import edu.arizona.videoshare.repository.ReactionRepository;
@@ -20,7 +21,7 @@ public class ReactionService {
         @Transactional
         public ReactResponse reactToVideo(Long videoId, Long userId, ReactionType type) {
                 User user = userRepository.findById(userId)
-                                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
+                                .orElseThrow(() -> new NotFoundException("User not found: " + userId));
 
                 Reaction reaction = reactionRepository.findByUser_IdAndVideoId(userId, videoId)
                                 .orElseGet(() -> Reaction.builder()
@@ -44,10 +45,10 @@ public class ReactionService {
         @Transactional
         public ReactResponse reactToComment(Long commentId, Long userId, ReactionType type) {
                 User user = userRepository.findById(userId)
-                                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
+                                .orElseThrow(() -> new NotFoundException("User not found: " + userId));
 
                 Comment comment = commentRepository.findById(commentId)
-                                .orElseThrow(() -> new IllegalArgumentException("Comment not found: " + commentId));
+                                .orElseThrow(() -> new NotFoundException("Comment not found: " + commentId));
 
                 Reaction reaction = reactionRepository.findByUser_IdAndComment_Id(userId, commentId)
                                 .orElseGet(() -> Reaction.builder()
