@@ -2,13 +2,11 @@ package edu.arizona.videoshare;
 
 import edu.arizona.videoshare.model.Channel;
 import edu.arizona.videoshare.model.Subscription;
+import edu.arizona.videoshare.model.Subscription.SubscriptionStatus;
 import edu.arizona.videoshare.model.User;
 import edu.arizona.videoshare.repository.ChannelRepository;
 import edu.arizona.videoshare.repository.SubscriptionRepository;
 import edu.arizona.videoshare.repository.UserRepository;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
@@ -25,9 +23,18 @@ public class DataLoader {
     ) {
         return args -> {
 
-            //Getting the users
-            edu.arizona.videoshare.model.User user1 = userRepository.findAll().get(0);
-            User user2 = userRepository.findAll().get(1);
+            //Creating Users
+            User user1 = new User();
+            user1.setUsername("alice");
+            user1.setEmail("alice@test.com");
+            user1.setDisplayName("Alice");
+            userRepository.save(user1);
+
+            User user2 = new User();
+            user2.setUsername("bob");
+            user2.setEmail("bob@test.com");
+            user2.setDisplayName("Bob");
+            userRepository.save(user2);
 
             //Adding channels
             Channel channel1 = new Channel();
@@ -46,13 +53,13 @@ public class DataLoader {
             Subscription sub1 = new Subscription();
             sub1.setSubscriber(user2);
             sub1.setChannel(channel1);
-            sub1.setCreatedAt(LocalDateTime.now());
+            sub1.setStatus(SubscriptionStatus.ACTIVE);
             subscriptionRepository.save(sub1);
 
             Subscription sub2 = new Subscription();
             sub2.setSubscriber(user1);
             sub2.setChannel(channel2);
-            sub2.setCreatedAt(LocalDateTime.now());
+            sub2.setStatus(SubscriptionStatus.ACTIVE);
             subscriptionRepository.save(sub2);
 
         };

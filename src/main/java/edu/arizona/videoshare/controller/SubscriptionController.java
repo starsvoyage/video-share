@@ -52,7 +52,7 @@ public class SubscriptionController {
         return subscriptionRepository.findBySubscriber(user);
     }
 
-    @DeleteMapping("/subscriptions/{subscriptionId}")
+    @DeleteMapping("/{subscriptionId}")
     public void cancelSubscription(@PathVariable Long subscriptionId) {
 
         subscriptionRepository.deleteById(subscriptionId);

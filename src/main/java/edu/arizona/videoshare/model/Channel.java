@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -33,7 +34,6 @@ public class Channel {
 
     private String description;
 
-    @NotNull
     @CreationTimestamp
     private LocalDateTime createdAt;
 
@@ -53,7 +53,7 @@ public class Channel {
     @OneToMany(mappedBy = "channel")
     private List<Video> videosOnChannel;
 
-    @OneToMany(mappedBy = "channel")
+    @OneToMany(mappedBy = "channel", fetch = FetchType.LAZY)
     private List<Subscription> subscribers;
 
 

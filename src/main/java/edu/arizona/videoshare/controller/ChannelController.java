@@ -5,14 +5,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import edu.arizona.videoshare.model.Channel;
-import edu.arizona.videoshare.model.Subscription;
 import edu.arizona.videoshare.model.User;
 import edu.arizona.videoshare.model.Video;
 import edu.arizona.videoshare.repository.ChannelRepository;
-import edu.arizona.videoshare.repository.SubscriptionRepository;
 import edu.arizona.videoshare.repository.UserRepository;
 import edu.arizona.videoshare.repository.VideoRepository;
-import edu.arizona.videoshare.model.Subscription.SubscriptionStatus;
+
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,7 +26,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/channel")
+@RequestMapping("/channels")
 public class ChannelController {
 
     private final UserRepository userRepository;
@@ -49,19 +47,19 @@ public class ChannelController {
 
     }
     
-    @GetMapping("/channels/{channelId}")
-    public Channel getChannel(@PathVariable Long channelId) {
+    @GetMapping("/{channelId}")
+    public Channel getChannel(@PathVariable Long channelId) { 
         return channelRepository.findById(channelId).orElseThrow(() -> new RuntimeException("Channel not found"));
     }
 
-    @GetMapping("/channels/{channelId}/videos")
+    @GetMapping("/{channelId}/videos")
     public List<Video> getChannelVideos(@PathVariable Long channelId) {
         Channel channel = channelRepository.findById(channelId).orElseThrow(() -> new RuntimeException("Channel not found"));
 
         return videoRepository.findByChannel(channel);
     }
 
-    @PutMapping("/channels/{channelId}")
+    @PutMapping("/{channelId}")
     public Channel updateChannel(@PathVariable Long channelId, @RequestBody Channel updatedChannel) {
         Channel channel = channelRepository.findById(channelId).orElseThrow(() -> new RuntimeException("Channel not found"));
 
@@ -72,7 +70,7 @@ public class ChannelController {
         return channelRepository.save(channel);
     }
 
-    @DeleteMapping("/channels/{channelId}")
+    @DeleteMapping("/{channelId}")
     public void deleteChannel(@PathVariable Long channelId) {
         channelRepository.deleteById(channelId);
 

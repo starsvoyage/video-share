@@ -9,5 +9,5 @@ import edu.arizona.videoshare.model.Channel;
 @Repository
 public interface ChannelRepository extends JpaRepository<Channel, Long>{
 
-    
+
 } 
