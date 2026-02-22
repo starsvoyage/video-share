@@ -59,12 +59,15 @@ public class Comment {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @Builder.Default
     private CommentStatus status = CommentStatus.ACTIVE;
 
     @Column(nullable = false)
+    @Builder.Default
     private long likeCount = 0;
 
     @Column(nullable = false)
+    @Builder.Default
     private long dislikeCount = 0;
 
     @PrePersist

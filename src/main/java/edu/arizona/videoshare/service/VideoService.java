@@ -1,11 +1,13 @@
 package edu.arizona.videoshare.service;
 
 import edu.arizona.videoshare.exception.NotFoundException;
+import edu.arizona.videoshare.model.entity.Video;
+
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import java.util.List;
 import edu.arizona.videoshare.repository.VideoRepository;
-import edu.arizona.videoshare.model.Video;
+
 
 @Service
 @RequiredArgsConstructor
@@ -13,7 +15,7 @@ public class VideoService {
 
     private final VideoRepository videoRepository;
 
-    public Video create(Video video) {
+    public Video create(edu.arizona.videoshare.controller.Video video) {
         return videoRepository.save(video);
     }
 
