@@ -1,68 +1,99 @@
 package edu.arizona.videoshare;
 
-import edu.arizona.videoshare.model.Channel;
-import edu.arizona.videoshare.model.Subscription;
-import edu.arizona.videoshare.model.Subscription.SubscriptionStatus;
-import edu.arizona.videoshare.model.User;
+import edu.arizona.videoshare.dto.user.UserRequest;
+import edu.arizona.videoshare.model.entity.Channel;
+import edu.arizona.videoshare.model.entity.Subscription;
+import edu.arizona.videoshare.model.entity.User;
+import edu.arizona.videoshare.model.entity.Subscription.SubscriptionStatus;
 import edu.arizona.videoshare.repository.ChannelRepository;
 import edu.arizona.videoshare.repository.SubscriptionRepository;
 import edu.arizona.videoshare.repository.UserRepository;
-
+import edu.arizona.videoshare.service.UserService;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Profile;
 
-@Configuration
-public class DataLoader {
+/**
+ * DataLoader
+ *
+ * Seeds initial data into the database when the application starts.
+ *
+ * Profile restriction:
+ * Disabled when the "test" profile is active to prevent interference with automated tests.
+ */
+@Profile("!test")
+@Component
+public class DataLoader implements CommandLineRunner {
 
-    @Bean
-    CommandLineRunner loadChannelAndSubscriptions(
-            UserRepository userRepository,
-            ChannelRepository channelRepository,
-            SubscriptionRepository subscriptionRepository
-    ) {
-        return args -> {
+    private final UserService userService;
+    private final UserRepository userRepository;
+    private final ChannelRepository channelRepository;
+    private final SubscriptionRepository subscriptionRepository;
 
-            //Creating Users
-            User user1 = new User();
-            user1.setUsername("alice");
-            user1.setEmail("alice@test.com");
-            user1.setDisplayName("Alice");
-            userRepository.save(user1);
+    public DataLoader(UserService userService, UserRepository userRepository,
+                        ChannelRepository channelRepository,
+                        SubscriptionRepository subscriptionRepository) {
+        this.userService = userService;
+        this.userRepository = userRepository;
+        this.channelRepository = channelRepository;
+        this.subscriptionRepository = subscriptionRepository;
+    }
 
-            User user2 = new User();
-            user2.setUsername("bob");
-            user2.setEmail("bob@test.com");
-            user2.setDisplayName("Bob");
-            userRepository.save(user2);
+    /**
+     * Runs automatically at application startup.
+     * Seeds users only if the database is empty to prevent duplicate insertions.
+     */
+    @Override
+    public void run(String... args) {
+        // Avoid reseeding on restart
+        if (userRepository.count() > 0) return;
 
-            //Adding channels
+        seed("ian", "idiazvachier@arizona.edu", "Ian Diaz-Vachier", "Password@123");
+        seed("user1", "user1@ua.edu", "TheUser1", "User1@123");
+
+        User alice = userRepository.findByUsername("alice").orElse(null);
+        User bob = userRepository.findByUsername("bob").orElse(null);
+
+        if (alice != null && bob != null) {
+            // Adding channels
             Channel channel1 = new Channel();
             channel1.setName("Alice with Bob");
             channel1.setDescription("Programming tutorials");
-            channel1.setUser(user1);
+            channel1.setUser(alice);
             channelRepository.save(channel1);
 
             Channel channel2 = new Channel();
             channel2.setName("Gaming");
             channel2.setDescription("Gaming content");
-            channel2.setUser(user2);
+            channel2.setUser(bob);
             channelRepository.save(channel2);
 
-            //Adding subscriptions to channel
+            // Adding subscriptions
             Subscription sub1 = new Subscription();
-            sub1.setSubscriber(user2);
+            sub1.setSubscriber(bob);
             sub1.setChannel(channel1);
             sub1.setStatus(SubscriptionStatus.ACTIVE);
             subscriptionRepository.save(sub1);
 
             Subscription sub2 = new Subscription();
-            sub2.setSubscriber(user1);
+            sub2.setSubscriber(alice);
             sub2.setChannel(channel2);
             sub2.setStatus(SubscriptionStatus.ACTIVE);
             subscriptionRepository.save(sub2);
+        }
+    }
 
-        };
+    /**
+     * Helper method to seed a user via service layer.
+     */
+    private void seed(String username, String email, String displayName, String password) {
+        UserRequest req = new UserRequest();
+        req.username = username;
+        req.email = email;
+        req.displayName = displayName;
+        req.password = password;
+
+        // Uses service.register() to enforce rules
+        userService.register(req);
     }
 }
-

@@ -5,11 +5,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import edu.arizona.videoshare.model.Channel;
-import edu.arizona.videoshare.model.User;
-import edu.arizona.videoshare.model.Video;
+import edu.arizona.videoshare.model.entity.User;
+import edu.arizona.videoshare.model.entity.Video;
 import edu.arizona.videoshare.repository.ChannelRepository;
 import edu.arizona.videoshare.repository.UserRepository;
-import edu.arizona.videoshare.repository.VideoRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -31,7 +30,6 @@ public class ChannelController {
 
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
-    private final VideoRepository videoRepository;
     
     @PostMapping
     public Channel createChannel(@RequestParam String channelName, @RequestParam String description, @RequestParam Long ownerUserId) {
@@ -56,7 +54,7 @@ public class ChannelController {
     public List<Video> getChannelVideos(@PathVariable Long channelId) {
         Channel channel = channelRepository.findById(channelId).orElseThrow(() -> new RuntimeException("Channel not found"));
 
-        return videoRepository.findByChannel(channel);
+        return channel.getVideosOnChannel();
     }
 
     @PutMapping("/{channelId}")

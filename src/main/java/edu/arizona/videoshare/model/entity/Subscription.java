@@ -1,4 +1,4 @@
-package edu.arizona.videoshare.model;
+package edu.arizona.videoshare.model.entity;
 
 import java.time.LocalDateTime;
 

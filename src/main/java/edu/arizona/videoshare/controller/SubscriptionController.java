@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 import edu.arizona.videoshare.model.Channel;
 import edu.arizona.videoshare.model.Subscription;
 import edu.arizona.videoshare.model.Subscription.SubscriptionStatus;
-import edu.arizona.videoshare.model.User;
+import edu.arizona.videoshare.model.entity.User;
 import edu.arizona.videoshare.repository.ChannelRepository;
 import edu.arizona.videoshare.repository.SubscriptionRepository;
 import edu.arizona.videoshare.repository.UserRepository;
