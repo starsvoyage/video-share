@@ -1,6 +1,7 @@
 package edu.arizona.videoshare.service;
 
 import edu.arizona.videoshare.dto.comment.CreateCommentResponse;
+import edu.arizona.videoshare.exception.NotFoundException;
 import edu.arizona.videoshare.model.entity.*;
 import edu.arizona.videoshare.repository.CommentRepository;
 import edu.arizona.videoshare.repository.UserRepository;
@@ -18,12 +19,12 @@ public class CommentService {
         @Transactional
         public CreateCommentResponse addComment(Long videoId, Long userId, String content, Long parentId) {
                 User user = userRepository.findById(userId)
-                                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
+                                .orElseThrow(() -> new NotFoundException("User not found: " + userId));
 
                 Comment parent = null;
                 if (parentId != null) {
                         parent = commentRepository.findById(parentId)
-                                        .orElseThrow(() -> new IllegalArgumentException(
+                                        .orElseThrow(() -> new NotFoundException(
                                                         "Parent comment not found: " + parentId));
                 }
 
@@ -51,7 +52,7 @@ public class CommentService {
         @Transactional
         public void removeComment(Long commentId) {
                 Comment c = commentRepository.findById(commentId)
-                                .orElseThrow(() -> new IllegalArgumentException("Comment not found: " + commentId));
+                                .orElseThrow(() -> new NotFoundException("Comment not found: " + commentId));
 
                 c.setStatus(CommentStatus.REMOVED);
                 commentRepository.save(c);
