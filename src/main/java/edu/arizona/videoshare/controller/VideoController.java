@@ -7,7 +7,7 @@ import edu.arizona.videoshare.service.VideoService;
 import edu.arizona.videoshare.model.Video;
 
 @RestController
-@RequestMapping("/api/v1/videos")
+@RequestMapping("/api/videos")
 @RequiredArgsConstructor
 
 public class VideoController {

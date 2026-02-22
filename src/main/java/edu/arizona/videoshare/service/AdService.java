@@ -1,5 +1,6 @@
 package edu.arizona.videoshare.service;
 
+import edu.arizona.videoshare.exception.NotFoundException;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import java.util.List;
@@ -20,7 +21,7 @@ public class AdService {
     // Get Ad by ID
     public Ad get(Long id) {
         return adRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Ad not found"));
+                .orElseThrow(() -> new NotFoundException("Ad not found"));
     }
 
     // Get All Ads

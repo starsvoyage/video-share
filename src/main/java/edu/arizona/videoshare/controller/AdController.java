@@ -7,7 +7,7 @@ import edu.arizona.videoshare.service.AdService;
 import edu.arizona.videoshare.model.Ad;
 
 @RestController
-@RequestMapping("/api/v1/ads")
+@RequestMapping("/api/ads")
 @RequiredArgsConstructor
 public class AdController {
 

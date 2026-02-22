@@ -1,5 +1,6 @@
 package edu.arizona.videoshare.service;
 
+import edu.arizona.videoshare.exception.NotFoundException;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import java.util.List;
@@ -18,7 +19,7 @@ public class VideoService {
 
     public Video get(Long id) {
         return videoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Video not found"));
+                .orElseThrow(() -> new NotFoundException("Video not found"));
     }
 
     public List<Video> getAll() {
