@@ -6,6 +6,9 @@ import java.util.List;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -48,12 +51,14 @@ public class Channel {
     @NotNull
     @ManyToOne(optional = false)
     @JoinColumn(name = "user_id")
+    @JsonIgnoreProperties({"channels", "credentials"})
     private User user;
 
     @OneToMany(mappedBy = "channel")
     private List<Video> videosOnChannel;
 
     @OneToMany(mappedBy = "channel", fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<Subscription> subscribers;
 
 

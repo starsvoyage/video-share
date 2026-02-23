@@ -5,10 +5,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import edu.arizona.videoshare.model.Channel;
-import edu.arizona.videoshare.model.Subscription;
-import edu.arizona.videoshare.model.Subscription.SubscriptionStatus;
+import edu.arizona.videoshare.model.entity.Channel;
+import edu.arizona.videoshare.model.entity.Subscription;
 import edu.arizona.videoshare.model.entity.User;
+import edu.arizona.videoshare.model.entity.Subscription.SubscriptionStatus;
 import edu.arizona.videoshare.repository.ChannelRepository;
 import edu.arizona.videoshare.repository.SubscriptionRepository;
 import edu.arizona.videoshare.repository.UserRepository;
@@ -41,6 +41,7 @@ public class SubscriptionController {
         sub.setStatus(SubscriptionStatus.ACTIVE);
 
         channel.setSubscriberCount(channel.getSubscriberCount() + 1);
+        channelRepository.save(channel);
 
         return subscriptionRepository.save(sub);
 

@@ -51,35 +51,39 @@ public class DataLoader implements CommandLineRunner {
         seed("ian", "idiazvachier@arizona.edu", "Ian Diaz-Vachier", "Password@123");
         seed("user1", "user1@ua.edu", "TheUser1", "User1@123");
 
-        User alice = userRepository.findByUsername("alice").orElse(null);
-        User bob = userRepository.findByUsername("bob").orElse(null);
+        User ian = userRepository.findByUsername("ian").orElse(null);
+        User user1 = userRepository.findByUsername("user1").orElse(null);
 
-        if (alice != null && bob != null) {
+        if (ian != null && user1 != null) {
             // Adding channels
             Channel channel1 = new Channel();
-            channel1.setName("Alice with Bob");
+            channel1.setName("Ian with Bob");
             channel1.setDescription("Programming tutorials");
-            channel1.setUser(alice);
+            channel1.setUser(ian);
             channelRepository.save(channel1);
 
             Channel channel2 = new Channel();
             channel2.setName("Gaming");
             channel2.setDescription("Gaming content");
-            channel2.setUser(bob);
+            channel2.setUser(user1);
             channelRepository.save(channel2);
 
             // Adding subscriptions
             Subscription sub1 = new Subscription();
-            sub1.setSubscriber(bob);
+            sub1.setSubscriber(ian);
             sub1.setChannel(channel1);
             sub1.setStatus(SubscriptionStatus.ACTIVE);
             subscriptionRepository.save(sub1);
+            channel1.setSubscriberCount(4L);
+            channelRepository.save(channel1);
 
             Subscription sub2 = new Subscription();
-            sub2.setSubscriber(alice);
+            sub2.setSubscriber(user1);
             sub2.setChannel(channel2);
             sub2.setStatus(SubscriptionStatus.ACTIVE);
             subscriptionRepository.save(sub2);
+            channel2.setSubscriberCount(10L);
+            channelRepository.save(channel2);
         }
     }
 

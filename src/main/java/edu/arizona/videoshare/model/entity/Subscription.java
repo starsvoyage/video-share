@@ -4,6 +4,10 @@ import java.time.LocalDateTime;
 
 import org.hibernate.annotations.CreationTimestamp;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -28,10 +32,12 @@ public class Subscription {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "user_id")
+    @JsonIgnoreProperties({"channels", "credentials"})
     private User subscriber;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "channel_id")
+    @JsonIgnoreProperties({"subscribers", "user"})
     private Channel channel;
 
     @CreationTimestamp
