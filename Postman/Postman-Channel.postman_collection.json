@@ -1,0 +1,134 @@
+{
+  "info": {
+    "_postman_id": "70b95d4c-46c7-4eef-9803-c69cb960d098",
+    "name": "Postman-Channel",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "51676301",
+    "_collection_link": "https://go.postman.co/collection/51676301-70b95d4c-46c7-4eef-9803-c69cb960d098?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Create Channel",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/channels?channelName=MyChannel&description=Cool+Videos&ownerUserId=1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "channels"
+          ],
+          "query": [
+            {
+              "key": "channelName",
+              "value": "MyChannel"
+            },
+            {
+              "key": "description",
+              "value": "Cool+Videos"
+            },
+            {
+              "key": "ownerUserId",
+              "value": "1"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Channel",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/channels/1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "channels",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Videos",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/channels/1/videos",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "channels",
+            "1",
+            "videos"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update Channel",
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"name\": \"Updated Channel Name\",\r\n    \"description\": \"This is my new description\",\r\n    \"avatarUrl\": \"https://example.com/photo.jpg\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/channels/1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "channels",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete Channel",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/channels/1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "channels",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
