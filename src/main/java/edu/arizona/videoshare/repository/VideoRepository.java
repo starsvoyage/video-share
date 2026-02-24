@@ -9,4 +9,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * Persistence abstraction for Video entities.
  */
 public interface VideoRepository extends JpaRepository<Video, Long> {
+
+    Video save(edu.arizona.videoshare.controller.Video video);
 }
