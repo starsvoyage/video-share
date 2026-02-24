@@ -6,15 +6,6 @@ The system is structured around a canonical domain models divided into bounded c
 
 The platform is designed to evolve in subsequent phases to include business workflows, authentication and authorization mechanisms, service-level scalability and a full user interface. The architectural foundation established in Phase 1 ensures the system can scale securely and remain adaptable as additional features are implemented.
 
-## Tech Stack
-- Java 17
-- Spring Boot
-- Spring Web
-- Spring Data JPA
-- H2 Database
-- Validation
-- Lombock
-
 ## How to Run the Application
 ### Prerequisites
 - Java 17+
@@ -37,6 +28,15 @@ The Postman collection and environment files are located in the following direct
 ```bash
 /Postman/
 ```
+
+## Tech Stack
+- Java 17
+- Spring Boot
+- Spring Web
+- Spring Data JPA
+- H2 Database
+- Validation
+- Lombock
 
 ---
 
