@@ -15,7 +15,7 @@ public class VideoService {
 
     private final VideoRepository videoRepository;
 
-    public Video create(edu.arizona.videoshare.controller.Video video) {
+    public Video create(Video video) {
         return videoRepository.save(video);
     }
 

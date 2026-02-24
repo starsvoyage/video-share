@@ -1,6 +1,6 @@
 package edu.arizona.videoshare.repository;
 
-import edu.arizona.videoshare.model.entities.MembershipPlan;
+import edu.arizona.videoshare.model.entity.MembershipPlan;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

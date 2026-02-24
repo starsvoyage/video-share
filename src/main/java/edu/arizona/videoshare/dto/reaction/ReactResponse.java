@@ -1,6 +1,6 @@
 package edu.arizona.videoshare.dto.reaction;
 
-import edu.arizona.videoshare.model.entity.ReactionType;
+import edu.arizona.videoshare.model.enums.ReactionType;
 import lombok.*;
 
 import java.time.LocalDateTime;

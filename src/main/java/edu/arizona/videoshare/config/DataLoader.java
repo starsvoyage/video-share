@@ -1,4 +1,4 @@
-package edu.arizona.videoshare;
+package edu.arizona.videoshare.config;
 
 import edu.arizona.videoshare.dto.user.UserRequest;
 import edu.arizona.videoshare.repository.UserRepository;
