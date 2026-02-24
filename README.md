@@ -1,6 +1,10 @@
-# Video Share Platform
+# Video Sharing Platform
 
-Enterprise video sharing platform built using Spring Boot and a 3-layer architecture.
+The Video-Sharing Platform is a layered enterprise system designed and implemented for the SFWE 505 – Enterprise Architecture course. The platform models the core components of a modern media ecosystem, including identity and authentication management, content creation and organization, user engagement features and monetization opportunities.
+
+The system is structured around a canonical domain models divided into bounded contexts: Identity, Content, Engagement, and Monetization. These contexts define interconnected entities such as users, credentials, channels, videos, playlists, comments, reactions, memberships, and advertisements, ensuring clear separation of concerns and modular growth. The architecture follows a clean three-layer stack (Controller -> Service -> Repository).
+
+The platform is designed to evolve in subsequent phases to include business workflows, authentication and authorization mechanisms, service-level scalability and a full user interface. The architectural foundation established in Phase 1 ensures the system can scale securely and remain adaptable as additional features are implemented.
 
 ## Tech Stack
 - Java 17
@@ -16,9 +20,22 @@ Enterprise video sharing platform built using Spring Boot and a 3-layer architec
 - Java 17+
 - Maven 3.9+ (or Maven Wrapper)
 
-## Run Locally
+## Running the Application
+### 1. Clone the repository
+```bash
+git clone https://github.com/starsvoyage/video-share.git
+cd video-share
+```
+
+### 2. Run the application
 ```bash
 mvn spring-boot:run
+```
+
+## Postman Files Location
+The Postman collection and environment files are located in the following directory:
+```bash
+/Postman/
 ```
 
 ---
@@ -97,7 +114,7 @@ Before committing every time, do the following:
 ```bash
 git branch
 ```
-### 2. Clean adn build the project
+### 2. Clean and build the project
 ```bash
 mvn clean
 ```
