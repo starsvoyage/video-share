@@ -3,6 +3,7 @@ package edu.arizona.videoshare.service;
 import edu.arizona.videoshare.dto.reaction.ReactResponse;
 import edu.arizona.videoshare.exception.NotFoundException;
 import edu.arizona.videoshare.model.entity.*;
+import edu.arizona.videoshare.model.enums.ReactionType;
 import edu.arizona.videoshare.repository.CommentRepository;
 import edu.arizona.videoshare.repository.ReactionRepository;
 import edu.arizona.videoshare.repository.UserRepository;

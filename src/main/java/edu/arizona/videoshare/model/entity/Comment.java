@@ -1,5 +1,6 @@
 package edu.arizona.videoshare.model.entity;
 
+import edu.arizona.videoshare.model.enums.CommentStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -59,12 +60,15 @@ public class Comment {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @Builder.Default
     private CommentStatus status = CommentStatus.ACTIVE;
 
     @Column(nullable = false)
+    @Builder.Default
     private long likeCount = 0;
 
     @Column(nullable = false)
+    @Builder.Default
     private long dislikeCount = 0;
 
     @PrePersist

@@ -36,6 +36,12 @@ public class Video {
     )
     private User owner;
 
+    //Added this to make the channel and subscription entities work
+    @Setter
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "channel_id", nullable = false)
+    private Channel channel;
+
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
