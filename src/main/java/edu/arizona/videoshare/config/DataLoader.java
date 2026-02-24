@@ -37,6 +37,10 @@ public class DataLoader implements CommandLineRunner {
         this.userRepository = userRepository;
         this.channelRepository = channelRepository;
         this.subscriptionRepository = subscriptionRepository;
+
+    public DataLoader(UserService userService, UserRepository userRepository) {
+        this.userService = userService;
+        this.userRepository = userRepository;
     }
 
     /**

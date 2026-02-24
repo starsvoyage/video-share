@@ -1,6 +1,6 @@
 package edu.arizona.videoshare.dto.membershipPlan;
 
-import edu.arizona.videoshare.model.entities.MembershipPlan;
+import edu.arizona.videoshare.model.entity.MembershipPlan;
 import lombok.Data;
 
 @Data

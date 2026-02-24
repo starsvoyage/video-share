@@ -3,6 +3,7 @@ package edu.arizona.videoshare.service;
 import edu.arizona.videoshare.dto.comment.CreateCommentResponse;
 import edu.arizona.videoshare.exception.NotFoundException;
 import edu.arizona.videoshare.model.entity.*;
+import edu.arizona.videoshare.model.enums.CommentStatus;
 import edu.arizona.videoshare.repository.CommentRepository;
 import edu.arizona.videoshare.repository.UserRepository;
 import lombok.RequiredArgsConstructor;

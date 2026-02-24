@@ -1,5 +1,6 @@
 package edu.arizona.videoshare.model.entity;
 
+import edu.arizona.videoshare.model.enums.ReactionType;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;

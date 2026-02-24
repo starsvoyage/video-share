@@ -1,4 +1,4 @@
-package edu.arizona.videoshare.model.entities;
+package edu.arizona.videoshare.model.entity;
 import edu.arizona.videoshare.model.enums.MembershipStatus;
 
 import jakarta.persistence.*;
