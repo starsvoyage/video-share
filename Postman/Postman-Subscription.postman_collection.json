@@ -1,0 +1,82 @@
+{
+  "info": {
+    "_postman_id": "56071987-c06c-481d-9ab9-336e48b1294a",
+    "name": "Postman-Subscription",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "51676301",
+    "_collection_link": "https://go.postman.co/collection/51676301-56071987-c06c-481d-9ab9-336e48b1294a?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Subscribe",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/subscriptions?subscriberId=1&channelId=1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "subscriptions"
+          ],
+          "query": [
+            {
+              "key": "subscriberId",
+              "value": "1"
+            },
+            {
+              "key": "channelId",
+              "value": "1"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get User Subs",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/subscriptions/users/1/subscriptions",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "subscriptions",
+            "users",
+            "1",
+            "subscriptions"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Unsubscribe",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/subscriptions/1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "subscriptions",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
