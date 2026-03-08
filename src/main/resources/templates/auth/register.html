@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout('VideoShare | Register', ~{::content}, false)}">
+
+<th:block th:fragment="content">
+    <div class="register-shell">
+        <!-- Left panel -->
+        <section class="register-brand-panel d-none d-lg-flex">
+            <div class="brand-content">
+
+                <h1 class="fw-bold mb-4">Create your free account</h1>
+
+                <p class="text-white-50 fs-5 mb-5">
+                    Share videos, build your channel, and connect with your audience.
+                </p>
+
+                <div class="vstack gap-4">
+                    <div>
+                        <h6 class="fw-semibold mb-1">Create your personal channel</h6>
+                        <p class="text-white-50 mb-0">
+                            Build your public presence and upload content under your own profile.
+                        </p>
+                    </div>
+
+                    <div>
+                        <h6 class="fw-semibold mb-1">Manage playlists</h6>
+                        <p class="text-white-50 mb-0">
+                            Organize your favorite and saved videos into custom playlists.
+                        </p>
+                    </div>
+
+                    <div>
+                        <h6 class="fw-semibold mb-1">Engage with the community</h6>
+                        <p class="text-white-50 mb-0">
+                            Comment, react, and subscribe to creators you enjoy watching.
+                        </p>
+                    </div>
+
+                    <div>
+                        <h6 class="fw-semibold mb-1">Grow over time</h6>
+                        <p class="text-white-50 mb-0">
+                            Start with a basic account and customize your profile later.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Right panel -->
+        <section class="register-form-panel position-relative">
+            <div class="signin-link">
+                <span class="text-muted">Already have an account?</span>
+                <a th:href="@{/login}" class="ms-2 link-dark fw-semibold text-decoration-none">Sign in</a>
+            </div>
+
+            <div class="w-100" style="max-width: 460px;">
+                <h2 class="fw-bold mb-4">Sign up for VideoShare</h2>
+
+                <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+                <form th:action="@{/register}" th:object="${registerForm}" method="post" novalidate>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input
+                                type="email"
+                                id="email"
+                                th:field="*{email}"
+                                class="form-control form-control-lg"
+                                placeholder="Enter your email">
+                        <div class="text-danger small mt-1"
+                             th:if="${#fields.hasErrors('email')}"
+                             th:errors="*{email}"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input
+                                type="text"
+                                id="username"
+                                th:field="*{username}"
+                                class="form-control form-control-lg"
+                                placeholder="Choose a username">
+                        <div class="text-danger small mt-1"
+                             th:if="${#fields.hasErrors('username')}"
+                             th:errors="*{username}"></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input
+                                type="password"
+                                id="password"
+                                th:field="*{password}"
+                                class="form-control form-control-lg"
+                                placeholder="Create a password">
+                        <div class="form-text">Use 8 to 72 characters.</div>
+                        <div class="text-danger small mt-1"
+                             th:if="${#fields.hasErrors('password')}"
+                             th:errors="*{password}"></div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="confirmPassword" class="form-label">Confirm Password</label>
+                        <input
+                                type="password"
+                                id="confirmPassword"
+                                th:field="*{confirmPassword}"
+                                class="form-control form-control-lg"
+                                placeholder="Confirm your password">
+                        <div class="text-danger small mt-1"
+                             th:if="${#fields.hasErrors('confirmPassword')}"
+                             th:errors="*{confirmPassword}"></div>
+                    </div>
+
+                    <button type="submit" class="btn btn-dark btn-lg w-100">Create account</button>
+                </form>
+            </div>
+        </section>
+    </div>
+
+</th:block>
+
+</html>

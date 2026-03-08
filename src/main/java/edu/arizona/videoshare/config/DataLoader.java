@@ -48,8 +48,8 @@ public class DataLoader implements CommandLineRunner {
         // Avoid reseeding on restart
         if (userRepository.count() > 0) return;
 
-        seed("ian", "idiazvachier@arizona.edu", "Ian Diaz-Vachier", "Password@123");
-        seed("user1", "user1@ua.edu", "TheUser1", "User1@123");
+        seed("ian", "idiazvachier@arizon.edu",  "Password@123");
+        seed("user1", "user1@ua.edu", "User1@123");
 
         User ian = userRepository.findByUsername("ian").orElse(null);
         User user1 = userRepository.findByUsername("user1").orElse(null);
@@ -90,12 +90,12 @@ public class DataLoader implements CommandLineRunner {
     /**
      * Helper method to seed a user via service layer.
      */
-    private void seed(String username, String email, String displayName, String password) {
+    private void seed(String username, String email, String password) {
         UserRequest req = new UserRequest();
         req.username = username;
         req.email = email;
-        req.displayName = displayName;
         req.password = password;
+        req.displayName = username;
 
         // Uses service.register() to enforce rules
         userService.register(req);

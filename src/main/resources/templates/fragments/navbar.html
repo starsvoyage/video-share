@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark" th:fragment="navbar">
+    <div class="container">
+        <a class="navbar-brand" th:href="@{/}">VideoShare</a>
+
+        <div class="ms-auto d-flex align-items-center gap-2">
+
+            <a th:if="${session.loggedInUserId == null}"
+               th:href="@{/login}"
+               class="btn btn-outline-light btn-sm">Sign in</a>
+
+            <a th:if="${session.loggedInUserId == null}"
+               th:href="@{/register}"
+               class="btn btn-light btn-sm">Sign up</a>
+
+            <div th:if="${session.loggedInUserId != null}" class="dropdown">
+                <button class="btn btn-dark border-0 p-0 dropdown-toggle d-flex align-items-center"
+                        type="button"
+                        data-bs-toggle="dropdown"
+                        aria-expanded="false"
+                        style="box-shadow: none;">
+
+                    <!-- Avatar image if available -->
+                    <img th:if="${session.loggedInAvatarUrl != null and !#strings.isEmpty(session.loggedInAvatarUrl)}"
+                         th:src="${session.loggedInAvatarUrl}"
+                         alt="User avatar"
+                         class="rounded-circle"
+                         style="width: 36px; height: 36px; object-fit: cover;">
+
+                    <!-- Fallback avatar if no image -->
+                    <div th:if="${session.loggedInAvatarUrl == null or #strings.isEmpty(session.loggedInAvatarUrl)}"
+                         class="rounded-circle bg-light text-dark d-flex align-items-center justify-content-center fw-bold"
+                         style="width: 36px; height: 36px;"
+                         th:text="${#strings.substring(session.loggedInUsername, 0, 1).toUpperCase()}">
+                    </div>
+                </button>
+
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                        <form th:action="@{/logout}" method="post" class="m-0">
+                            <button type="submit" class="dropdown-item">Sign out</button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
+</body>
+</html>
