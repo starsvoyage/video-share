@@ -1,10 +1,16 @@
+<!--
+    register.html (View Layer - Thymeleaf Template)
+
+    Allows new users to create an account by providing email,
+    username, password, and password confirmation.
+-->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout/base :: layout('VideoShare | Register', ~{::content}, false)}">
 
 <th:block th:fragment="content">
     <div class="register-shell">
-        <!-- Left panel -->
+        <!-- Left panel - Registration Perks -->
         <section class="register-brand-panel d-none d-lg-flex">
             <div class="brand-content">
 
@@ -14,6 +20,7 @@
                     Share videos, build your channel, and connect with your audience.
                 </p>
 
+                <!-- Feature highlights -->
                 <div class="vstack gap-4">
                     <div>
                         <h6 class="fw-semibold mb-1">Create your personal channel</h6>
@@ -46,8 +53,10 @@
             </div>
         </section>
 
-        <!-- Right panel -->
+        <!-- Right panel - Registration Form -->
         <section class="register-form-panel position-relative">
+
+            <!-- Link to login page -->
             <div class="signin-link">
                 <span class="text-muted">Already have an account?</span>
                 <a th:href="@{/login}" class="ms-2 link-dark fw-semibold text-decoration-none">Sign in</a>
@@ -56,9 +65,12 @@
             <div class="w-100" style="max-width: 460px;">
                 <h2 class="fw-bold mb-4">Sign up for VideoShare</h2>
 
+                <!-- Server error message -->
                 <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
 
+                <!-- Registration form -->
                 <form th:action="@{/register}" th:object="${registerForm}" method="post" novalidate>
+                    <!-- Email field -->
                     <div class="mb-3">
                         <label for="email" class="form-label">Email</label>
                         <input
@@ -72,6 +84,7 @@
                              th:errors="*{email}"></div>
                     </div>
 
+                    <!-- Username field -->
                     <div class="mb-3">
                         <label for="username" class="form-label">Username</label>
                         <input
@@ -85,6 +98,7 @@
                              th:errors="*{username}"></div>
                     </div>
 
+                    <!-- Password field -->
                     <div class="mb-3">
                         <label for="password" class="form-label">Password</label>
                         <input
@@ -99,6 +113,7 @@
                              th:errors="*{password}"></div>
                     </div>
 
+                    <!-- Confirm password field -->
                     <div class="mb-4">
                         <label for="confirmPassword" class="form-label">Confirm Password</label>
                         <input
@@ -112,6 +127,7 @@
                              th:errors="*{confirmPassword}"></div>
                     </div>
 
+                    <!-- Submit button -->
                     <button type="submit" class="btn btn-dark btn-lg w-100">Create account</button>
                 </form>
             </div>

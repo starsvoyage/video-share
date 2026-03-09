@@ -13,6 +13,13 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * AuthService (Business Layer)
+ *
+ * Handles authentication and registration business logic.
+ * Responsible for creating new user accounts and verifying
+ * login credentials.
+ */
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -20,6 +27,11 @@ public class AuthService {
     private final UserRepository users;
     private final BCryptPasswordEncoder encoder;
 
+    /**
+     * Registers a new user account.
+     * Validates uniqueness of username and email,
+     * hashes the password, and saves the user.
+     */
     @Transactional
     public User register(RegisterForm form) {
         String username = form.getUsername().trim();
@@ -49,6 +61,10 @@ public class AuthService {
         return users.save(user);
     }
 
+    /**
+     * Authenticates a user during login.
+     * Verifies the identifier (username/email) and password.
+     */
     @Transactional(readOnly = true)
     public User authenticate(LoginForm form) {
         String identifier = form.getIdentifier().trim();

@@ -16,12 +16,23 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+/**
+ * AuthController (Presentation Layer)
+ *
+ * Handles authentication-related web pages and actions.
+ * Provides endpoints for registration, login, logout,
+ * and rendering the home page.
+ */
 @Controller
 @RequiredArgsConstructor
 public class AuthController {
 
     private final AuthService authService;
 
+    /**
+     * GET /register
+     * Displays the user registration page.
+     */
     @GetMapping("/register")
     public String showRegisterPage(Model model) {
         if (!model.containsAttribute("registerForm")) {
@@ -30,6 +41,11 @@ public class AuthController {
         return "auth/register";
     }
 
+    /**
+     * POST /register
+     * Processes user registration and creates a new account.
+     * On success, logs the user in and redirects to the home page.
+     */
     @PostMapping("/register")
     public String register(
             @Valid @ModelAttribute("registerForm") RegisterForm form,
@@ -70,6 +86,10 @@ public class AuthController {
         }
     }
 
+    /**
+     * GET /login
+     * Displays the login page.
+     */
     @GetMapping("/login")
     public String showLoginPage(Model model) {
         if (!model.containsAttribute("loginForm")) {
@@ -78,6 +98,11 @@ public class AuthController {
         return "auth/login";
     }
 
+    /**
+     * POST /login
+     * Authenticates a user using username/email and password.
+     * On success, creates a session and redirects to home.
+     */
     @PostMapping("/login")
     public String login(
             @Valid @ModelAttribute("loginForm") LoginForm form,
@@ -102,6 +127,10 @@ public class AuthController {
         }
     }
 
+    /**
+     * POST /logout
+     * Logs the user out by invalidating the session.
+     */
     @PostMapping("/logout")
     public String logout(HttpSession session, RedirectAttributes redirectAttributes) {
         session.invalidate();
@@ -109,6 +138,10 @@ public class AuthController {
         return "redirect:/";
     }
 
+    /**
+     * GET /
+     * Returns the application home page.
+     */
     @GetMapping("/")
     public String home() {
         return "home";
