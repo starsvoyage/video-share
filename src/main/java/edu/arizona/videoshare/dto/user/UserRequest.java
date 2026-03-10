@@ -35,7 +35,6 @@ public class UserRequest {
     /**
      * Display name shown publicly.
      */
-    @NotBlank
     @Size(max = 100)
     public String displayName;
 

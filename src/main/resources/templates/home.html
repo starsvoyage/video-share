@@ -1,0 +1,17 @@
+<!--
+    home.html (View Layer - Thymeleaf Template)
+
+    Represents the main home page of the application.
+-->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout('VideoShare', ~{::content}, true)}">
+
+<th:block th:fragment="content">
+    <!-- Main page content -->
+    <div class="container py-5">
+            <h1>Welcome to VideoShare</h1>
+    </div>
+</th:block>
+
+</html>
