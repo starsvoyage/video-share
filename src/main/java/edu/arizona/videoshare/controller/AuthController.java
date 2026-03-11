@@ -2,9 +2,11 @@ package edu.arizona.videoshare.controller;
 
 import edu.arizona.videoshare.dto.user.LoginForm;
 import edu.arizona.videoshare.dto.user.RegisterForm;
+import edu.arizona.videoshare.dto.user.VerifyCodeForm;
 import edu.arizona.videoshare.exception.ConflictException;
 import edu.arizona.videoshare.model.entity.User;
 import edu.arizona.videoshare.service.AuthService;
+import edu.arizona.videoshare.service.VerificationService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +16,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
@@ -28,6 +31,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class AuthController {
 
     private final AuthService authService;
+    private final VerificationService verificationService;
 
     /**
      * GET /register
@@ -50,9 +54,7 @@ public class AuthController {
     public String register(
             @Valid @ModelAttribute("registerForm") RegisterForm form,
             BindingResult bindingResult,
-            Model model,
-            RedirectAttributes redirectAttributes,
-            HttpSession session
+            Model model
     ) {
         if (!form.getPassword().equals(form.getConfirmPassword())) {
             bindingResult.rejectValue("confirmPassword", "mismatch", "Passwords do not match");
@@ -64,13 +66,10 @@ public class AuthController {
 
         try {
             User user = authService.register(form);
+            model.addAttribute("email", user.getEmail());
+            model.addAttribute("verifyCodeForm", new VerifyCodeForm());
+            return "auth/verify-account";
 
-            session.setAttribute("loggedInUserId", user.getId());
-            session.setAttribute("loggedInUsername", user.getUsername());
-            session.setAttribute("loggedInDisplayName", user.getDisplayName());
-
-            redirectAttributes.addFlashAttribute("successMessage", "Welcome to Video Share!");
-            return "redirect:/";
         } catch (ConflictException ex) {
             String msg = ex.getMessage();
 
@@ -145,5 +144,59 @@ public class AuthController {
     @GetMapping("/")
     public String home() {
         return "home";
+    }
+
+    @GetMapping("/verify")
+    public String verifyAccount(@RequestParam("token") String token,
+                                RedirectAttributes redirectAttributes) {
+        try {
+            verificationService.verifyByToken(token);
+            redirectAttributes.addFlashAttribute("successMessage", "Account verified successfully. Please sign in.");
+            return "redirect:/login";
+        } catch (IllegalArgumentException ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+            return "redirect:/login";
+        }
+    }
+
+    @PostMapping("/verify/resend")
+    public String resendVerification(@RequestParam("email") String email,
+                                     RedirectAttributes redirectAttributes) {
+        try {
+            verificationService.resendVerification(email);
+            redirectAttributes.addFlashAttribute("successMessage", "Verification email sent.");
+        } catch (IllegalArgumentException ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+        }
+
+        return "redirect:/login";
+    }
+
+    @GetMapping("/verify/account")
+    public String showVerifyAccountPage(Model model) {
+        if (!model.containsAttribute("verifyCodeForm")) {
+            model.addAttribute("verifyCodeForm", new VerifyCodeForm());
+        }
+        return "auth/verify-account";
+    }
+
+    @PostMapping("/verify/account")
+    public String verifyAccountByCode(
+            @Valid @ModelAttribute("verifyCodeForm") VerifyCodeForm form,
+            BindingResult bindingResult,
+            RedirectAttributes redirectAttributes
+    ) {
+        if (bindingResult.hasErrors()) {
+            return "auth/verify-account";
+        }
+
+        try {
+            verificationService.verifyByCode(form.getCode());
+            redirectAttributes.addFlashAttribute("successMessage", "Account verified successfully. Please sign in.");
+            return "redirect:/login";
+        } catch (IllegalArgumentException ex) {
+            bindingResult.rejectValue("code", "invalid", ex.getMessage());
+            return "auth/verify-account";
+        }
     }
 }

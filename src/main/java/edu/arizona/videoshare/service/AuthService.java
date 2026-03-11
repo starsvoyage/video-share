@@ -26,6 +26,7 @@ public class AuthService {
 
     private final UserRepository users;
     private final BCryptPasswordEncoder encoder;
+    private final VerificationService verificationService;
 
     /**
      * Registers a new user account.
@@ -50,13 +51,15 @@ public class AuthService {
         user.setUsername(username);
         user.setEmail(email);
         user.setDisplayName(username);
-        user.setStatus(UserStatus.ACTIVE);
+        user.setStatus(UserStatus.PENDING_VERIFICATION);
         user.setRole(UserRole.VIEWER);
 
         UserCredentials credentials = new UserCredentials();
         credentials.setPasswordHash(encoder.encode(rawPassword));
-
         user.attachCredentials(credentials);
+
+        User savedUser = users.save(user);
+        verificationService.createAndSendVerification(savedUser);
 
         return users.save(user);
     }
@@ -73,6 +76,9 @@ public class AuthService {
         User user = users.findByUsernameIgnoreCaseOrEmailIgnoreCase(identifier, identifier)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid username/email or password"));
 
+        if (user.getStatus() != UserStatus.ACTIVE) {
+            throw new IllegalArgumentException("Please verify your email before signing in");
+        }
         if (user.getCredentials() == null ||
                 !encoder.matches(password, user.getCredentials().getPasswordHash())) {
             throw new IllegalArgumentException("Invalid username/email or password");
