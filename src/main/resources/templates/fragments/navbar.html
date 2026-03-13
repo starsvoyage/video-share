@@ -9,15 +9,44 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <body>
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark" th:fragment="navbar">
-    <div class="container">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark" th:fragment="navbar"
+     style="border-bottom:1px solid #2f2f2f;">
+
+    <div class="container-fluid d-flex align-items-center px-3">
+
+        <!-- Sidebar toggle -->
+        <button id="sidebarToggle"
+                type="button"
+                class="sidebar-toggle-btn me-2"
+                aria-label="Toggle sidebar">
+            <span id="sidebarToggleIcon">☰</span>
+        </button>
 
         <!-- Application brand / home link -->
         <a class="navbar-brand" th:href="@{/}">VideoShare</a>
 
+        <!-- Search bar -->
+        <div class="flex-grow-1 d-flex justify-content-center">
+            <form class="d-flex" role="search" th:action="@{/#}" method="get" style="width:100%; max-width:500px;">
+                <div class="input-group">
+
+                    <input class="form-control bg-dark text-white border-secondary"
+                           type="search"
+                           name="q"
+                           placeholder="Search"
+                           aria-label="Search">
+
+                    <button class="btn btn-outline-light" type="submit">
+                        <i class="bi bi-search"></i>
+                    </button>
+
+                </div>
+            </form>
+        </div>
+
         <div class="ms-auto d-flex align-items-center gap-2">
 
-            <!-- Guest navigation -->
+            <!-- Navigation -->
             <a th:if="${session.loggedInUserId == null}"
                th:href="@{/login}"
                class="btn btn-outline-light btn-sm">Sign in</a>

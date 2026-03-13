@@ -1,0 +1,4 @@
+.navbar .form-control::placeholder {
+    color: rgba(255, 255, 255, 0.65) !important;
+    opacity: 1 !important;
+}

@@ -1,0 +1,85 @@
+<!--
+    sidebar.html (View Layer - Thymeleaf Fragment)
+
+    Defines the collapsible left sidebar navigation.
+    In expanded mode it shows icons and labels.
+    In collapsed mode it shows icons only.
+-->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div id="sidebar"
+     th:fragment="sidebar"
+     class="sidebar bg-dark text-white p-3">
+
+    <!-- Main navigation -->
+    <ul class="nav nav-pills flex-column mb-4">
+
+        <li class="nav-item mb-2">
+            <a th:href="@{/}" class="nav-link text-white d-flex align-items-center gap-3 sidebar-link">
+            <span class="sidebar-icon">
+                <i class="bi bi-house"></i>
+            </span>
+                <span class="sidebar-text">Home</span>
+            </a>
+        </li>
+
+        <li class="nav-item mb-2">
+            <a th:href="@{#}" class="nav-link text-white d-flex align-items-center gap-3 sidebar-link">
+            <span class="sidebar-icon">
+                <i class="bi bi-check2-circle"></i>
+            </span>
+                <span class="sidebar-text">Followed</span>
+            </a>
+        </li>
+
+        <li class="nav-item mb-2">
+            <a th:href="@{#}" class="nav-link text-white d-flex align-items-center gap-3 sidebar-link">
+            <span class="sidebar-icon">
+                <i class="bi bi-clock-history"></i>
+            </span>
+                <span class="sidebar-text">Watch History</span>
+            </a>
+        </li>
+
+    </ul>
+
+    <hr class="border-secondary">
+
+    <!-- Followed channels -->
+    <div th:if="${session.loggedInUserId != null}">
+
+        <h6 class="text-uppercase text-white-50 small mb-3 sidebar-text">
+            Following
+        </h6>
+
+        <!-- Placeholder content to serve as example -->
+        <div class="d-flex flex-column gap-3">
+
+            <div class="d-flex align-items-center gap-3 sidebar-channel">
+                <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center sidebar-avatar">
+                    A
+                </div>
+                <span class="sidebar-text">Channel A</span>
+            </div>
+
+            <div class="d-flex align-items-center gap-3 sidebar-channel">
+                <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center sidebar-avatar">
+                    B
+                </div>
+                <span class="sidebar-text">Channel B</span>
+            </div>
+
+            <div class="d-flex align-items-center gap-3 sidebar-channel">
+                <div class="rounded-circle bg-secondary d-flex align-items-center justify-content-center sidebar-avatar">
+                    C
+                </div>
+                <span class="sidebar-text">Channel C</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
