@@ -5,6 +5,9 @@ import edu.arizona.videoshare.model.entity.Channel;
 import edu.arizona.videoshare.model.entity.Subscription;
 import edu.arizona.videoshare.model.entity.User;
 import edu.arizona.videoshare.model.entity.Subscription.SubscriptionStatus;
+import edu.arizona.videoshare.model.entity.UserCredentials;
+import edu.arizona.videoshare.model.enums.UserRole;
+import edu.arizona.videoshare.model.enums.UserStatus;
 import edu.arizona.videoshare.repository.ChannelRepository;
 import edu.arizona.videoshare.repository.SubscriptionRepository;
 import edu.arizona.videoshare.repository.UserRepository;
@@ -12,6 +15,7 @@ import edu.arizona.videoshare.service.UserService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import org.springframework.context.annotation.Profile;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 /**
  * DataLoader
@@ -24,19 +28,23 @@ import org.springframework.context.annotation.Profile;
 @Profile("!test")
 @Component
 public class DataLoader implements CommandLineRunner {
-
-    private final UserService userService;
+    
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
     private final SubscriptionRepository subscriptionRepository;
+    private final BCryptPasswordEncoder encoder;
 
-    public DataLoader(UserService userService, UserRepository userRepository,
-                        ChannelRepository channelRepository,
-                        SubscriptionRepository subscriptionRepository) {
-        this.userService = userService;
+    public DataLoader(UserService userService,
+                      UserRepository userRepository,
+                      ChannelRepository channelRepository,
+                      SubscriptionRepository subscriptionRepository,
+                      BCryptPasswordEncoder encoder)
+    {
+
         this.userRepository = userRepository;
         this.channelRepository = channelRepository;
         this.subscriptionRepository = subscriptionRepository;
+        this.encoder = encoder;
     }
 
     /**
@@ -48,7 +56,7 @@ public class DataLoader implements CommandLineRunner {
         // Avoid reseeding on restart
         if (userRepository.count() > 0) return;
 
-        seed("ian", "idiazvachier@arizon.edu",  "Password@123");
+        seed("starsvoyage", "idiazvachier@arizona.edu",  "Password@123");
         seed("user1", "user1@ua.edu", "User1@123");
 
         User ian = userRepository.findByUsername("ian").orElse(null);
@@ -91,13 +99,23 @@ public class DataLoader implements CommandLineRunner {
      * Helper method to seed a user via service layer.
      */
     private void seed(String username, String email, String password) {
-        UserRequest req = new UserRequest();
-        req.username = username;
-        req.email = email;
-        req.password = password;
-        req.displayName = username;
 
-        // Uses service.register() to enforce rules
-        userService.register(req);
+        if (userRepository.existsByUsername(username) || userRepository.existsByEmail(email)) {
+        return;
+        }
+
+        User user = new User();
+        user.setUsername(username);
+        user.setEmail(email.trim().toLowerCase());
+        user.setDisplayName(username);
+        user.setStatus(UserStatus.ACTIVE);
+        user.setRole(UserRole.VIEWER);
+
+        UserCredentials credentials = new UserCredentials();
+        credentials.setPasswordHash(encoder.encode(password));
+
+        user.attachCredentials(credentials);
+
+        userRepository.save(user);
     }
 }

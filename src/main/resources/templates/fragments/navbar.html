@@ -22,8 +22,12 @@
             <span id="sidebarToggleIcon">☰</span>
         </button>
 
-        <!-- Application brand / home link -->
-        <a class="navbar-brand" th:href="@{/}">VideoShare</a>
+        <!-- Project logo-->
+        <a class="navbar-brand d-flex align-items-center gap-2" th:href="@{/}">
+            <img th:src="@{/images/vs-title-logo.svg}"
+                 alt="VideoShare"
+                 height="36">
+        </a>
 
         <!-- Search bar -->
         <div class="flex-grow-1 d-flex justify-content-center">
@@ -55,41 +59,85 @@
                th:href="@{/register}"
                class="btn btn-light btn-sm">Sign up</a>
 
-            <!-- Logged-in user dropdown -->
-            <div th:if="${session.loggedInUserId != null}" class="dropdown">
+            <!-- Logged-in user actions -->
+            <div th:if="${session.loggedInUserId != null}" class="d-flex align-items-center gap-3">
 
-                <!-- Avatar button -->
-                <button class="btn btn-dark border-0 p-0 dropdown-toggle d-flex align-items-center"
-                        type="button"
-                        data-bs-toggle="dropdown"
-                        aria-expanded="false"
-                        style="box-shadow: none;">
+                <!-- Create dropdown -->
+                <div class="dropdown">
+                    <button class="btn btn-outline-light btn-sm d-flex align-items-center gap-1"
+                            type="button"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false">
+                        <i class="bi bi-plus-lg"></i>
+                        <span>Create</span>
+                    </button>
 
-                    <!-- User avatar image if available -->
-                    <img th:if="${session.loggedInAvatarUrl != null and !#strings.isEmpty(session.loggedInAvatarUrl)}"
-                         th:src="${session.loggedInAvatarUrl}"
-                         alt="User avatar"
-                         class="rounded-circle"
-                         style="width: 36px; height: 36px; object-fit: cover;">
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <a class="dropdown-item" href="#">Upload video</a>
+                        </li>
+                    </ul>
+                </div>
 
-                    <!-- Fallback avatar using first letter of username -->
-                    <div th:if="${session.loggedInAvatarUrl == null or #strings.isEmpty(session.loggedInAvatarUrl)}"
-                         class="rounded-circle bg-light text-dark d-flex align-items-center justify-content-center fw-bold"
-                         style="width: 36px; height: 36px;"
-                         th:text="${#strings.substring(session.loggedInUsername, 0, 1).toUpperCase()}">
-                    </div>
-                </button>
+                <!-- Notifications dropdown -->
+                <div class="dropdown">
+                    <button class="btn btn-dark border-0 position-relative d-flex align-items-center justify-content-center"
+                            type="button"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false"
+                            style="width: 40px; height: 40px; box-shadow: none;">
+                        <i class="bi bi-bell fs-5"></i>
+                    </button>
 
-                <!-- Dropdown menu -->
-                <ul class="dropdown-menu dropdown-menu-end">
+                    <ul class="dropdown-menu dropdown-menu-end p-0" style="min-width: 320px;">
+                        <li class="dropdown-header-row d-flex justify-content-between align-items-center px-3 py-2">
+                            <span class="fw-semibold">Notifications</span>
+                            <a href="#" class="small text-decoration-none">View all</a>
+                        </li>
 
-                    <!-- Logout action -->
-                    <li>
-                        <form th:action="@{/logout}" method="post" class="m-0">
-                            <button type="submit" class="dropdown-item">Sign out</button>
-                        </form>
-                    </li>
-                </ul>
+                        <!-- Placeholder until notifications are implemented -->
+                        <li class="px-3 py-3 small text-center empty-state">
+                            No notifications yet.
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- User dropdown -->
+                <div class="dropdown">
+
+                    <!-- Avatar button -->
+                    <button class="btn btn-dark border-0 p-0 d-flex align-items-center"
+                            type="button"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false"
+                            style="box-shadow: none;">
+
+                        <!-- User avatar image if available -->
+                        <img th:if="${session.loggedInAvatarUrl != null and !#strings.isEmpty(session.loggedInAvatarUrl)}"
+                             th:src="${session.loggedInAvatarUrl}"
+                             alt="User avatar"
+                             class="rounded-circle"
+                             style="width: 36px; height: 36px; object-fit: cover;">
+
+                        <!-- Fallback avatar using first letter of username -->
+                        <div th:if="${session.loggedInAvatarUrl == null or #strings.isEmpty(session.loggedInAvatarUrl)}"
+                             class="rounded-circle bg-light text-dark d-flex align-items-center justify-content-center fw-bold"
+                             style="width: 36px; height: 36px;"
+                             th:text="${#strings.substring(session.loggedInUsername, 0, 1).toUpperCase()}">
+                        </div>
+                    </button>
+
+                     <!-- User menu -->
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <!-- Logout action -->
+                        <li>
+                            <form th:action="@{/logout}" method="post" class="m-0">
+                                <button type="submit" class="dropdown-item">Sign out</button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+
             </div>
         </div>
     </div>
