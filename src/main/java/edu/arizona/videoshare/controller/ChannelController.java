@@ -1,76 +1,97 @@
 package edu.arizona.videoshare.controller;
 
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import edu.arizona.videoshare.service.ChannelService;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
 
 import edu.arizona.videoshare.model.entity.Channel;
-import edu.arizona.videoshare.model.entity.User;
 import edu.arizona.videoshare.model.entity.Video;
-import edu.arizona.videoshare.repository.ChannelRepository;
-import edu.arizona.videoshare.repository.UserRepository;
+
 
 import lombok.RequiredArgsConstructor;
-
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 @RequiredArgsConstructor
-@RestController
+@Controller
 @RequestMapping("/channels")
 public class ChannelController {
+    private static final Logger log = LoggerFactory.getLogger(ChannelController.class);
+    private final ChannelService channelService;
 
-    private final UserRepository userRepository;
-    private final ChannelRepository channelRepository;
-    
-    @PostMapping
-    public Channel createChannel(@RequestParam String channelName, @RequestParam String description, @RequestParam Long ownerUserId) {
-        User owner = userRepository.findById(ownerUserId).orElseThrow(() -> new RuntimeException("User not found"));
+    @PostMapping("/create")
+    public String createChannel(
+            @RequestParam String name,
+            @RequestParam(required = false) String description,
+            @RequestParam(required = false) MultipartFile avatarUrl,
+            HttpSession session,
+            RedirectAttributes redirectAttributes
+    ) {
+        Long loggedInUserId = (Long) session.getAttribute("loggedInUserId");
 
-        Channel newChannel = new Channel();
-        newChannel.setName(channelName);
-        newChannel.setDescription(description);
-        newChannel.setUser(owner);
-        newChannel.setSubscriberCount(0L);
-        
-        return channelRepository.save(newChannel);
+        if (loggedInUserId == null) {
+            return "redirect:/login";
+        }
 
+        try {
+            Channel createdChannel = channelService.createChannelForUser(
+                    loggedInUserId,
+                    name,
+                    description,
+                    avatarUrl
+            );
+
+            redirectAttributes.addFlashAttribute(
+                    "successMessage",
+                    "Channel \"" + createdChannel.getName() + "\" created successfully."
+            );
+
+        } catch (IllegalArgumentException ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+            redirectAttributes.addFlashAttribute("openCreateChannelModal", true);
+            redirectAttributes.addFlashAttribute("channelNameValue", name);
+            redirectAttributes.addFlashAttribute("channelDescriptionValue", description);
+        } catch (Exception ex) {
+            log.error("Channel creation failed", ex);
+            redirectAttributes.addFlashAttribute("errorMessage", "Failed to upload image.");
+            redirectAttributes.addFlashAttribute("openCreateChannelModal", true);
+            redirectAttributes.addFlashAttribute("channelNameValue", name);
+            redirectAttributes.addFlashAttribute("channelDescriptionValue", description);
+        }
+
+        return "redirect:/you";
     }
-    
+
+    @ResponseBody
     @GetMapping("/{channelId}")
-    public Channel getChannel(@PathVariable Long channelId) { 
-        return channelRepository.findById(channelId).orElseThrow(() -> new RuntimeException("Channel not found"));
+    public Channel getChannel(@PathVariable Long channelId) {
+        return channelService.getChannelById(channelId);
     }
 
+    @ResponseBody
     @GetMapping("/{channelId}/videos")
     public List<Video> getChannelVideos(@PathVariable Long channelId) {
-        Channel channel = channelRepository.findById(channelId).orElseThrow(() -> new RuntimeException("Channel not found"));
-
-        return channel.getVideosOnChannel();
+        return channelService.getChannelVideos(channelId);
     }
 
+    @ResponseBody
     @PutMapping("/{channelId}")
     public Channel updateChannel(@PathVariable Long channelId, @RequestBody Channel updatedChannel) {
-        Channel channel = channelRepository.findById(channelId).orElseThrow(() -> new RuntimeException("Channel not found"));
-
-        channel.setName(updatedChannel.getName());
-        channel.setDescription(updatedChannel.getDescription());
-        channel.setAvatarUrl(updatedChannel.getAvatarUrl());
-
-        return channelRepository.save(channel);
+        return channelService.updateChannel(channelId, updatedChannel);
     }
 
+    @ResponseBody
     @DeleteMapping("/{channelId}")
     public void deleteChannel(@PathVariable Long channelId) {
-        channelRepository.deleteById(channelId);
+        channelService.deleteChannel(channelId);
 
     }
     

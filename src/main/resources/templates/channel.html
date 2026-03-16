@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout('VideoShare | ' + ${channel.user.username}, ~{::content}, true)}">
+
+<th:block th:fragment="content">
+    <div class="px-4 py-4">
+
+        <!-- Channel Header -->
+        <div class="py-4 border-bottom">
+            <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center gap-4">
+
+                <!-- Avatar -->
+                <div class="flex-shrink-0">
+                    <img th:if="${channel.avatarUrl != null and !#strings.isEmpty(channel.avatarUrl)}"
+                         th:src="${channel.avatarUrl}"
+                         alt="Channel Avatar"
+                         class="rounded-circle border"
+                         style="width: 120px; height: 120px; object-fit: cover;">
+
+                    <div th:if="${channel.avatarUrl == null or #strings.isEmpty(channel.avatarUrl)}"
+                         class="rounded-circle bg-light text-dark d-flex align-items-center justify-content-center fw-bold border"
+                         style="width:120px; height:120px; font-size:48px;"
+                         th:text="${#strings.substring(channel.name,0,1).toUpperCase()}">
+                    </div>
+                </div>
+
+                <!-- Channel Info -->
+                <div class="flex-grow-1">
+                    <h1 class="h2 fw-bold mb-2" th:text="${channel.name}">Channel Name</h1>
+
+                    <div class="text-muted mb-2">
+                        by <span th:text="${channel.user.displayName}">Owner Name</span>
+                        <span class="mx-2">•</span>
+                        <span th:text="${channel.subscriberCount}">0</span> subscribers
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-2" th:if="${!isOwner}">
+                        <button type="button" class="btn btn-dark rounded-pill px-4">
+                            Subscribe
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Channel Tabs -->
+        <div class="border-bottom">
+            <div class="d-flex flex-wrap gap-4 py-3">
+                <button type="button"
+                        class="btn p-0 border-0 bg-transparent fw-semibold channel-tab active"
+                        data-target="videosSection">
+                    Videos
+                </button>
+
+                <button type="button"
+                        class="btn p-0 border-0 bg-transparent fw-semibold channel-tab"
+                        data-target="playlistsSection">
+                    Playlists
+                </button>
+
+                <button type="button"
+                        class="btn p-0 border-0 bg-transparent fw-semibold channel-tab"
+                        data-target="aboutSection">
+                    About
+                </button>
+            </div>
+        </div>
+
+        <!-- Videos Section -->
+        <div id="videosSection" class="channel-section py-4 border-bottom">
+            <h3 class="h5 mb-4">Videos</h3>
+
+            <div th:if="${#lists.isEmpty(channel.videosOnChannel)}" class="text-muted">
+                No videos found.
+            </div>
+
+            <div th:if="${!#lists.isEmpty(channel.videosOnChannel)}" class="row g-4">
+                <div class="col-md-6 col-lg-4" th:each="video : ${channel.videosOnChannel}">
+                    <div class="border rounded-4 p-3 h-100 bg-white shadow-sm">
+                        <h5 class="mb-2" th:text="${video.title}">Video Title</h5>
+                        <p class="text-muted mb-0">Video details coming soon.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Playlists Section -->
+        <div id="playlistsSection" class="channel-section py-4 d-none border-bottom">
+            <h3 class="h5 mb-4">Playlists</h3>
+            <p class="text-muted mb-0">No playlists yet.</p>
+        </div>
+
+        <!-- About Section -->
+        <div id="aboutSection" class="channel-section py-4 d-none border-bottom">
+            <h3 class="h5 mb-4">About</h3>
+
+            <div class="mb-3">
+                <div class="fw-semibold mb-1">Channel Owner</div>
+                <div class="text-muted" th:text="${channel.user.displayName}">Owner Name</div>
+            </div>
+
+            <div class="mb-3">
+                <div class="fw-semibold mb-1">Subscribers</div>
+                <div class="text-muted">
+                    <span th:text="${channel.subscriberCount}">0</span>
+                </div>
+            </div>
+
+            <div>
+                <div class="fw-semibold mb-1">Description</div>
+                <div class="text-muted"
+                     th:text="${channel.description != null and !#strings.isEmpty(channel.description) ? channel.description : 'No description yet.'}">
+                    Channel description
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <style>
+        .channel-tab {
+            color: #6c757d;
+            position: relative;
+        }
+
+        .channel-tab.active {
+            color: #212529;
+        }
+
+        .channel-tab.active::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            bottom: -12px;
+            width: 100%;
+            height: 3px;
+            background-color: #212529;
+            border-radius: 999px;
+        }
+    </style>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const tabs = document.querySelectorAll(".channel-tab");
+            const sections = document.querySelectorAll(".channel-section");
+
+            tabs.forEach(tab => {
+                tab.addEventListener("click", function () {
+                    const targetId = this.getAttribute("data-target");
+
+                    tabs.forEach(t => t.classList.remove("active"));
+                    this.classList.add("active");
+
+                    sections.forEach(section => section.classList.add("d-none"));
+                    document.getElementById(targetId).classList.remove("d-none");
+                });
+            });
+        });
+    </script>
+</th:block>
+</html>
