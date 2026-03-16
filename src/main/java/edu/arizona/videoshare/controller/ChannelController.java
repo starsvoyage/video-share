@@ -3,7 +3,6 @@ package edu.arizona.videoshare.controller;
 import edu.arizona.videoshare.service.ChannelService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import edu.arizona.videoshare.model.entity.Channel;
@@ -16,15 +15,11 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 
 @RequiredArgsConstructor
 @Controller
 @RequestMapping("/channels")
 public class ChannelController {
-    private static final Logger log = LoggerFactory.getLogger(ChannelController.class);
     private final ChannelService channelService;
 
     @PostMapping("/create")
@@ -60,7 +55,6 @@ public class ChannelController {
             redirectAttributes.addFlashAttribute("channelNameValue", name);
             redirectAttributes.addFlashAttribute("channelDescriptionValue", description);
         } catch (Exception ex) {
-            log.error("Channel creation failed", ex);
             redirectAttributes.addFlashAttribute("errorMessage", "Failed to upload image.");
             redirectAttributes.addFlashAttribute("openCreateChannelModal", true);
             redirectAttributes.addFlashAttribute("channelNameValue", name);
