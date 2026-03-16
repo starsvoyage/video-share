@@ -1,0 +1,257 @@
+{
+  "info": {
+    "name": "Reactions",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Setup - Create Video",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Test Video\",\n  \"channel\": { \"id\": 1 }\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/videos",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "videos"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Issue #82 - Like video as user 1 - expect 201 CREATED",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": 1,\n  \"type\": \"LIKE\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/videos/1/reactions",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "videos", "1", "reactions"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Issue #83 - Dislike video as user 2 - expect 201 CREATED",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": 2,\n  \"type\": \"DISLIKE\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/videos/1/reactions",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "videos", "1", "reactions"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Issue #82/#83 - Get reaction counts - expect 1 like 1 dislike",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/videos/1/reactions/count",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "videos", "1", "reactions", "count"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Issue #84 - Like again to toggle off - expect REMOVED",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": 1,\n  \"type\": \"LIKE\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/videos/1/reactions",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "videos", "1", "reactions"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Issue #84 - Verify count after toggle off - expect 0 likes 1 dislike",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/videos/1/reactions/count",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "videos", "1", "reactions", "count"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Issue #84 - Switch dislike to like - expect TOGGLED",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": 2,\n  \"type\": \"LIKE\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/videos/1/reactions",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "videos", "1", "reactions"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Issue #84 - Verify count after switch - expect 1 like 0 dislikes",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/videos/1/reactions/count",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "videos", "1", "reactions", "count"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Issue #85 - React to nonexistent video - expect 404",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": 1,\n  \"type\": \"LIKE\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/videos/999/reactions",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "videos", "999", "reactions"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Issue #85 - React with nonexistent user - expect 404",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": 999,\n  \"type\": \"LIKE\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/videos/1/reactions",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "videos", "1", "reactions"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Issue #85 - Count nonexistent video - expect 404",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/videos/999/reactions/count",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "videos", "999", "reactions", "count"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Issue #85 - Missing type field - expect 400",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": 1\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/videos/1/reactions",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "videos", "1", "reactions"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Issue #85 - Missing userId field - expect 400",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"type\": \"LIKE\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/videos/1/reactions",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "videos", "1", "reactions"]
+        }
+      },
+      "response": []
+    }
+  ]
+}
