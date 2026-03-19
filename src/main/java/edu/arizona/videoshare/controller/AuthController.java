@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import edu.arizona.videoshare.repository.VideoRepository;
 
 /**
  * AuthController (Presentation Layer)
@@ -32,6 +33,7 @@ public class AuthController {
 
     private final AuthService authService;
     private final VerificationService verificationService;
+    private final VideoRepository videoRepository;
 
     /**
      * GET /register
@@ -54,8 +56,7 @@ public class AuthController {
     public String register(
             @Valid @ModelAttribute("registerForm") RegisterForm form,
             BindingResult bindingResult,
-            Model model
-    ) {
+            Model model) {
         if (!form.getPassword().equals(form.getConfirmPassword())) {
             bindingResult.rejectValue("confirmPassword", "mismatch", "Passwords do not match");
         }
@@ -106,8 +107,7 @@ public class AuthController {
     public String login(
             @Valid @ModelAttribute("loginForm") LoginForm form,
             BindingResult bindingResult,
-            HttpSession session
-    ) {
+            HttpSession session) {
         if (bindingResult.hasErrors()) {
             return "auth/login";
         }
@@ -142,13 +142,14 @@ public class AuthController {
      * Returns the application home page.
      */
     @GetMapping("/")
-    public String home() {
+    public String home(Model model) {
+        model.addAttribute("videos", videoRepository.findAllByOrderByCreatedAtDesc());
         return "home";
     }
 
     @GetMapping("/verify")
     public String verifyAccount(@RequestParam("token") String token,
-                                RedirectAttributes redirectAttributes) {
+            RedirectAttributes redirectAttributes) {
         try {
             verificationService.verifyByToken(token);
             redirectAttributes.addFlashAttribute("successMessage", "Account verified successfully. Please sign in.");
@@ -161,7 +162,7 @@ public class AuthController {
 
     @PostMapping("/verify/resend")
     public String resendVerification(@RequestParam("email") String email,
-                                     RedirectAttributes redirectAttributes) {
+            RedirectAttributes redirectAttributes) {
         try {
             verificationService.resendVerification(email);
             redirectAttributes.addFlashAttribute("successMessage", "Verification email sent.");
@@ -184,8 +185,7 @@ public class AuthController {
     public String verifyAccountByCode(
             @Valid @ModelAttribute("verifyCodeForm") VerifyCodeForm form,
             BindingResult bindingResult,
-            RedirectAttributes redirectAttributes
-    ) {
+            RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
             return "auth/verify-account";
         }
