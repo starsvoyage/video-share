@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout('Video', ~{::content}, true)}">
+
+<th:block th:fragment="content">
+    <div class="container py-4">
+
+        <!-- Video Title -->
+        <h2 class="fw-bold" th:text="${video.title}">Video Title</h2>
+
+        <!-- Fake Video Player -->
+        <div class="bg-dark text-white d-flex align-items-center justify-content-center mt-3 rounded"
+             style="height: 350px;">
+            Video Player Placeholder
+        </div>
+
+        <!-- Comments Section -->
+        <div class="mt-4">
+            <h5 class="mb-3">Comments</h5>
+
+            <!-- Comment Input -->
+            <div th:if="${loggedInUserId != null}">
+                <textarea
+                        id="commentInput"
+                        class="form-control"
+                        rows="3"
+                        placeholder="Add a comment..."></textarea>
+
+                <button
+                        id="submitComment"
+                        class="btn btn-dark mt-2">
+                    Post Comment
+                </button>
+
+                <div id="commentMessage" class="mt-2 small"></div>
+            </div>
+
+            <!-- Not Logged In -->
+            <div th:if="${loggedInUserId == null}" class="text-muted">
+                Please log in to comment.
+            </div>
+        </div>
+
+    </div>
+
+    <!-- JavaScript -->
+    <script th:inline="javascript">
+    document.addEventListener("DOMContentLoaded", function () {
+        const button = document.getElementById("submitComment");
+
+        if (!button) return;
+
+        button.addEventListener("click", async function () {
+            const content = document.getElementById("commentInput").value.trim();
+            const messageBox = document.getElementById("commentMessage");
+
+            messageBox.textContent = "";
+            messageBox.className = "mt-2 small";
+
+            if (!content) {
+                messageBox.classList.add("text-danger");
+                messageBox.textContent = "Comment cannot be empty.";
+                return;
+            }
+
+            const videoId = /*[[${video.id}]]*/ 0;
+            const userId = /*[[${loggedInUserId}]]*/ 0;
+
+            try {
+                const response = await fetch(`/api/videos/${videoId}/comments`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        userId: userId,
+                        content: content,
+                        parentId: null
+                    })
+                });
+
+                if (!response.ok) throw new Error();
+
+                document.getElementById("commentInput").value = "";
+                messageBox.classList.add("text-success");
+                messageBox.textContent = "Comment posted!";
+            } catch {
+                messageBox.classList.add("text-danger");
+                messageBox.textContent = "Failed to post comment.";
+            }
+        });
+    });
+</script>
+
+</th:block>
+</html>
