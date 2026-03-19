@@ -40,6 +40,22 @@ public class VideoService {
     }
 
     public Video createVideoForUser(Long userId, Long channelId, String title) {
+        if (userId == null) {
+            throw new IllegalArgumentException("You must be logged in to upload a video.");
+        }
+
+        if (channelId == null) {
+            throw new IllegalArgumentException("Please select a channel.");
+        }
+
+        if (title == null || title.trim().isEmpty()) {
+            throw new IllegalArgumentException("Video title is required.");
+        }
+
+        if (title.trim().length() > 200) {
+            throw new IllegalArgumentException("Video title must be 200 characters or fewer.");
+        }
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found"));
 
@@ -56,10 +72,6 @@ public class VideoService {
 
         if (!channel.getUser().getId().equals(userId)) {
             throw new IllegalArgumentException("You can only upload videos to your own channel.");
-        }
-
-        if (title == null || title.trim().isEmpty()) {
-            throw new IllegalArgumentException("Video title is required.");
         }
 
         Video video = new Video();

@@ -17,13 +17,15 @@ public class VideoFormController {
 
     @PostMapping("/videos/create")
     public String createVideo(
-            @RequestParam String title,
-            @RequestParam Long channelId,
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) Long channelId,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
+
         Long loggedInUserId = (Long) session.getAttribute("loggedInUserId");
 
         if (loggedInUserId == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "You must be logged in to upload a video.");
             return "redirect:/login";
         }
 
