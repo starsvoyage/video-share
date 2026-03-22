@@ -9,6 +9,7 @@ import edu.arizona.videoshare.model.entity.User;
 import edu.arizona.videoshare.model.entity.Video;
 import edu.arizona.videoshare.repository.ChannelRepository;
 import edu.arizona.videoshare.repository.UserRepository;
+import edu.arizona.videoshare.exception.ForbiddenException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,7 +40,7 @@ public class ChannelController {
         Channel newChannel = new Channel();
         newChannel.setName(channelName);
         newChannel.setDescription(description);
-        newChannel.setUser(owner);
+        newChannel.setOwner(owner);
         newChannel.setSubscriberCount(0L);
         
         return channelRepository.save(newChannel);
@@ -58,8 +60,18 @@ public class ChannelController {
     }
 
     @PutMapping("/{channelId}")
-    public Channel updateChannel(@PathVariable Long channelId, @RequestBody Channel updatedChannel) {
+    public Channel updateChannel(@PathVariable Long channelId, @RequestBody Channel updatedChannel, HttpServletRequest request) {
         Channel channel = channelRepository.findById(channelId).orElseThrow(() -> new RuntimeException("Channel not found"));
+
+        //Checking if user is logged in and is the owner of the channel
+        Long userId = (Long) request.getSession().getAttribute("loggedInUserId");
+        if (userId == null) {
+            throw new ForbiddenException("Authentication required");
+        }
+
+        if (!channel.getOwner().getId().equals(userId)) {
+            throw new ForbiddenException("You are not the owner of this channel");
+        }
 
         channel.setName(updatedChannel.getName());
         channel.setDescription(updatedChannel.getDescription());
@@ -69,7 +81,19 @@ public class ChannelController {
     }
 
     @DeleteMapping("/{channelId}")
-    public void deleteChannel(@PathVariable Long channelId) {
+    public void deleteChannel(@PathVariable Long channelId, HttpServletRequest request) {
+        Channel channel = channelRepository.findById(channelId).orElseThrow(() -> new RuntimeException("Channel not found"));
+
+        //Checking if user is logged in and is the owner of the channel
+        Long userId = (Long) request.getSession().getAttribute("loggedInUserId");
+        if (userId == null) {
+            throw new ForbiddenException("Authentication required");
+        }
+
+        if (!channel.getOwner().getId().equals(userId)) {
+            throw new ForbiddenException("You are not the owner of this channel");
+        }
+
         channelRepository.deleteById(channelId);
 
     }

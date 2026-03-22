@@ -67,13 +67,13 @@ public class DataLoader implements CommandLineRunner {
             Channel channel1 = new Channel();
             channel1.setName("Ian with Bob");
             channel1.setDescription("Programming tutorials");
-            channel1.setUser(ian);
+            channel1.setOwner(ian);
             channelRepository.save(channel1);
 
             Channel channel2 = new Channel();
             channel2.setName("Gaming");
             channel2.setDescription("Gaming content");
-            channel2.setUser(user1);
+            channel2.setOwner(user1);
             channelRepository.save(channel2);
 
             // Adding subscriptions

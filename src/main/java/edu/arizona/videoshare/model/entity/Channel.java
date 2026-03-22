@@ -52,7 +52,7 @@ public class Channel {
     @ManyToOne(optional = false)
     @JoinColumn(name = "user_id")
     @JsonIgnoreProperties({"channels", "credentials"})
-    private User user;
+    private User owner;
 
     @OneToMany(mappedBy = "channel")
     private List<Video> videosOnChannel;

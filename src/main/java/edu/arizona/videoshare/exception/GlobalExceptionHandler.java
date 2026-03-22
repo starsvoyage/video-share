@@ -6,6 +6,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
+import edu.arizona.videoshare.exception.ForbiddenException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -85,6 +86,21 @@ public class GlobalExceptionHandler {
                 List.of()
         );
         return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
+    }
+
+    /**
+     * Handles authorization failures.
+     * Returns HTTP 403 Forbidden.
+     */
+    @ExceptionHandler(ForbiddenException.class)
+    ResponseEntity<ApiError> handleForbidden(ForbiddenException ex) {
+        ApiError body = new ApiError(
+                HttpStatus.FORBIDDEN.value(),
+                "Forbidden",
+                ex.getMessage(),
+                List.of()
+            );
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
     }
 
     /**
