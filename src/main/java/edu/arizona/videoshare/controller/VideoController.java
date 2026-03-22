@@ -31,7 +31,7 @@ public class VideoController {
             throw new ForbiddenException("Authentication required");
         }
 
-        if (!channel.getOwner().getId().equals(userId)) {
+        if (!channel.getUser().getId().equals(userId)) {
             throw new ForbiddenException("You are not the owner of this channel");
         }
 

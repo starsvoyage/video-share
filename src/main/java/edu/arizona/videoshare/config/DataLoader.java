@@ -23,23 +23,23 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
  * Seeds initial data into the database when the application starts.
  *
  * Profile restriction:
- * Disabled when the "test" profile is active to prevent interference with automated tests.
+ * Disabled when the "test" profile is active to prevent interference with
+ * automated tests.
  */
 @Profile("!test")
 @Component
 public class DataLoader implements CommandLineRunner {
-    
+
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
     private final SubscriptionRepository subscriptionRepository;
     private final BCryptPasswordEncoder encoder;
 
     public DataLoader(UserService userService,
-                      UserRepository userRepository,
-                      ChannelRepository channelRepository,
-                      SubscriptionRepository subscriptionRepository,
-                      BCryptPasswordEncoder encoder)
-    {
+            UserRepository userRepository,
+            ChannelRepository channelRepository,
+            SubscriptionRepository subscriptionRepository,
+            BCryptPasswordEncoder encoder) {
 
         this.userRepository = userRepository;
         this.channelRepository = channelRepository;
@@ -54,12 +54,13 @@ public class DataLoader implements CommandLineRunner {
     @Override
     public void run(String... args) {
         // Avoid reseeding on restart
-        if (userRepository.count() > 0) return;
+        if (userRepository.count() > 0)
+            return;
 
-        seed("starsvoyage", "idiazvachier@arizona.edu",  "Password@123");
+        seed("starsvoyage", "idiazvachier@arizona.edu", "Password@123");
         seed("user1", "user1@ua.edu", "User1@123");
 
-        User ian = userRepository.findByUsername("ian").orElse(null);
+        User ian = userRepository.findByUsername("starsvoyage").orElse(null);
         User user1 = userRepository.findByUsername("user1").orElse(null);
 
         if (ian != null && user1 != null) {
@@ -67,13 +68,13 @@ public class DataLoader implements CommandLineRunner {
             Channel channel1 = new Channel();
             channel1.setName("Ian with Bob");
             channel1.setDescription("Programming tutorials");
-            channel1.setOwner(ian);
+            channel1.setUser(ian);
             channelRepository.save(channel1);
 
             Channel channel2 = new Channel();
             channel2.setName("Gaming");
             channel2.setDescription("Gaming content");
-            channel2.setOwner(user1);
+            channel2.setUser(user1);
             channelRepository.save(channel2);
 
             // Adding subscriptions
@@ -101,7 +102,7 @@ public class DataLoader implements CommandLineRunner {
     private void seed(String username, String email, String password) {
 
         if (userRepository.existsByUsername(username) || userRepository.existsByEmail(email)) {
-        return;
+            return;
         }
 
         User user = new User();
@@ -109,7 +110,7 @@ public class DataLoader implements CommandLineRunner {
         user.setEmail(email.trim().toLowerCase());
         user.setDisplayName(username);
         user.setStatus(UserStatus.ACTIVE);
-        user.setRole(UserRole.VIEWER);
+        user.setRole(UserRole.CREATOR);
 
         UserCredentials credentials = new UserCredentials();
         credentials.setPasswordHash(encoder.encode(password));

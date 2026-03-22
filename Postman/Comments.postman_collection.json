@@ -1,0 +1,314 @@
+{
+  "info": {
+    "name": "Comments",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Setup - Create Video",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Test Video\",\n  \"channel\": { \"id\": 1 }\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/videos",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "videos"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Issue #86 - Post comment as user 1 - expect 201",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": 1,\n  \"content\": \"Great video!\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/videos/1/comments",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "videos", "1", "comments"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Issue #86 - Post second comment as user 2 - expect 201",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": 2,\n  \"content\": \"Thanks for sharing\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/videos/1/comments",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "videos", "1", "comments"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Issue #86 - Get all comments - expect 2 comments replyCount 0",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/videos/1/comments",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "videos", "1", "comments"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Issue #87 - Reply to comment 1 as user 2 - expect 201 parentId 1",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": 2,\n  \"content\": \"I agree!\",\n  \"parentId\": 1\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/videos/1/comments",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "videos", "1", "comments"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Issue #87 - Reply to comment 1 as user 1 - expect 201 parentId 1",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": 1,\n  \"content\": \"Thanks for the feedback!\",\n  \"parentId\": 1\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/videos/1/comments",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "videos", "1", "comments"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Issue #87 - Get replies for comment 1 - expect 2 replies",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/videos/1/comments/1/replies",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "videos", "1", "comments", "1", "replies"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Issue #87 - Verify replyCount on parent - expect replyCount 2",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/videos/1/comments",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "videos", "1", "comments"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Issue #86 - Comment on nonexistent video - expect 404",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": 1,\n  \"content\": \"Hello\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/videos/999/comments",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "videos", "999", "comments"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Issue #86 - Comment with nonexistent user - expect 404",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": 999,\n  \"content\": \"Hello\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/videos/1/comments",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "videos", "1", "comments"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Issue #86 - Blank content - expect 400",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": 1,\n  \"content\": \"\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/videos/1/comments",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "videos", "1", "comments"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Issue #87 - Reply with nonexistent parentId - expect 404",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": 1,\n  \"content\": \"Reply to ghost\",\n  \"parentId\": 999\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/videos/1/comments",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "videos", "1", "comments"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Issue #87 - Reply with parent from wrong video - expect 409",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": 1,\n  \"content\": \"Cross-video reply\",\n  \"parentId\": 1\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/videos/2/comments",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "videos", "2", "comments"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Issue #87 - Delete comment 2 setup for removed test",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/videos/1/comments/2",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "videos", "1", "comments", "2"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Issue #87 - Reply to removed comment - expect 409",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": 1,\n  \"content\": \"Reply to removed\",\n  \"parentId\": 2\n}"
+        },
+        "url": {
+          "raw": "http://localhost:8080/api/videos/1/comments",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "videos", "1", "comments"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Issue #86 - Removed comment hidden from GET - expect 1 comment",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/videos/1/comments",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "8080",
+          "path": ["api", "videos", "1", "comments"]
+        }
+      },
+      "response": []
+    }
+  ]
+}
