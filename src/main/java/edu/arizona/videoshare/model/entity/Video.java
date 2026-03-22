@@ -11,7 +11,8 @@ import java.time.LocalDateTime;
 /**
  * Video entity
  *
- * Minimal implementation so other domains (like PlaylistVideo) can reference it.
+ * Minimal implementation so other domains (like PlaylistVideo) can reference
+ * it.
  */
 @Getter
 @Entity
@@ -28,15 +29,15 @@ public class Video {
     @Column(nullable = false, length = 200)
     private String title;
 
+    @Column(name = "media_url", length = 1000)
+    private String mediaUrl;
+
     @Setter
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(
-            name = "owner_user_id",
-            foreignKey = @ForeignKey(name = "fk_videos_owner_user")
-    )
+    @JoinColumn(name = "owner_user_id", foreignKey = @ForeignKey(name = "fk_videos_owner_user"))
     private User owner;
 
-    //Added this to make the channel and subscription entities work
+    // Added this to make the channel and subscription entities work
     @Setter
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "channel_id", nullable = false)
@@ -47,7 +48,8 @@ public class Video {
 
     private LocalDateTime updatedAt;
 
-    public Video() {}
+    public Video() {
+    }
 
     @PrePersist
     void onCreate() {
