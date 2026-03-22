@@ -77,10 +77,13 @@
 
             <div th:if="${!#lists.isEmpty(channel.videosOnChannel)}" class="row g-4">
                 <div class="col-md-6 col-lg-4" th:each="video : ${channel.videosOnChannel}">
-                    <div class="border rounded-4 p-3 h-100 bg-white shadow-sm">
-                        <h5 class="mb-2" th:text="${video.title}">Video Title</h5>
-                        <p class="text-muted mb-0">Video details coming soon.</p>
-                    </div>
+                    <a th:href="@{'/videos/' + ${video.id}}"
+                       class="text-decoration-none text-dark">
+                        <div class="border rounded-4 p-3 h-100 bg-white shadow-sm">
+                            <h5 class="mb-2" th:text="${video.title}">Video Title</h5>
+                            <p class="text-muted mb-0">Click to watch</p>
+                        </div>
+                    </a>
                 </div>
             </div>
         </div>

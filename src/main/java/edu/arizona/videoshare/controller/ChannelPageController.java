@@ -20,8 +20,7 @@ public class ChannelPageController {
             @PathVariable String username,
             @PathVariable String channelName,
             HttpSession session,
-            Model model
-    ) {
+            Model model) {
         Channel channel = channelService.getChannelByUsernameAndName(username, channelName);
 
         Long loggedInUserId = (Long) session.getAttribute("loggedInUserId");
