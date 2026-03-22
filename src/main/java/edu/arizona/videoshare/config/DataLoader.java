@@ -60,7 +60,7 @@ public class DataLoader implements CommandLineRunner {
         seed("starsvoyage", "idiazvachier@arizona.edu", "Password@123");
         seed("user1", "user1@ua.edu", "User1@123");
 
-        User ian = userRepository.findByUsername("ian").orElse(null);
+        User ian = userRepository.findByUsername("starsvoyage").orElse(null);
         User user1 = userRepository.findByUsername("user1").orElse(null);
 
         if (ian != null && user1 != null) {

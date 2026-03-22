@@ -9,6 +9,8 @@ import edu.arizona.videoshare.model.enums.UserStatus;
 import edu.arizona.videoshare.repository.ChannelRepository;
 import edu.arizona.videoshare.repository.UserRepository;
 import edu.arizona.videoshare.repository.VideoRepository;
+import edu.arizona.videoshare.model.entity.Video;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +25,15 @@ public class VideoService {
     private final ChannelRepository channelRepository;
 
     public Video create(Video video) {
+        if (video.getChannel() == null || video.getChannel().getId() == null) {
+            throw new NotFoundException("Channel is required");
+        }
+
+        Channel channel = channelRepository.findById(video.getChannel().getId())
+                .orElseThrow(() -> new NotFoundException(
+                        "Channel not found: " + video.getChannel().getId()));
+
+        video.setChannel(channel);
         return videoRepository.save(video);
     }
 
