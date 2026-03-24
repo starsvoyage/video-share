@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
+import edu.arizona.videoshare.model.enums.VideoVisibility;
 
 import java.time.LocalDateTime;
 
@@ -41,6 +42,11 @@ public class Video {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "channel_id", nullable = false)
     private Channel channel;
+
+    @Setter
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private VideoVisibility visibility = VideoVisibility.PUBLIC;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;

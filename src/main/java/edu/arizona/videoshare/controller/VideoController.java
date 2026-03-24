@@ -21,12 +21,12 @@ public class VideoController {
 
     @GetMapping("/{id}")
     public edu.arizona.videoshare.model.entity.Video get(@PathVariable Long id) {
-        return videoService.get(id);
+        return videoService.getPublic(id);
     }
 
     @GetMapping
     public List<edu.arizona.videoshare.model.entity.Video> getAll() {
-        return videoService.getAll();
+        return videoService.getAllPublic();
     }
 
     @DeleteMapping("/{id}")

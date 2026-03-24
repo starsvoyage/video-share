@@ -4,12 +4,12 @@ import edu.arizona.videoshare.exception.NotFoundException;
 import edu.arizona.videoshare.model.entity.Channel;
 import edu.arizona.videoshare.model.entity.User;
 import edu.arizona.videoshare.model.entity.Video;
+import edu.arizona.videoshare.model.enums.VideoVisibility;
 import edu.arizona.videoshare.model.enums.UserRole;
 import edu.arizona.videoshare.model.enums.UserStatus;
 import edu.arizona.videoshare.repository.ChannelRepository;
 import edu.arizona.videoshare.repository.UserRepository;
 import edu.arizona.videoshare.repository.VideoRepository;
-import edu.arizona.videoshare.model.entity.Video;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -42,8 +42,21 @@ public class VideoService {
                 .orElseThrow(() -> new NotFoundException("Video not found"));
     }
 
+    public Video getPublic(Long id) {
+        return videoRepository.findByIdAndVisibility(id, VideoVisibility.PUBLIC)
+                .orElseThrow(() -> new NotFoundException("Video not found"));
+    }
+
     public List<Video> getAll() {
         return videoRepository.findAll();
+    }
+
+    public List<Video> getAllPublic() {
+        return videoRepository.findAllByVisibilityOrderByCreatedAtDesc(VideoVisibility.PUBLIC);
+    }
+
+    public List<Video> getPublicVideosForChannel(Long channelId) {
+        return videoRepository.findAllByChannelIdAndVisibilityOrderByCreatedAtDesc(channelId, VideoVisibility.PUBLIC);
     }
 
     public void delete(Long id) {
@@ -89,6 +102,7 @@ public class VideoService {
         video.setTitle(title.trim());
         video.setOwner(user);
         video.setChannel(channel);
+        video.setVisibility(VideoVisibility.PUBLIC);
 
         return videoRepository.save(video);
     }

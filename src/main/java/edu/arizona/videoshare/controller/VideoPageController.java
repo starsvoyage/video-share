@@ -1,7 +1,7 @@
 package edu.arizona.videoshare.controller;
 
 import edu.arizona.videoshare.model.entity.Video;
-import edu.arizona.videoshare.repository.VideoRepository;
+import edu.arizona.videoshare.service.VideoService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -13,15 +13,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 @RequiredArgsConstructor
 public class VideoPageController {
 
-    private final VideoRepository videoRepository;
+    private final VideoService videoService;
 
     @GetMapping("/videos/{videoId}")
     public String showVideoPage(
             @PathVariable Long videoId,
             HttpSession session,
             Model model) {
-        Video video = videoRepository.findById(videoId)
-                .orElseThrow(() -> new RuntimeException("Video not found"));
+        Video video = videoService.getPublic(videoId);
 
         Long loggedInUserId = (Long) session.getAttribute("loggedInUserId");
 

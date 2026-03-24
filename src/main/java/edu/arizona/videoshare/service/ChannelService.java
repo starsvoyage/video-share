@@ -7,6 +7,7 @@ import edu.arizona.videoshare.model.enums.UserRole;
 import edu.arizona.videoshare.model.enums.UserStatus;
 import edu.arizona.videoshare.repository.ChannelRepository;
 import edu.arizona.videoshare.repository.UserRepository;
+import edu.arizona.videoshare.repository.VideoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +26,7 @@ public class ChannelService {
 
     private final ChannelRepository channelRepository;
     private final UserRepository userRepository;
+    private final VideoRepository videoRepository;
 
     @Transactional(readOnly = true)
     public List<Channel> getChannelsByUserId(Long userId) {
@@ -119,7 +121,9 @@ public class ChannelService {
         Channel channel = channelRepository.findById(channelId)
                 .orElseThrow(() -> new RuntimeException("Channel not found"));
 
-        return channel.getVideosOnChannel();
+        return videoRepository.findAllByChannelIdAndVisibilityOrderByCreatedAtDesc(
+                channel.getId(),
+                edu.arizona.videoshare.model.enums.VideoVisibility.PUBLIC);
     }
 
     @Transactional
