@@ -1,0 +1,89 @@
+package edu.arizona.videoshare.service;
+
+import edu.arizona.videoshare.dto.user.LoginForm;
+import edu.arizona.videoshare.dto.user.RegisterForm;
+import edu.arizona.videoshare.exception.ConflictException;
+import edu.arizona.videoshare.model.entity.User;
+import edu.arizona.videoshare.model.entity.UserCredentials;
+import edu.arizona.videoshare.model.enums.UserRole;
+import edu.arizona.videoshare.model.enums.UserStatus;
+import edu.arizona.videoshare.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+/**
+ * AuthService (Business Layer)
+ *
+ * Handles authentication and registration business logic.
+ * Responsible for creating new user accounts and verifying
+ * login credentials.
+ */
+@Service
+@RequiredArgsConstructor
+public class AuthService {
+
+    private final UserRepository users;
+    private final BCryptPasswordEncoder encoder;
+    private final VerificationService verificationService;
+
+    /**
+     * Registers a new user account.
+     * Validates uniqueness of username and email,
+     * hashes the password, and saves the user.
+     */
+    @Transactional
+    public User register(RegisterForm form) {
+        String username = form.getUsername().trim();
+        String email = form.getEmail().trim().toLowerCase();
+        String rawPassword = form.getPassword();
+
+        if (users.existsByUsername(username)) {
+            throw new ConflictException("Username already exists");
+        }
+
+        if (users.existsByEmail(email)) {
+            throw new ConflictException("Email already exists");
+        }
+
+        User user = new User();
+        user.setUsername(username);
+        user.setEmail(email);
+        user.setDisplayName(username);
+        user.setStatus(UserStatus.PENDING_VERIFICATION);
+        user.setRole(UserRole.VIEWER);
+
+        UserCredentials credentials = new UserCredentials();
+        credentials.setPasswordHash(encoder.encode(rawPassword));
+        user.attachCredentials(credentials);
+
+        User savedUser = users.save(user);
+        verificationService.createAndSendVerification(savedUser);
+
+        return users.save(user);
+    }
+
+    /**
+     * Authenticates a user during login.
+     * Verifies the identifier (username/email) and password.
+     */
+    @Transactional(readOnly = true)
+    public User authenticate(LoginForm form) {
+        String identifier = form.getIdentifier().trim();
+        String password = form.getPassword();
+
+        User user = users.findByUsernameIgnoreCaseOrEmailIgnoreCase(identifier, identifier)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid username/email or password"));
+
+        if (user.getStatus() != UserStatus.ACTIVE) {
+            throw new IllegalArgumentException("Please verify your email before signing in");
+        }
+        if (user.getCredentials() == null ||
+                !encoder.matches(password, user.getCredentials().getPasswordHash())) {
+            throw new IllegalArgumentException("Invalid username/email or password");
+        }
+
+        return user;
+    }
+}

@@ -1,12 +1,10 @@
 package edu.arizona.videoshare.service;
 
+import edu.arizona.videoshare.dto.user.RegisterForm;
 import edu.arizona.videoshare.dto.user.UserRequest;
-import edu.arizona.videoshare.exception.ConflictException;
 import edu.arizona.videoshare.exception.NotFoundException;
 import edu.arizona.videoshare.model.entity.User;
-import edu.arizona.videoshare.model.entity.UserCredentials;
 import edu.arizona.videoshare.repository.UserRepository;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -24,43 +22,18 @@ import java.util.List;
 public class UserService {
 
     private final UserRepository users;
-    private final BCryptPasswordEncoder encoder;
+    private final AuthService authService;
 
-//    public UserService(UserRepository users, BCryptPasswordEncoder encoder) {
-//        this.users = users;
-//        this.encoder = encoder;
-//    }
-
-    /**
-     * CREATE: Registers a new user account.
-     */
     @Transactional
     public User register(UserRequest req) {
 
-        // Business rule: username/email unique
-        if (users.existsByUsername(req.username)) {
-            throw new ConflictException("Username already exists");
-        }
-        if (users.existsByEmail(req.email)) {
-            throw new ConflictException("Email already exists");
-        }
+        RegisterForm form = new RegisterForm();
+        form.setUsername(req.username);
+        form.setEmail(req.email);
+        form.setPassword(req.password);
+        form.setConfirmPassword(req.password);
 
-        // Create user profile
-        User u = new User();
-        u.setUsername(req.username.trim());
-        u.setEmail(req.email.trim().toLowerCase());
-        u.setDisplayName(req.displayName.trim());
-
-        // Create credentials
-        // Because UserCredentials uses @MapsId, credentials will share the same PK as the user.
-        UserCredentials creds = new UserCredentials();
-        creds.setPasswordHash(encoder.encode(req.password));
-
-        // attachCredentials keeps both sides of the 1:1 mapping consistent in memory
-        u.attachCredentials(creds);
-
-        // Saving user cascades creds due to cascade=ALL on User.credentials
-        return users.save(u);
+        return authService.register(form);
     }
 
     /**

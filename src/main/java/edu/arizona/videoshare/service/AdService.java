@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
 import java.util.List;
 import edu.arizona.videoshare.repository.AdRepository;
-import edu.arizona.videoshare.model.Ad;
+import edu.arizona.videoshare.model.entity.Ad;
 
 @Service
 @RequiredArgsConstructor

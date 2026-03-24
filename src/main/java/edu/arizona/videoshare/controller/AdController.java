@@ -4,7 +4,7 @@ import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
 import java.util.List;
 import edu.arizona.videoshare.service.AdService;
-import edu.arizona.videoshare.model.Ad;
+import edu.arizona.videoshare.model.entity.Ad;
 
 @RestController
 @RequestMapping("/api/ads")

@@ -1,4 +1,4 @@
-package edu.arizona.videoshare.model.entity;
+package edu.arizona.videoshare.model.enums;
 
 public enum CommentStatus {
     PENDING,

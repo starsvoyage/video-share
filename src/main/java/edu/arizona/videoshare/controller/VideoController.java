@@ -3,12 +3,13 @@ package edu.arizona.videoshare.controller;
 import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
 import java.util.List;
+
 import edu.arizona.videoshare.service.VideoService;
+import edu.arizona.videoshare.model.entity.Video;
 
 @RestController
 @RequestMapping("/api/videos")
 @RequiredArgsConstructor
-
 public class VideoController {
 
     private final VideoService videoService;
