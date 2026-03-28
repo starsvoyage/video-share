@@ -48,8 +48,11 @@ public class Video {
 
     private LocalDateTime updatedAt;
 
-    public Video() {
-    }
+    //For the file path, when we need to access the video file
+    @Setter
+    private String filePath;
+
+    public Video() {}
 
     @PrePersist
     void onCreate() {
