@@ -47,6 +47,10 @@ public class VerificationService {
         User user = users.findByEmailIgnoreCase(email)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
+        if (user.getStatus() == UserStatus.DELETED) {
+            throw new IllegalArgumentException("This account has been deactivated");
+        }
+
         if (user.getStatus() == UserStatus.ACTIVE) {
             throw new IllegalArgumentException("Account already verified");
         }

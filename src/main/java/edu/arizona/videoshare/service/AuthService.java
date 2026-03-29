@@ -76,6 +76,9 @@ public class AuthService {
         User user = users.findByUsernameIgnoreCaseOrEmailIgnoreCase(identifier, identifier)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid username/email or password"));
 
+        if (user.getStatus() == UserStatus.DELETED) {
+            throw new IllegalArgumentException("This account has been deactivated");
+        }
         if (user.getStatus() != UserStatus.ACTIVE) {
             throw new IllegalArgumentException("Please verify your email before signing in");
         }
