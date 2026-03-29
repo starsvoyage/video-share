@@ -71,12 +71,12 @@
         <div id="videosSection" class="channel-section py-4 border-bottom">
             <h3 class="h5 mb-4">Videos</h3>
 
-            <div th:if="${#lists.isEmpty(channel.videosOnChannel)}" class="text-muted">
+            <div th:if="${#lists.isEmpty(videos)}" class="text-muted">
                 No videos found.
             </div>
 
-            <div th:if="${!#lists.isEmpty(channel.videosOnChannel)}" class="row g-4">
-                <div class="col-md-6 col-lg-4" th:each="video : ${channel.videosOnChannel}">
+            <div th:if="${!#lists.isEmpty(videos)}" class="row g-4">
+                <div class="col-md-6 col-lg-4" th:each="video : ${videos}">
                     <a th:href="@{'/videos/' + ${video.id}}"
                        class="text-decoration-none text-dark">
                         <div class="border rounded-4 p-3 h-100 bg-white shadow-sm">

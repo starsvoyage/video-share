@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import edu.arizona.videoshare.repository.VideoRepository;
+import edu.arizona.videoshare.service.VideoService;
 
 /**
  * AuthController (Presentation Layer)
@@ -33,7 +33,7 @@ public class AuthController {
 
     private final AuthService authService;
     private final VerificationService verificationService;
-    private final VideoRepository videoRepository;
+    private final VideoService videoService;
 
     /**
      * GET /register
@@ -143,7 +143,7 @@ public class AuthController {
      */
     @GetMapping("/")
     public String home(Model model) {
-        model.addAttribute("videos", videoRepository.findAllByOrderByCreatedAtDesc());
+        model.addAttribute("videos", videoService.getAllPublic());
         return "home";
     }
 
