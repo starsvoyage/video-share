@@ -2,8 +2,10 @@ package edu.arizona.videoshare.controller;
 
 import java.util.List;
 
+import edu.arizona.videoshare.dto.notification.NotificationRequest;
 import edu.arizona.videoshare.dto.notification.NotificationResponse;
 import edu.arizona.videoshare.model.enums.NotificationType;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import edu.arizona.videoshare.model.entity.Notification;
@@ -18,8 +20,8 @@ public class NotificationController {
     private final NotificationService notificationService;
 
     @PostMapping
-    public Notification create(@RequestBody Notification notification) {
-        return notificationService.createNotification(notification);
+    public NotificationResponse create(@Valid @RequestBody NotificationRequest request) {
+        return notificationService.createNotification(request);
     }
 
     @GetMapping("/user/{userId}")
