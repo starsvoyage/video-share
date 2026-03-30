@@ -11,7 +11,7 @@
 <!DOCTYPE html>
 <html lang="en"
       xmlns:th="http://www.thymeleaf.org"
-      th:fragment="layout(pageTitle, content, showNavbar)">
+      th:fragment="layout(pageTitle, content, showNavbar, showSidebar)"
 
 <head>
     <meta charset="UTF-8">
@@ -28,6 +28,7 @@
     <link rel="stylesheet" th:href="@{/css/sidebar.css}">
     <link rel="stylesheet" th:href="@{/css/navbar.css}">
     <link rel="stylesheet" th:href="@{/css/you.css}">
+    <link rel="stylesheet" th:href="@{/css/settings.css}">
 </head>
 
 <body style="background-color: #f1f3f5;">
@@ -40,7 +41,7 @@
     <div class="d-flex">
 
         <!-- Sidebar -->
-        <th:block th:if="${showNavbar}">
+        <th:block th:if="${showSidebar}">
             <div th:replace="~{fragments/sidebar :: sidebar}"></div>
         </th:block>
 

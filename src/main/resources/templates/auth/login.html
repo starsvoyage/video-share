@@ -6,7 +6,7 @@
 -->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layout/base :: layout('VideoShare | Sign In', ~{::content}, false)}">
+      th:replace="~{layout/base :: layout('VideoShare | Sign In', ~{::content}, false, false)}">
 
 <th:block th:fragment="content">
     <div class="login-page d-flex align-items-start justify-content-center">
@@ -16,10 +16,10 @@
 
                     <!-- Page title / branding -->
                     <div class="text-center mb-4">
-                        <div class="bg-white text-dark rounded-circle d-inline-flex align-items-center justify-content-center fw-bold mb-3"
-                             style="width:64px; height:64px;">
-                            VS
-                        </div>
+                        <img th:src="@{/images/vs-logo.svg}"
+                             alt="VideoShare"
+                             height="64"
+                             style="margin-bottom:16px;">
                         <h1 class="h2 fw-bold text-white">Sign in to VideoShare</h1>
                     </div>
 

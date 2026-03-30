@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en"
       xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layout/base :: layout('VideoShare | ' + ${user.username}, ~{::content}, true)}">
+      th:replace="~{layout/base :: layout('VideoShare | ' + ${user.username}, ~{::content}, true, true)}">
 
 <th:block th:fragment="content">
     <div class="px-4 py-4">
@@ -37,33 +37,25 @@
 
                     <div class="text-muted mb-2">
                         @<span th:text="${user.username}">username</span>
-                        <span class="mx-2">•</span>
-                        <span th:text="${user.role}">VIEWER</span>
-                    </div>
-
-                    <div class="d-flex flex-wrap gap-2 mb-2 align-items-center">
-
-                        <!-- Status badge -->
-                        <span class="badge rounded-pill px-3 py-2"
-                              th:classappend="${isVerified} ? 'text-bg-success' : 'text-bg-warning'">
-                            <span th:text="${isVerified} ? 'Verified Account' : 'Not Verified'">Status</span>
+                        <span class="btn btn-sm btn-outline-success rounded-pill px-3"
+                              th:classappend="${isVerified} ? 'text-bg-success' : 'text-bg-light'"
+                              th:text="${isVerified} ? 'Verified' : 'Not Verified'">
+                            Verified
                         </span>
-
-                        <!-- Verify button (only if NOT verified) -->
-                        <div th:if="${!isVerified}">
-                            <a th:href="@{/verify/account}"
-                               class="btn btn-sm btn-outline-success rounded-pill px-3">
-                                Verify Account
-                            </a>
-                        </div>
-
                     </div>
 
-                    <p class="mb-0 text-secondary"
-                       th:if="${user.bio != null and !#strings.isEmpty(user.bio)}"
-                       th:text="${user.bio}">
-                        Bio goes here
-                    </p>
+                    <div class="mb-0">
+                        <p class="mb-2 text-secondary"
+                           th:if="${user.bio != null and !#strings.isEmpty(user.bio)}"
+                           th:text="${user.bio}">
+                            Bio goes here
+                        </p>
+
+                        <p class="mb-2 text-secondary"
+                           th:if="${user.bio == null or #strings.isEmpty(user.bio)}">
+                            No bio yet.
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>

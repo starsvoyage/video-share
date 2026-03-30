@@ -75,11 +75,11 @@
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li>
                            <a class="dropdown-item"
-   href="#"
-   data-bs-toggle="modal"
-   data-bs-target="#uploadVideoModal">
-    Upload video
-</a>
+                               href="#"
+                               data-bs-toggle="modal"
+                               data-bs-target="#uploadVideoModal">
+                               Upload video
+                           </a>
                         </li>
                     </ul>
                 </div>
@@ -134,6 +134,16 @@
 
                      <!-- User menu -->
                     <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <a class="dropdown-item" th:href="@{/you}">Account</a>
+                        </li>
+
+
+                        <li>
+                            <a class="dropdown-item" th:href="@{/settings}">Settings</a>
+                        </li>
+
+
                         <!-- Logout action -->
                         <li>
                             <form th:action="@{/logout}" method="post" class="m-0">
