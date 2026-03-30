@@ -1,6 +1,7 @@
 package edu.arizona.videoshare.model.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -44,11 +45,6 @@ public class Video {
     @JoinColumn(name = "channel_id", nullable = false)
     private Channel channel;
 
-    @Setter
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    private VideoVisibility visibility = VideoVisibility.PUBLIC;
-
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
@@ -57,6 +53,16 @@ public class Video {
     //For the file path, when we need to access the video file
     @Setter
     private String filePath;
+
+    @Setter
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 10)
+    private VideoVisibility visibility = VideoVisibility.PUBLIC;
+
+    @Setter
+    @Min(0)
+    @Column(nullable = false)
+    private int duration = 0;
 
     public Video() {}
 

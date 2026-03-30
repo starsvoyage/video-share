@@ -18,7 +18,6 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class CommentService {
-
         private final CommentRepository commentRepository;
         private final UserRepository userRepository;
         private final VideoRepository videoRepository;
@@ -45,6 +44,11 @@ public class CommentService {
 
                         if (parent.getStatus() == CommentStatus.REMOVED) {
                                 throw new ConflictException("Cannot reply to removed comment");
+                        }
+
+                        if (parent.getParent() != null) {
+                                throw new ConflictException("Nested replies are not allowed; "
+                                        + "reply to the first in chain comment instead");
                         }
                 }
 
@@ -78,6 +82,15 @@ public class CommentService {
                 commentRepository.save(c);
         }
 
+        @Transactional
+        public CommentResponse updateCommentStatus(Long commentId, CommentStatus newStatus) {
+                Comment c = commentRepository.findById(commentId)
+                        .orElseThrow(() -> new NotFoundException("Comment not found: " + commentId));
+
+                c.setStatus(newStatus);
+                Comment saved = commentRepository.save(c);
+                return toResponse(saved);
+        }
 
         @Transactional(readOnly = true)
         public List<CommentResponse> getTopLevelComments(Long videoId) {

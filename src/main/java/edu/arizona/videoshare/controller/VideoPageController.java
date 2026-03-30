@@ -1,6 +1,8 @@
 package edu.arizona.videoshare.controller;
 
+import edu.arizona.videoshare.exception.ForbiddenException;
 import edu.arizona.videoshare.model.entity.Video;
+import edu.arizona.videoshare.model.enums.VideoVisibility;
 import edu.arizona.videoshare.service.VideoService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -20,9 +22,18 @@ public class VideoPageController {
             @PathVariable Long videoId,
             HttpSession session,
             Model model) {
-        Video video = videoService.getPublic(videoId);
+        Video video = videoService.get(videoId);
 
         Long loggedInUserId = (Long) session.getAttribute("loggedInUserId");
+
+        if (video.getVisibility() == VideoVisibility.PRIVATE) {
+            Long ownerId = video.getOwner() != null
+                    ? video.getOwner().getId()
+                    : video.getChannel().getUser().getId();
+            if (loggedInUserId == null || !loggedInUserId.equals(ownerId)) {
+                throw new ForbiddenException("This video is private");
+            }
+        }
 
         model.addAttribute("video", video);
         model.addAttribute("loggedInUserId", loggedInUserId);

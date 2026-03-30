@@ -5,5 +5,6 @@ public enum CommentStatus {
     APPROVED,
     REJECTED,
     ACTIVE,
+    HIDDEN,
     REMOVED
 }

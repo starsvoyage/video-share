@@ -2,13 +2,9 @@ package edu.arizona.videoshare.controller;
 
 import java.util.List;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import edu.arizona.videoshare.dto.notification.NotificationResponse;
+import edu.arizona.videoshare.model.enums.NotificationType;
+import org.springframework.web.bind.annotation.*;
 
 import edu.arizona.videoshare.model.entity.Notification;
 import edu.arizona.videoshare.service.NotificationService;
@@ -27,12 +23,24 @@ public class NotificationController {
     }
 
     @GetMapping("/user/{userId}")
-    public List<Notification> getFeed(@PathVariable Long userId) {
+    public List<NotificationResponse> getFeed(@PathVariable Long userId) {
         return notificationService.getFeed(userId);
     }
 
     @PatchMapping("/{id}/read")
-    public Notification markRead(@PathVariable Long id) {
+    public NotificationResponse markRead(@PathVariable Long id) {
         return notificationService.markRead(id);
+    }
+
+    @GetMapping("/user/{userId}/filter")
+    public List<NotificationResponse> getByType(
+            @PathVariable Long userId,
+            @RequestParam NotificationType type) {
+        return notificationService.getByType(userId, type);
+    }
+
+    @GetMapping("/user/{userId}/unread-count")
+    public long getUnreadCount(@PathVariable Long userId) {
+        return notificationService.getUnreadCount(userId);
     }
 }
