@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en"
       xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layout/base :: layout('VideoShare | ' + ${video.title}, ~{::content}, true)}">
+      th:replace="~{layout/base :: layout('VideoShare | ' + ${video.title}, ~{::content}, true, true)}">
 
 <th:block th:fragment="content">
     <div class="container-fluid py-4 px-4">

@@ -1,5 +1,6 @@
 package edu.arizona.videoshare.service;
 
+import org.springframework.web.multipart.MultipartFile;
 import edu.arizona.videoshare.dto.user.RegisterForm;
 import edu.arizona.videoshare.dto.user.UserRequest;
 import edu.arizona.videoshare.exception.NotFoundException;
@@ -10,6 +11,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.UUID;
 import java.util.List;
 
 /**
@@ -93,4 +99,58 @@ public class UserService {
         users.deleteById(id);
     }
 
+    @Transactional
+    public User updateAccountInformation(Long userId, String displayName, String bio, MultipartFile avatar) throws IOException {
+        User user = users.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found: " + userId));
+
+        user.setDisplayName(displayName.trim());
+
+        if (bio == null || bio.trim().isEmpty()) {
+            user.setBio(null);
+        } else {
+            user.setBio(bio.trim());
+        }
+
+        if (avatar != null && !avatar.isEmpty()) {
+
+            long maxSize = 5 * 1024 * 1024;
+            if (avatar.getSize() > maxSize) {
+                throw new IllegalArgumentException("Avatar image must be smaller than 5MB.");
+            }
+
+            String contentType = avatar.getContentType();
+            if (contentType == null ||
+                    !(contentType.equals("image/png")
+                            || contentType.equals("image/jpeg")
+                            || contentType.equals("image/jpg")
+                            || contentType.equals("image/webp"))) {
+                throw new IllegalArgumentException("Only PNG, JPG, JPEG, or WEBP images are allowed.");
+            }
+
+            String originalFilename = avatar.getOriginalFilename();
+            String extension = "";
+
+            if (originalFilename != null && originalFilename.contains(".")) {
+                extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+            }
+
+            String fileName = UUID.randomUUID() + extension;
+
+            Path uploadDir = Paths.get(
+                    System.getProperty("user.dir"),
+                    "uploads",
+                    "user-avatars"
+            ).toAbsolutePath().normalize();
+
+            Files.createDirectories(uploadDir);
+
+            Path filePath = uploadDir.resolve(fileName);
+            avatar.transferTo(filePath.toFile());
+
+            user.setAvatarUrl("/uploads/user-avatars/" + fileName);
+        }
+
+        return users.save(user);
+    }
 }
