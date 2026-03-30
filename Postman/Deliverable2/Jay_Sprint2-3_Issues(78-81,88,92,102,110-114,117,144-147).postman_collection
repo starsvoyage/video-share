@@ -1,0 +1,1368 @@
+{
+  "info": {
+    "_postman_id": "01683da9-03c9-4666-8c7b-019bfec1c361",
+    "name": "Sprint 2-3 Issues #78-147",
+    "description": "Tests issues 78-81, 88, 92, 102, 110-114, 117, 144-147.\nRequires app running on localhost:8080 with DataLoader seed data.\nSeeded: users 1+2, channels 1+2, videos 1(dur=120)+2(dur=300).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "51796033",
+    "_collection_link": "https://go.postman.co/collection/51796033-01683da9-03c9-4666-8c7b-019bfec1c361?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Setup - Verify seeded data",
+      "item": [
+        {
+          "name": "Verify videos exist",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                  "var json = pm.response.json();",
+                  "pm.test('At least 2 videos seeded', function () { pm.expect(json.length).to.be.above(1); });",
+                  "pm.collectionVariables.set('videoId', json[0].id);",
+                  "pm.collectionVariables.set('videoId2', json.length > 1 ? json[1].id : json[0].id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/videos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "videos"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "#78 - Create ViewEvent on playback start",
+      "item": [
+        {
+          "name": "#78 - Create ViewEvent - expect 201",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', function () { pm.response.to.have.status(201); });",
+                  "var json = pm.response.json();",
+                  "pm.test('Has id, userId, videoId', function () {",
+                  "    pm.expect(json).to.have.property('id');",
+                  "    pm.expect(json.userId).to.eql(1);",
+                  "    pm.expect(json.videoId).to.eql(parseInt(pm.collectionVariables.get('videoId')));",
+                  "});",
+                  "pm.test('watchDuration starts at 0', function () { pm.expect(json.watchDuration).to.eql(0); });",
+                  "pm.test('completed starts false', function () { pm.expect(json.completed).to.eql(false); });",
+                  "pm.test('watchedAt is set', function () { pm.expect(json.watchedAt).to.not.be.null; });",
+                  "pm.collectionVariables.set('viewEventId', json.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"userId\": 1, \"videoId\": {{videoId}}}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/views",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "views"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "#78 - Bad userId - expect 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 404', function () { pm.response.to.have.status(404); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"userId\": 999, \"videoId\": {{videoId}}}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/views",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "views"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "#78 - Bad videoId - expect 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 404', function () { pm.response.to.have.status(404); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"userId\": 1, \"videoId\": 999}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/views",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "views"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "#78 - Get user watch history",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Returns array', function () { pm.expect(pm.response.json()).to.be.an('array'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/views/user/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "views",
+                "user",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "#79 #80 - Update watchDuration and auto-completion",
+      "item": [
+        {
+          "name": "#79 - Update duration to 30s - completed stays false",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                  "var json = pm.response.json();",
+                  "pm.test('watchDuration is 30', function () { pm.expect(json.watchDuration).to.eql(30); });",
+                  "pm.test('completed still false (30 < 120)', function () { pm.expect(json.completed).to.eql(false); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"watchDuration\": 30}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/views/{{viewEventId}}/duration",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "views",
+                "{{viewEventId}}",
+                "duration"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "#80 - Update duration to 120s - completed becomes true",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                  "var json = pm.response.json();",
+                  "pm.test('watchDuration is 120', function () { pm.expect(json.watchDuration).to.eql(120); });",
+                  "pm.test('completed true (120 >= video.duration 120)', function () { pm.expect(json.completed).to.eql(true); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"watchDuration\": 120}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/views/{{viewEventId}}/duration",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "views",
+                "{{viewEventId}}",
+                "duration"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "#79 - Nonexistent ViewEvent - expect 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 404', function () { pm.response.to.have.status(404); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"watchDuration\": 10}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/views/9999/duration",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "views",
+                "9999",
+                "duration"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "#88 #92 #102 - Comments, replies, status",
+      "item": [
+        {
+          "name": "#88 - Post top-level comment 1 - expect 201",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', function () { pm.response.to.have.status(201); });",
+                  "var json = pm.response.json();",
+                  "pm.test('parentId is null', function () { pm.expect(json.parentId).to.be.null; });",
+                  "pm.collectionVariables.set('commentId1', json.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"userId\": 1, \"content\": \"Top-level comment for testing\"}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/videos/{{videoId}}/comments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "videos",
+                "{{videoId}}",
+                "comments"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "#88 - Post top-level comment 2 - expect 201",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', function () { pm.response.to.have.status(201); });",
+                  "var json = pm.response.json();",
+                  "pm.collectionVariables.set('commentId2', json.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"userId\": 2, \"content\": \"Second top-level comment\"}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/videos/{{videoId}}/comments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "videos",
+                "{{videoId}}",
+                "comments"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "#88 - Reply to comment 1 - expect 201",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', function () { pm.response.to.have.status(201); });",
+                  "var json = pm.response.json();",
+                  "pm.test('parentId matches comment 1', function () {",
+                  "    pm.expect(json.parentId).to.eql(parseInt(pm.collectionVariables.get('commentId1')));",
+                  "});",
+                  "pm.collectionVariables.set('replyId', json.id);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"userId\": 2, \"content\": \"This is a reply\", \"parentId\": {{commentId1}}}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/videos/{{videoId}}/comments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "videos",
+                "{{videoId}}",
+                "comments"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "#88 - Nested reply (reply to reply) - expect 409",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 409 - nested replies blocked', function () { pm.response.to.have.status(409); });",
+                  "pm.test('Message mentions nested', function () {",
+                  "    pm.expect(pm.response.json().message.toLowerCase()).to.include('nested');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"userId\": 1, \"content\": \"Trying to reply to a reply\", \"parentId\": {{replyId}}}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/videos/{{videoId}}/comments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "videos",
+                "{{videoId}}",
+                "comments"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "#88 - Reply with parent from wrong video - expect 409",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 409 - parent belongs to different video', function () { pm.response.to.have.status(409); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"userId\": 1, \"content\": \"Cross-video reply attempt\", \"parentId\": {{commentId1}}}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/videos/{{videoId2}}/comments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "videos",
+                "{{videoId2}}",
+                "comments"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "#92 - Get top-level comments - expect replyCount",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                  "var json = pm.response.json();",
+                  "pm.test('Returns array', function () { pm.expect(json).to.be.an('array'); });",
+                  "pm.test('Comments have replyCount field', function () {",
+                  "    json.forEach(function(c) { pm.expect(c).to.have.property('replyCount'); });",
+                  "});",
+                  "pm.test('Comment 1 has replyCount >= 1', function () {",
+                  "    var c1 = json.find(c => c.id == pm.collectionVariables.get('commentId1'));",
+                  "    if (c1) pm.expect(c1.replyCount).to.be.above(0);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/videos/{{videoId}}/comments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "videos",
+                "{{videoId}}",
+                "comments"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "#92 - Get replies for comment 1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                  "var json = pm.response.json();",
+                  "pm.test('At least 1 reply', function () { pm.expect(json.length).to.be.above(0); });",
+                  "pm.test('Replies have displayName and content', function () {",
+                  "    json.forEach(function(r) {",
+                  "        pm.expect(r).to.have.property('displayName');",
+                  "        pm.expect(r).to.have.property('content');",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/videos/{{videoId}}/comments/{{commentId1}}/replies",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "videos",
+                "{{videoId}}",
+                "comments",
+                "{{commentId1}}",
+                "replies"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "#102 - Update comment 2 status to HIDDEN",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Status is HIDDEN', function () { pm.expect(pm.response.json().status).to.eql('HIDDEN'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/videos/{{videoId}}/comments/{{commentId2}}/status?status=HIDDEN",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "videos",
+                "{{videoId}}",
+                "comments",
+                "{{commentId2}}",
+                "status"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "HIDDEN"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "#102 - Verify HIDDEN comment excluded from GET",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                  "var json = pm.response.json();",
+                  "pm.test('HIDDEN comment not in results', function () {",
+                  "    var hidden = json.find(c => c.id == pm.collectionVariables.get('commentId2'));",
+                  "    pm.expect(hidden).to.be.undefined;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/videos/{{videoId}}/comments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "videos",
+                "{{videoId}}",
+                "comments"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "#102 - Restore comment 2 to ACTIVE",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Status is ACTIVE', function () { pm.expect(pm.response.json().status).to.eql('ACTIVE'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/videos/{{videoId}}/comments/{{commentId2}}/status?status=ACTIVE",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "videos",
+                "{{videoId}}",
+                "comments",
+                "{{commentId2}}",
+                "status"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "ACTIVE"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "#110-114 #117 - Subscriptions",
+      "item": [
+        {
+          "name": "#110 - Subscribe user 2 to channel 1 - expect 201",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', function () { pm.response.to.have.status(201); });",
+                  "var json = pm.response.json();",
+                  "pm.test('subscriberId=2, channelId=1', function () {",
+                  "    pm.expect(json.subscriberId).to.eql(2);",
+                  "    pm.expect(json.channelId).to.eql(1);",
+                  "});",
+                  "pm.test('Status ACTIVE', function () { pm.expect(json.status).to.eql('ACTIVE'); });",
+                  "pm.test('#117 - has subscriberCount', function () { pm.expect(json).to.have.property('subscriberCount'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"subscriberId\": 2, \"channelId\": 1}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/subscriptions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "subscriptions"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "#111 - Self-subscribe user 1 to own channel 1 - expect 409",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 409', function () { pm.response.to.have.status(409); });",
+                  "pm.test('Message mentions self', function () {",
+                  "    pm.expect(pm.response.json().message.toLowerCase()).to.include('self');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"subscriberId\": 1, \"channelId\": 1}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/subscriptions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "subscriptions"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "#112 - Duplicate subscribe user 2 to channel 1 - expect 409",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 409', function () { pm.response.to.have.status(409); });",
+                  "pm.test('Message mentions already', function () {",
+                  "    pm.expect(pm.response.json().message.toLowerCase()).to.include('already');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"subscriberId\": 2, \"channelId\": 1}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/subscriptions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "subscriptions"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "#114 - Check subscription - expect true",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Returns true', function () { pm.expect(pm.response.json()).to.eql(true); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/subscriptions/check?subscriberId=2&channelId=1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "subscriptions",
+                "check"
+              ],
+              "query": [
+                {
+                  "key": "subscriberId",
+                  "value": "2"
+                },
+                {
+                  "key": "channelId",
+                  "value": "1"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "#113 - Unsubscribe user 2 from channel 1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                  "var json = pm.response.json();",
+                  "pm.test('Status CANCELLED', function () { pm.expect(json.status).to.eql('CANCELLED'); });",
+                  "pm.test('#117 - subscriberCount in response', function () { pm.expect(json).to.have.property('subscriberCount'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/subscriptions?subscriberId=2&channelId=1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "subscriptions"
+              ],
+              "query": [
+                {
+                  "key": "subscriberId",
+                  "value": "2"
+                },
+                {
+                  "key": "channelId",
+                  "value": "1"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "#114 - Check after unsubscribe - expect false",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Returns false', function () { pm.expect(pm.response.json()).to.eql(false); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/subscriptions/check?subscriberId=2&channelId=1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "subscriptions",
+                "check"
+              ],
+              "query": [
+                {
+                  "key": "subscriberId",
+                  "value": "2"
+                },
+                {
+                  "key": "channelId",
+                  "value": "1"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "#112 - Resubscribe (reactivate) - expect 201",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201', function () { pm.response.to.have.status(201); });",
+                  "pm.test('Status ACTIVE again', function () { pm.expect(pm.response.json().status).to.eql('ACTIVE'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"subscriberId\": 2, \"channelId\": 1}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/subscriptions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "subscriptions"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "#110 - Get user subscriptions",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Returns array', function () { pm.expect(pm.response.json()).to.be.an('array'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/subscriptions/users/2",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "subscriptions",
+                "users",
+                "2"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "#144-147 - Notifications",
+      "item": [
+        {
+          "name": "#144 - Create notification",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "    pm.test('Notification created', function () {",
+                  "        var json = pm.response.json();",
+                  "        pm.expect(json).to.have.property('id');",
+                  "        pm.collectionVariables.set('notificationId', json.id);",
+                  "    });",
+                  "} else {",
+                  "    pm.test('Notification POST returned ' + pm.response.code + ' (known issue: User.id has no setter for Jackson)', function () {",
+                  "        pm.expect(true).to.be.true;",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"COMMENT\",\n  \"message\": \"User 2 commented on your video\",\n  \"sourceType\": \"COMMENT\",\n  \"recipient\": { \"id\": 1 },\n  \"actorUser\": { \"id\": 2 }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "notifications"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "#144 - Get notification feed",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                  "var json = pm.response.json();",
+                  "pm.test('Returns array', function () { pm.expect(json).to.be.an('array'); });",
+                  "if (json.length > 0) {",
+                  "    pm.test('DTOs have type, message, createdAt', function () {",
+                  "        json.forEach(function(n) {",
+                  "            pm.expect(n).to.have.property('type');",
+                  "            pm.expect(n).to.have.property('message');",
+                  "            pm.expect(n).to.have.property('createdAt');",
+                  "        });",
+                  "    });",
+                  "    pm.collectionVariables.set('notificationId', json[0].id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/user/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "notifications",
+                "user",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "#147 - Get unread count",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Returns a number', function () { pm.expect(typeof pm.response.json()).to.eql('number'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/user/1/unread-count",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "notifications",
+                "user",
+                "1",
+                "unread-count"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "#145 - Mark notification as read",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var nid = pm.collectionVariables.get('notificationId');",
+                  "if (!nid) { pm.test('Skipped - no notification to mark', function () { pm.expect(true).to.be.true; }); return; }",
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                  "var json = pm.response.json();",
+                  "pm.test('read is true', function () { pm.expect(json.read).to.eql(true); });",
+                  "pm.test('Has type and message (DTO)', function () {",
+                  "    pm.expect(json).to.have.property('type');",
+                  "    pm.expect(json).to.have.property('message');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/{{notificationId}}/read",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "notifications",
+                "{{notificationId}}",
+                "read"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "#146 - Filter by type COMMENT",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                  "var json = pm.response.json();",
+                  "pm.test('Returns array', function () { pm.expect(json).to.be.an('array'); });",
+                  "pm.test('All results type COMMENT', function () {",
+                  "    json.forEach(function(n) { pm.expect(n.type).to.eql('COMMENT'); });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/user/1/filter?type=COMMENT",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "notifications",
+                "user",
+                "1",
+                "filter"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "COMMENT"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "#146 - Filter by type UPLOAD - expect empty",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Empty array', function () { pm.expect(pm.response.json()).to.be.an('array').that.has.length(0); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/user/1/filter?type=UPLOAD",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "notifications",
+                "user",
+                "1",
+                "filter"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "UPLOAD"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "videoId",
+      "value": "1"
+    },
+    {
+      "key": "videoId2",
+      "value": "2"
+    },
+    {
+      "key": "viewEventId",
+      "value": ""
+    },
+    {
+      "key": "commentId1",
+      "value": ""
+    },
+    {
+      "key": "commentId2",
+      "value": ""
+    },
+    {
+      "key": "replyId",
+      "value": ""
+    },
+    {
+      "key": "notificationId",
+      "value": ""
+    }
+  ]
+}

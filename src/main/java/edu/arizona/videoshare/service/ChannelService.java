@@ -91,7 +91,7 @@ public class ChannelService {
             Path filePath = uploadDir.resolve(fileName);
             avatarUrl.transferTo(filePath.toFile());
 
-            channel.setAvatarUrl("/uploads/channels/" + fileName);
+            channel.setAvatarUrl("/uploads/channel-avatars/" + fileName);
         }
 
         Channel saved = channelRepository.save(channel);
