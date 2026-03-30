@@ -121,7 +121,7 @@ public class AuthController {
 
             return "redirect:/";
         } catch (IllegalArgumentException ex) {
-            bindingResult.reject("login.failed", "Invalid username/email or password");
+            bindingResult.reject("login.failed", ex.getMessage());
             return "auth/login";
         }
     }
