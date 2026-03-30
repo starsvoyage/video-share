@@ -11,6 +11,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
@@ -39,5 +41,20 @@ public class YouController {
         model.addAttribute("isCreator", user.getRole() == UserRole.CREATOR);
 
         return "you";
+    }
+
+    @PostMapping("/you/deactivate")
+    public String deactivateAccount(HttpSession session, RedirectAttributes redirectAttributes) {
+        Long loggedInUserId = (Long) session.getAttribute("loggedInUserId");
+
+        if (loggedInUserId == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "You must be signed in to deactivate your account.");
+            return "redirect:/login";
+        }
+
+        userService.deactivate(loggedInUserId);
+        session.invalidate();
+        redirectAttributes.addFlashAttribute("successMessage", "Your account has been deactivated.");
+        return "redirect:/";
     }
 }

@@ -5,6 +5,7 @@ import edu.arizona.videoshare.dto.user.RegisterForm;
 import edu.arizona.videoshare.dto.user.UserRequest;
 import edu.arizona.videoshare.exception.NotFoundException;
 import edu.arizona.videoshare.model.entity.User;
+import edu.arizona.videoshare.model.enums.UserStatus;
 import edu.arizona.videoshare.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -72,6 +73,18 @@ public class UserService {
         if (req.bio != null) user.setBio(req.bio.trim());
         if (req.avatarUrl != null) user.setAvatarUrl(req.avatarUrl.trim());
 
+        return users.save(user);
+    }
+
+    /**
+     * UPDATE: Marks a user account as deactivated without removing persisted data.
+     */
+    @Transactional
+    public User deactivate(Long id) {
+        User user = users.findById(id)
+                .orElseThrow(() -> new NotFoundException("User not found: " + id));
+
+        user.setStatus(UserStatus.DELETED);
         return users.save(user);
     }
 
