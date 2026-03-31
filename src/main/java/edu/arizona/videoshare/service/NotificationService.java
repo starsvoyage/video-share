@@ -14,7 +14,17 @@ public class NotificationService {
 
     private final NotificationRepository notificationRepository;
 
+    //Creating a notification, but only if the recipient and actor are not the same user
     public Notification createNotification(Notification notification) {
+
+        if (notification.getRecipient() == null && notification.getActorUser() == null) {
+            return null;
+        }
+
+        if(notification.getRecipient().getId().equals(notification.getActorUser().getId())) {
+            return null;
+        }
+
         return notificationRepository.save(notification);
     }
 
