@@ -1,9 +1,11 @@
 package edu.arizona.videoshare.controller;
 
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import edu.arizona.videoshare.dto.subscription.SubscribeRequest;
+import edu.arizona.videoshare.dto.subscription.SubscriptionResponse;
+import edu.arizona.videoshare.service.SubscriptionService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
 
 import edu.arizona.videoshare.model.entity.Channel;
 import edu.arizona.videoshare.model.entity.Subscription;
@@ -16,47 +18,36 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/subscriptions")
+@RequestMapping("/api/subscriptions")
 public class SubscriptionController {
     
-    private final SubscriptionRepository subscriptionRepository;
-    private final UserRepository userRepository;
-    private final ChannelRepository channelRepository;
+    private final SubscriptionService subscriptionService;
 
     @PostMapping
-    public Subscription subscribe(@RequestParam Long subscriberId, @RequestParam Long channelId) {
-        User user = userRepository.findById(subscriberId).orElseThrow(() -> new RuntimeException("User not found"));
-        Channel channel = channelRepository.findById(channelId).orElseThrow(() -> new RuntimeException("Channel not found"));
-
-        Subscription sub = new Subscription();
-        sub.setSubscriber(user);
-        sub.setChannel(channel);
-        sub.setStatus(SubscriptionStatus.ACTIVE);
-
-        channel.setSubscriberCount(channel.getSubscriberCount() + 1);
-        channelRepository.save(channel);
-
-        return subscriptionRepository.save(sub);
-
+    @ResponseStatus(HttpStatus.CREATED)
+    public SubscriptionResponse subscribe(@Valid @RequestBody SubscribeRequest request) {
+        return subscriptionService.subscribe(request);
     }
 
-    @GetMapping("/users/{userId}/subscriptions")
+    @DeleteMapping
+    public SubscriptionResponse unsubscribe(
+            @RequestParam Long subscriberId,
+            @RequestParam Long channelId) {
+        return subscriptionService.unsubscribe(subscriberId, channelId);
+    }
+
+    @GetMapping("/users/{userId}")
     public List<Subscription> getUserSubscriptions(@PathVariable Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-        return subscriptionRepository.findBySubscriber(user);
+        return subscriptionService.getUserSubscriptions(userId);
     }
 
-    @DeleteMapping("/{subscriptionId}")
-    public void cancelSubscription(@PathVariable Long subscriptionId) {
-
-        subscriptionRepository.deleteById(subscriptionId);
+    @GetMapping("/check")
+    public boolean isSubscribed(
+            @RequestParam Long subscriberId,
+            @RequestParam Long channelId) {
+        return subscriptionService.isSubscribed(subscriberId, channelId);
     }
-    
 }

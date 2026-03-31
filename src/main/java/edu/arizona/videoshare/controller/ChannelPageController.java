@@ -2,6 +2,7 @@ package edu.arizona.videoshare.controller;
 
 import edu.arizona.videoshare.model.entity.Channel;
 import edu.arizona.videoshare.service.ChannelService;
+import edu.arizona.videoshare.service.SubscriptionService;
 import edu.arizona.videoshare.service.VideoService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,7 @@ public class ChannelPageController {
 
     private final ChannelService channelService;
     private final VideoService videoService;
+    private final SubscriptionService subscriptionService;
 
     @GetMapping("/{username}/channel/{channelName}")
     public String showChannelPage(
@@ -28,8 +30,15 @@ public class ChannelPageController {
         Long loggedInUserId = (Long) session.getAttribute("loggedInUserId");
         boolean isOwner = loggedInUserId != null && loggedInUserId.equals(channel.getUser().getId());
 
+        boolean isSubscribed = false;
+        if (loggedInUserId != null && !isOwner) {
+            isSubscribed = subscriptionService.isSubscribed(loggedInUserId, channel.getId());
+        }
+
         model.addAttribute("channel", channel);
         model.addAttribute("isOwner", isOwner);
+        model.addAttribute("isSubscribed", isSubscribed);
+        model.addAttribute("loggedInUserId", loggedInUserId);
         model.addAttribute("videos", isOwner
                 ? channel.getVideosOnChannel()
                 : videoService.getPublicVideosForChannel(channel.getId()));

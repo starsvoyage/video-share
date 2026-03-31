@@ -3,6 +3,7 @@ package edu.arizona.videoshare.controller;
 import edu.arizona.videoshare.dto.comment.CommentResponse;
 import edu.arizona.videoshare.dto.comment.CreateCommentRequest;
 import edu.arizona.videoshare.dto.comment.CreateCommentResponse;
+import edu.arizona.videoshare.model.enums.CommentStatus;
 import edu.arizona.videoshare.service.CommentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,14 @@ public class CommentController {
         @ResponseStatus(HttpStatus.NO_CONTENT)
         public void delete(@PathVariable Long videoId, @PathVariable Long commentId) {
                 commentService.removeComment(commentId);
+        }
+
+        @PatchMapping("/{commentId}/status")
+        public CommentResponse updateStatus(
+                @PathVariable Long videoId,
+                @PathVariable Long commentId,
+                @RequestParam CommentStatus status) {
+                return commentService.updateCommentStatus(commentId, status);
         }
 
         @GetMapping

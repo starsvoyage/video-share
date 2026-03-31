@@ -4,8 +4,10 @@ import edu.arizona.videoshare.dto.reaction.ReactResponse;
 import edu.arizona.videoshare.dto.reaction.ReactionCountResponse;
 import edu.arizona.videoshare.exception.NotFoundException;
 import edu.arizona.videoshare.model.entity.*;
+import edu.arizona.videoshare.model.enums.NotificationType;
 import edu.arizona.videoshare.model.enums.ReactionAction;
 import edu.arizona.videoshare.model.enums.ReactionType;
+import edu.arizona.videoshare.model.enums.SourceType;
 import edu.arizona.videoshare.repository.CommentRepository;
 import edu.arizona.videoshare.repository.ReactionRepository;
 import edu.arizona.videoshare.repository.UserRepository;
@@ -24,6 +26,7 @@ public class ReactionService {
         private final UserRepository userRepository;
         private final CommentRepository commentRepository;
         private final VideoRepository videoRepository;
+        private final NotificationService notificationService;
 
         @Transactional
         public ReactResponse reactToVideo(Long videoId, Long userId, ReactionType type) {
@@ -72,6 +75,14 @@ public class ReactionService {
                         .type(type)
                         .build();
                 Reaction saved = reactionRepository.save(reaction);
+
+                if (type == ReactionType.LIKE) {
+                        Video video = videoRepository.findById(videoId).orElse(null);
+                        if (video != null && video.getOwner() != null) {
+                                notificationService.notify(video.getOwner(), user, NotificationType.LIKE_VIDEO, SourceType.REACTION,
+                                        user.getDisplayName() + " liked your video \"" + video.getTitle() + "\"");
+                        }
+                }
 
                 return ReactResponse.builder()
                         .id(saved.getId())
