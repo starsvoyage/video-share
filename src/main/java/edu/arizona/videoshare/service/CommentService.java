@@ -6,6 +6,8 @@ import edu.arizona.videoshare.exception.ConflictException;
 import edu.arizona.videoshare.exception.NotFoundException;
 import edu.arizona.videoshare.model.entity.*;
 import edu.arizona.videoshare.model.enums.CommentStatus;
+import edu.arizona.videoshare.model.enums.NotificationType;
+import edu.arizona.videoshare.model.enums.SourceType;
 import edu.arizona.videoshare.repository.CommentRepository;
 import edu.arizona.videoshare.repository.UserRepository;
 import edu.arizona.videoshare.repository.VideoRepository;
@@ -21,6 +23,7 @@ public class CommentService {
         private final CommentRepository commentRepository;
         private final UserRepository userRepository;
         private final VideoRepository videoRepository;
+        private final NotificationService notificationService;
 
         @Transactional
         public CreateCommentResponse addComment(Long videoId, Long userId, String content, Long parentId) {
@@ -61,6 +64,22 @@ public class CommentService {
                                 .build();
 
                 Comment saved = commentRepository.save(comment);
+
+                if (parent != null) {
+                        notificationService.notify(
+                                parent.getUser(), user,
+                                NotificationType.REPLY, SourceType.COMMENT,user.getDisplayName() +
+                                        " replied to your comment");
+                }
+
+                else {
+                        Video video = videoRepository.findById(videoId).orElse(null);
+                        if (video != null && video.getOwner() != null) {
+                                notificationService.notify(video.getOwner(), user, NotificationType.COMMENT,
+                                        SourceType.COMMENT,user.getDisplayName() +
+                                                " commented on your video \"" + video.getTitle() + "\"");
+                        }
+                }
 
                 return CreateCommentResponse.builder()
                                 .id(saved.getId())

@@ -17,4 +17,6 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, Long
     Optional<Subscription> findBySubscriberIdAndChannelId(Long subscriberId, Long channelId);
 
     long countByChannelIdAndStatus(Long channelId, Subscription.SubscriptionStatus status);
-} 
+
+    List<Subscription> findByChannelIdAndStatus(Long channelId, Subscription.SubscriptionStatus status);
+}

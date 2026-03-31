@@ -7,6 +7,7 @@ import edu.arizona.videoshare.dto.notification.NotificationResponse;
 import edu.arizona.videoshare.exception.NotFoundException;
 import edu.arizona.videoshare.model.entity.User;
 import edu.arizona.videoshare.model.enums.NotificationType;
+import edu.arizona.videoshare.model.enums.SourceType;
 import edu.arizona.videoshare.repository.UserRepository;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
@@ -98,5 +99,16 @@ public class NotificationService {
         r.setRead(n.isRead());
         r.setSourceType(n.getSourceType());
         return r;
+    }
+
+    public void notify(User recipient, User actor, NotificationType type, SourceType sourceType, String message) {
+        if (recipient.getId().equals(actor.getId())) return;
+        Notification n = new Notification();
+        n.setRecipient(recipient);
+        n.setActorUser(actor);
+        n.setType(type);
+        n.setSourceType(sourceType);
+        n.setMessage(message);
+        notificationRepository.save(n);
     }
 }

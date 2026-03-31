@@ -5,5 +5,5 @@ public enum  NotificationType {
     COMMENT,
     REPLY,
     LIKE_VIDEO,
-    LIKE_COMMENT
+    SUBSCRIBE
 }

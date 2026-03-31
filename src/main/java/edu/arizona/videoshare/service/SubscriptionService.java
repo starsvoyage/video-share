@@ -7,6 +7,8 @@ import edu.arizona.videoshare.exception.NotFoundException;
 import edu.arizona.videoshare.model.entity.Channel;
 import edu.arizona.videoshare.model.entity.Subscription;
 import edu.arizona.videoshare.model.entity.User;
+import edu.arizona.videoshare.model.enums.NotificationType;
+import edu.arizona.videoshare.model.enums.SourceType;
 import edu.arizona.videoshare.repository.ChannelRepository;
 import edu.arizona.videoshare.repository.SubscriptionRepository;
 import edu.arizona.videoshare.repository.UserRepository;
@@ -24,6 +26,7 @@ public class SubscriptionService {
     private final SubscriptionRepository subscriptionRepository;
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
+    private final NotificationService notificationService;
 
     @Transactional
     public SubscriptionResponse subscribe(SubscribeRequest request) {
@@ -62,6 +65,9 @@ public class SubscriptionService {
         Subscription saved = subscriptionRepository.save(sub);
 
         syncSubscriberCount(channel);
+
+        notificationService.notify(channel.getUser(), subscriber, NotificationType.SUBSCRIBE, SourceType.SUBSCRIPTION,
+                subscriber.getDisplayName() + " subscribed to your channel \"" + channel.getName() + "\"");
 
         return toResponse(saved, channel);
     }

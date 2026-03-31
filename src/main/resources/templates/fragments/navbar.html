@@ -98,48 +98,95 @@
                               th:text="${unreadNotificationCount}">0</span>
                     </button>
 
-                    <ul class="dropdown-menu dropdown-menu-end p-0" style="min-width: 320px; max-height: 400px; overflow-y: auto;" id="notificationDropdown">
-                        <li class="dropdown-header-row d-flex justify-content-between align-items-center px-3 py-2">
-                            <span class="fw-semibold">Notifications</span>
-                        </li>
-
-                        <li class="px-3 py-3 small text-center" id="notifEmpty">
-                            Loading...
-                        </li>
-                    </ul>
-
+                    <ul class="dropdown-menu dropdown-menu-end p-0 bg-dark" style="min-width: 340px; max-height: 450px; overflow-y: auto;" id="notificationDropdown">
+                    <li class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
+                        <span class="fw-semibold text-white">Notifications</span>
+                    </li>
+                    <li class="px-3 py-2 border-bottom" onclick="event.stopPropagation();">
+                        <div class="d-flex gap-1 flex-wrap">
+                            <button class="btn btn-sm btn-dark rounded-pill px-2 py-0 notif-filter active" data-filter="ALL" style="font-size:0.75rem;">All</button>
+                            <button class="btn btn-sm btn-outline-light rounded-pill px-2 py-0 notif-filter" data-filter="COMMENT" style="font-size:0.75rem;">Comments</button>
+                            <button class="btn btn-sm btn-outline-light rounded-pill px-2 py-0 notif-filter" data-filter="LIKE_VIDEO" style="font-size:0.75rem;">Likes</button>
+                            <button class="btn btn-sm btn-outline-light rounded-pill px-2 py-0 notif-filter" data-filter="UPLOAD" style="font-size:0.75rem;">Uploads</button>
+                            <button class="btn btn-sm btn-outline-light rounded-pill px-2 py-0 notif-filter" data-filter="REPLY" style="font-size:0.75rem;">Replies</button>
+                            <button class="btn btn-sm btn-outline-light rounded-pill px-2 py-0 notif-filter" data-filter="SUBSCRIBE" style="font-size:0.75rem;">Subs</button>
+                        </div>
+                    </li>
+                    <div id="notifList">
+                        <li class="px-3 py-3 small text-center text-light" id="notifEmpty">Loading...</li>
+                    </div>
+                </ul>
                     <script th:inline="javascript">
                         document.addEventListener("DOMContentLoaded", function () {
                             const notifUserId = /*[[${session.loggedInUserId}]]*/ null;
                             if (!notifUserId) return;
-
-                            const dropdown = document.getElementById("notificationDropdown");
-                            const emptyEl = document.getElementById("notifEmpty");
-
-                            fetch(`/api/notifications/user/${notifUserId}`)
-                                .then(res => res.ok ? res.json() : [])
-                                .then(notifs => {
+                            const notifList = document.getElementById("notifList");
+                            const badge = document.querySelector("#notificationDropdown").closest(".dropdown").querySelector(".badge");
+                            let currentFilter = "ALL";
+                            loadNotifications();
+                            document.querySelectorAll(".notif-filter").forEach(btn => {
+                                btn.addEventListener("click", function (e) {
+                                    e.stopPropagation();
+                                    e.preventDefault();
+                                    document.querySelectorAll(".notif-filter").forEach(b => {
+                                        b.classList.remove("btn-dark", "active");
+                                        b.classList.add("btn-outline-light");
+                                    });
+                                    this.classList.remove("btn-outline-light");
+                                    this.classList.add("btn-dark", "active");
+                                    currentFilter = this.dataset.filter;
+                                    loadNotifications();
+                                });
+                            });
+                            async function loadNotifications() {
+                                try {
+                                    let url = `/api/notifications/user/${notifUserId}`;
+                                    if (currentFilter !== "ALL") {
+                                        url = `/api/notifications/user/${notifUserId}/filter?type=${currentFilter}`;
+                                    }
+                                    const res = await fetch(url);
+                                    const notifs = res.ok ? await res.json() : [];
+                                    notifList.innerHTML = "";
                                     if (notifs.length === 0) {
-                                        emptyEl.textContent = "No notifications yet.";
+                                        notifList.innerHTML = '<li class="px-3 py-3 small text-center text-light">No notifications.</li>';
                                         return;
                                     }
-                                    emptyEl.remove();
                                     notifs.forEach(n => {
                                         const li = document.createElement("li");
-                                        li.innerHTML = `<a class="dropdown-item px-3 py-2 small ${n.read ? '' : 'fw-semibold'}" href="#"
-                                            data-notif-id="${n.id}">
-                                            <div>${n.message}</div>
-                                            <div class="text-muted" style="font-size:0.75rem;">${new Date(n.createdAt).toLocaleDateString('en-US', {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}</div>
+                                        li.innerHTML = `<a class="dropdown-item px-3 py-2 small d-flex align-items-start gap-2 ${n.read ? '' : 'fw-semibold'}" href="#" data-notif-id="${n.id}" style="color:#fff;">
+                                            <div class="flex-grow-1">
+                                                <div>${escN(n.message)}</div>
+                                                <div style="font-size:0.7rem; color:#aaa;">${fmtDate(n.createdAt)}</div>
+                                            </div>
+                                            ${!n.read ? '<span class="bg-primary rounded-circle flex-shrink-0 mt-1" style="width:8px;height:8px;display:inline-block;"></span>' : ''}
                                         </a>`;
-                                        li.querySelector("a").addEventListener("click", function(e) {
+                                        li.querySelector("a").addEventListener("click", function (e) {
                                             e.preventDefault();
-                                            fetch(`/api/notifications/${n.id}/read`, { method: 'PATCH' })
-                                                .then(() => { this.classList.remove("fw-semibold"); });
+                                            e.stopPropagation();
+                                            if (!n.read) {
+                                                fetch(`/api/notifications/${n.id}/read`, { method: 'PATCH' }).then(() => {
+                                                    this.classList.remove("fw-semibold");
+                                                    const dot = this.querySelector(".bg-primary");
+                                                    if (dot) dot.remove();
+                                                    updateBadge(-1);
+                                                    n.read = true;
+                                                });
+                                            }
                                         });
-                                        dropdown.appendChild(li);
+                                        notifList.appendChild(li);
                                     });
-                                })
-                                .catch(() => { emptyEl.textContent = "No notifications yet."; });
+                                } catch (e) {
+                                    notifList.innerHTML = '<li class="px-3 py-3 small text-center text-light">No notifications.</li>';
+                                }
+                            }
+                            function updateBadge(delta) {
+                                if (!badge) return;
+                                let count = parseInt(badge.textContent || "0") + delta;
+                                if (count <= 0) { badge.style.display = "none"; }
+                                else { badge.textContent = count; badge.style.display = ""; }
+                            }
+                            function escN(s) { const d = document.createElement("div"); d.textContent = s || ""; return d.innerHTML; }
+                            function fmtDate(iso) { if (!iso) return ""; return new Date(iso).toLocaleDateString("en-US", {month:"short",day:"numeric",hour:"numeric",minute:"2-digit"}); }
                         });
                     </script>
                 </div>
