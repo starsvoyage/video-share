@@ -39,11 +39,27 @@
                             </div>
                         </div>
 
-                        <div class="text-muted small">
-                            <span th:if="${video.createdAt != null}"
-                                  th:text="'Uploaded ' + ${#temporals.format(video.createdAt, 'MMM d, yyyy')}">
-                                Uploaded date
-                            </span>
+                        <div class="d-flex align-items-center gap-2">
+                            <div th:if="${loggedInUserId != null}" class="btn-group" role="group">
+                                <button type="button" class="btn btn-outline-dark rounded-pill rounded-end px-3" id="likeBtn" onclick="react('LIKE')">
+                                    <i class="bi bi-hand-thumbs-up me-1"></i><span id="likeCount">0</span>
+                                </button>
+                                <button type="button" class="btn btn-outline-dark rounded-pill rounded-start px-3" id="dislikeBtn" onclick="react('DISLIKE')">
+                                    <i class="bi bi-hand-thumbs-down me-1"></i><span id="dislikeCount">0</span>
+                                </button>
+                            </div>
+
+                            <div th:if="${loggedInUserId == null}" class="text-muted small">
+                                <i class="bi bi-hand-thumbs-up me-1"></i><span id="likeCountAnon">0</span>
+                                <i class="bi bi-hand-thumbs-down ms-2 me-1"></i><span id="dislikeCountAnon">0</span>
+                            </div>
+
+                            <div class="text-muted small ms-2">
+                                <span th:if="${video.createdAt != null}"
+                                      th:text="'Uploaded ' + ${#temporals.format(video.createdAt, 'MMM d, yyyy')}">
+                                    Uploaded date
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -128,6 +144,41 @@
             const commentHeader = document.getElementById("commentHeader");
 
             loadComments();
+            if (userId) {
+                fetch('/api/views', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: userId, videoId: videoId })
+                }).catch(() => {});
+            }
+
+            // Reactions
+            loadReactions();
+
+            async function loadReactions() {
+                try {
+                    const res = await fetch(`/api/videos/${videoId}/reactions/count`);
+                    if (!res.ok) return;
+                    const data = await res.json();
+                    const likeEl = document.getElementById('likeCount') || document.getElementById('likeCountAnon');
+                    const dislikeEl = document.getElementById('dislikeCount') || document.getElementById('dislikeCountAnon');
+                    if (likeEl) likeEl.textContent = data.likes;
+                    if (dislikeEl) dislikeEl.textContent = data.dislikes;
+                } catch (e) {}
+            }
+
+            window.react = async function(type) {
+                if (!userId) return;
+                try {
+                    const res = await fetch(`/api/videos/${videoId}/reactions`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userId: userId, type: type })
+                    });
+                    if (!res.ok) throw new Error();
+                    loadReactions();
+                } catch (e) {}
+            };
 
             const submitBtn = document.getElementById("submitComment");
             if (submitBtn) {
@@ -189,7 +240,7 @@
                                 <span class="text-muted small ms-2">${formatDate(c.createdAt)}</span>
                             </div>
                         </div>
-                        <div class="mt-2">${escHtml(c.content)}</div>
+                        <div class="mt-2">${c.status === 'REMOVED' ? '<span class="text-muted fst-italic">[Removed]</span>' : escHtml(c.content)}</div>
 
                         <div class="mt-2 d-flex align-items-center gap-3">
                             ${c.replyCount > 0
@@ -199,10 +250,16 @@
                                        <i class="bi bi-chat-dots me-1"></i>${c.replyCount} ${c.replyCount === 1 ? 'reply' : 'replies'}
                                    </button>`
                                 : ''}
-                            ${userId
+                            ${userId && c.status !== 'REMOVED'
                                 ? `<button class="btn btn-sm btn-link text-decoration-none p-0 show-reply-form-btn"
                                            data-comment-id="${c.id}">
                                        <i class="bi bi-reply me-1"></i>Reply
+                                   </button>`
+                                : ''}
+                            ${userId && c.userId === userId && c.status !== 'REMOVED'
+                                ? `<button class="btn btn-sm btn-link text-decoration-none text-danger p-0 delete-comment-btn"
+                                           data-comment-id="${c.id}">
+                                       <i class="bi bi-trash me-1"></i>Delete
                                    </button>`
                                 : ''}
                         </div>
@@ -309,6 +366,20 @@
                             msgBox.classList.add("text-danger");
                             msgBox.textContent = e.message || "Could not post reply.";
                         }
+                    });
+                });
+
+                document.querySelectorAll(".delete-comment-btn").forEach(btn => {
+                    btn.addEventListener("click", async function () {
+                        if (!confirm("Delete this comment?")) return;
+                        const cid = this.dataset.commentId;
+                        try {
+                            const res = await fetch(`/api/videos/${videoId}/comments/${cid}`, {
+                                method: 'DELETE'
+                            });
+                            if (!res.ok) throw new Error();
+                            loadComments();
+                        } catch (e) {}
                     });
                 });
             }

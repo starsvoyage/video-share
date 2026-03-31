@@ -63,10 +63,6 @@
         <section class="you-section">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h3 class="h5 mb-0">Channels</h3>
-
-                <button type="button" class="btn btn-outline-dark btn-sm you-view-all-btn">
-                    View all
-                </button>
             </div>
 
             <div class="row g-4">
@@ -137,21 +133,41 @@
                 </div>
             </div>
         </section>
+
         <!-- History Section -->
-        <section class="you-section">
+        <section class="you-section" id="history">
             <div class="d-flex justify-content-between align-items-center you-section-header">
                 <div>
                     <h3 class="h5 mb-1">History</h3>
                 </div>
-
-                <button type="button" class="btn btn-outline-dark btn-sm you-view-all-btn">
-                    View all
-                </button>
             </div>
 
             <div class="row g-4">
                 <div class="col-12" th:if="${history == null or #lists.isEmpty(history)}">
                     <p class="text-muted mb-0">No history yet.</p>
+                </div>
+
+                <div class="col-12 col-md-6 col-lg-4" th:each="view : ${history}">
+                    <a th:href="@{/videos/{id}(id=${view.video.id})}" class="text-decoration-none text-dark">
+                        <div class="card h-100 border-0 bg-white shadow-sm rounded-4 p-3">
+                            <div class="d-flex align-items-start gap-3">
+                                <div class="flex-shrink-0">
+                                    <div class="rounded-3 bg-light d-flex align-items-center justify-content-center"
+                                         style="width:80px; height:56px;">
+                                        <i class="bi bi-play-circle text-muted" style="font-size:1.5rem;"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="fw-semibold text-truncate" th:text="${view.video.title}">Video Title</div>
+                                    <div class="text-muted small" th:text="${view.video.channel != null ? view.video.channel.name : ''}">Channel</div>
+                                    <div class="text-muted small">
+                                        <span th:text="${view.watchDuration}">0</span>s watched
+                                        <span th:if="${view.completed}" class="badge bg-success-subtle text-success ms-1">Completed</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
                 </div>
             </div>
         </section>
@@ -162,10 +178,6 @@
                 <div>
                     <h3 class="h5 mb-1">Playlists</h3>
                 </div>
-
-                <button type="button" class="btn btn-outline-dark btn-sm you-view-all-btn">
-                    View all
-                </button>
             </div>
 
             <div class="row g-4">
@@ -181,10 +193,6 @@
                 <div>
                     <h3 class="h5 mb-1">Liked Videos</h3>
                 </div>
-
-                <button type="button" class="btn btn-outline-dark btn-sm you-view-all-btn">
-                    View all
-                </button>
             </div>
             <div class="text-muted">
                 No liked videos yet.

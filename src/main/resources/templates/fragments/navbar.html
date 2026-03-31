@@ -98,17 +98,50 @@
                               th:text="${unreadNotificationCount}">0</span>
                     </button>
 
-                    <ul class="dropdown-menu dropdown-menu-end p-0" style="min-width: 320px;">
+                    <ul class="dropdown-menu dropdown-menu-end p-0" style="min-width: 320px; max-height: 400px; overflow-y: auto;" id="notificationDropdown">
                         <li class="dropdown-header-row d-flex justify-content-between align-items-center px-3 py-2">
                             <span class="fw-semibold">Notifications</span>
-                            <a href="#" class="small text-decoration-none">View all</a>
                         </li>
 
-                        <!-- Placeholder until notifications are implemented -->
-                        <li class="px-3 py-3 small text-center empty-state">
-                            No notifications yet.
+                        <li class="px-3 py-3 small text-center" id="notifEmpty">
+                            Loading...
                         </li>
                     </ul>
+
+                    <script th:inline="javascript">
+                        document.addEventListener("DOMContentLoaded", function () {
+                            const notifUserId = /*[[${session.loggedInUserId}]]*/ null;
+                            if (!notifUserId) return;
+
+                            const dropdown = document.getElementById("notificationDropdown");
+                            const emptyEl = document.getElementById("notifEmpty");
+
+                            fetch(`/api/notifications/user/${notifUserId}`)
+                                .then(res => res.ok ? res.json() : [])
+                                .then(notifs => {
+                                    if (notifs.length === 0) {
+                                        emptyEl.textContent = "No notifications yet.";
+                                        return;
+                                    }
+                                    emptyEl.remove();
+                                    notifs.forEach(n => {
+                                        const li = document.createElement("li");
+                                        li.innerHTML = `<a class="dropdown-item px-3 py-2 small ${n.read ? '' : 'fw-semibold'}" href="#"
+                                            data-notif-id="${n.id}">
+                                            <div>${n.message}</div>
+                                            <div class="text-muted" style="font-size:0.75rem;">${new Date(n.createdAt).toLocaleDateString('en-US', {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}</div>
+                                        </a>`;
+                                        li.querySelector("a").addEventListener("click", function(e) {
+                                            e.preventDefault();
+                                            fetch(`/api/notifications/${n.id}/read`, { method: 'PATCH' })
+                                                .then(() => { this.classList.remove("fw-semibold"); });
+                                        });
+                                        dropdown.appendChild(li);
+                                    });
+                                })
+                                .catch(() => { emptyEl.textContent = "No notifications yet."; });
+                        });
+                    </script>
                 </div>
 
                 <!-- User dropdown -->
