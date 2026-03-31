@@ -83,7 +83,7 @@ public class ChannelService {
             Path uploadDir = Paths.get(
                     System.getProperty("user.dir"),
                     "uploads",
-                    "channels"
+                    "channel-avatars"
             ).toAbsolutePath().normalize();
 
             Files.createDirectories(uploadDir);

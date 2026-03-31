@@ -42,19 +42,4 @@ public class YouController {
 
         return "you";
     }
-
-    @PostMapping("/you/deactivate")
-    public String deactivateAccount(HttpSession session, RedirectAttributes redirectAttributes) {
-        Long loggedInUserId = (Long) session.getAttribute("loggedInUserId");
-
-        if (loggedInUserId == null) {
-            redirectAttributes.addFlashAttribute("errorMessage", "You must be signed in to deactivate your account.");
-            return "redirect:/login";
-        }
-
-        userService.deactivate(loggedInUserId);
-        session.invalidate();
-        redirectAttributes.addFlashAttribute("successMessage", "Your account has been deactivated.");
-        return "redirect:/";
-    }
 }

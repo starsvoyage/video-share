@@ -23,9 +23,9 @@ public class VerificationService {
 
     @Transactional
     public void createAndSendVerification(User user) {
-        tokens.findByUserId(user.getId()).ifPresent(tokens::delete);
+        VerificationToken verification = tokens.findByUserId(user.getId())
+                .orElseGet(VerificationToken::new);
 
-        VerificationToken verification = new VerificationToken();
         verification.setUser(user);
         verification.setToken(UUID.randomUUID().toString());
         verification.setCode(generateSixDigitCode());

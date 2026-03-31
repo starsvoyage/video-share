@@ -190,25 +190,6 @@
                 No liked videos yet.
             </div>
         </section>
-
-        <section class="you-section border border-danger-subtle rounded-4 p-4 bg-danger-subtle bg-opacity-10">
-            <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
-                <div>
-                    <h3 class="h5 mb-1 text-danger">Deactivate Account</h3>
-                    <p class="mb-0 text-secondary">
-                        Deactivating your account signs you out and prevents future sign-ins.
-                    </p>
-                </div>
-
-                <form th:action="@{/you/deactivate}" method="post"
-                      onsubmit="return confirm('Deactivate your account? You will be signed out immediately.');">
-                    <button type="submit" class="btn btn-danger rounded-pill px-4">
-                        Deactivate Account
-                    </button>
-                </form>
-            </div>
-        </section>
-
     </div>
 
     <!-- Create Channel Modal -->

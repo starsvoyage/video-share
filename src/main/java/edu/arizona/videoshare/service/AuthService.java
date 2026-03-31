@@ -155,4 +155,33 @@ public class AuthService {
             credentialsRepository.save(credentials);
         }
     }
+
+    @Transactional
+    public void changePassword(Long userId, String currentPassword, String newPassword, String confirmNewPassword) {
+        User user = users.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found."));
+
+        UserCredentials credentials = user.getCredentials();
+
+        if (credentials == null) {
+            throw new IllegalArgumentException("Credentials not found.");
+        }
+
+        if (!encoder.matches(currentPassword, credentials.getPasswordHash())) {
+            throw new IllegalArgumentException("Current password is incorrect.");
+        }
+
+        if (!newPassword.equals(confirmNewPassword)) {
+            throw new IllegalArgumentException("New passwords do not match.");
+        }
+
+        if (encoder.matches(newPassword, credentials.getPasswordHash())) {
+            throw new IllegalArgumentException("New password must be different from your current password.");
+        }
+
+        credentials.setPasswordHash(encoder.encode(newPassword));
+
+        clearFailedAttempts(credentials);
+        credentialsRepository.save(credentials);
+    }
 }

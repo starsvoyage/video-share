@@ -24,7 +24,7 @@
         </li>
 
         <li class="nav-item mb-2">
-            <a th:href="@{/settings/premium}"
+            <a th:href="@{#}"
                class="nav-link text-white d-flex align-items-center justify-content-between gap-3 settings-nav-link"
                th:classappend="${activeSection == 'premium'} ? ' active' : ''">
                 <span class="d-flex align-items-center gap-3">
@@ -38,7 +38,7 @@
         </li>
 
         <li class="nav-item mb-2">
-            <a th:href="@{/settings/followed-channels}"
+            <a th:href="@{#}"
                class="nav-link text-white d-flex align-items-center justify-content-between gap-3 settings-nav-link"
                th:classappend="${activeSection == 'followed-channels'} ? ' active' : ''">
                 <span class="d-flex align-items-center gap-3">
@@ -52,7 +52,7 @@
         </li>
 
         <li class="nav-item mb-2">
-            <a th:href="@{/settings/notifications}"
+            <a th:href="@{#}"
                class="nav-link text-white d-flex align-items-center justify-content-between gap-3 settings-nav-link"
                th:classappend="${activeSection == 'notifications'} ? ' active' : ''">
                 <span class="d-flex align-items-center gap-3">
