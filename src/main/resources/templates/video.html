@@ -74,6 +74,22 @@
                     </div>
                 </div>
 
+                                <!-- Add to Playlist -->
+                <div class="mb-4" th:if="${loggedInUserId != null}">
+                    <button type="button"
+                            class="btn btn-outline-dark rounded-pill px-4"
+                            data-bs-toggle="modal"
+                            data-bs-target="#addToPlaylistModal">
+                        <i class="bi bi-collection-play me-2"></i>Add to Playlist
+                    </button>
+
+                    <div id="playlistAddMessage" class="small mt-2"></div>
+                </div>
+
+                <div class="mb-4 text-muted small" th:if="${loggedInUserId == null}">
+                    Please log in to save this video to a playlist.
+                </div>
+
                 <!-- Comments Section -->
                 <div class="mt-4">
                     <h5 class="mb-3" id="commentHeader">Comments</h5>
@@ -158,6 +174,43 @@
 
     </div>
 
+        <!-- Add to Playlist Modal -->
+    <div class="modal fade" id="addToPlaylistModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-4 shadow-lg">
+
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-semibold">Add to Playlist</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body pt-2">
+                    <div th:if="${playlists == null or #lists.isEmpty(playlists)}" class="text-muted small">
+                        You do not have any playlists yet. Create one first.
+                    </div>
+
+                    <div th:if="${playlists != null and !#lists.isEmpty(playlists)}" class="list-group">
+                        <button type="button"
+                                class="list-group-item list-group-item-action rounded-3 mb-2 add-to-playlist-btn"
+                                th:each="playlist : ${playlists}"
+                                th:attr="data-playlist-id=${playlist.id}"
+                                th:text="${playlist.name}">
+                            Playlist Name
+                        </button>
+                    </div>
+                </div>
+
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button"
+                            class="btn btn-outline-secondary rounded-pill px-4"
+                            data-bs-dismiss="modal">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script th:inline="javascript">
         document.addEventListener("DOMContentLoaded", function () {
             const videoId = /*[[${video.id}]]*/ 0;
@@ -165,6 +218,7 @@
 
             const commentsList = document.getElementById("commentsList");
             const commentHeader = document.getElementById("commentHeader");
+            const playlistAddMessage = document.getElementById("playlistAddMessage");
 
             loadComments();
             if (userId) {
@@ -407,6 +461,45 @@
                 });
             }
 
+                        document.querySelectorAll(".add-to-playlist-btn").forEach(btn => {
+                btn.addEventListener("click", async function () {
+                    const playlistId = this.dataset.playlistId;
+
+                    if (playlistAddMessage) {
+                        playlistAddMessage.textContent = "";
+                        playlistAddMessage.className = "small mt-2";
+                    }
+
+                    try {
+                        const res = await fetch(`/api/playlists/${playlistId}/videos`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ videoId: videoId })
+                        });
+
+                        if (!res.ok) {
+                            const err = await res.json().catch(() => null);
+                            throw new Error(err?.message || "Could not add video to playlist.");
+                        }
+
+                        if (playlistAddMessage) {
+                            playlistAddMessage.classList.add("text-success");
+                            playlistAddMessage.textContent = "Video added to playlist.";
+                        }
+
+                        const modalEl = document.getElementById("addToPlaylistModal");
+                        const modal = bootstrap.Modal.getInstance(modalEl);
+                        if (modal) modal.hide();
+
+                    } catch (e) {
+                        if (playlistAddMessage) {
+                            playlistAddMessage.classList.add("text-danger");
+                            playlistAddMessage.textContent = e.message || "Could not add video to playlist.";
+                        }
+                    }
+                });
+            });
+            
             function escHtml(str) {
                 const d = document.createElement("div");
                 d.textContent = str || "";

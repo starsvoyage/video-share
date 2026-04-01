@@ -5,8 +5,10 @@ import edu.arizona.videoshare.model.entity.User;
 import edu.arizona.videoshare.model.enums.UserRole;
 import edu.arizona.videoshare.model.enums.UserStatus;
 import edu.arizona.videoshare.service.ChannelService;
+import edu.arizona.videoshare.service.PlaylistService;
 import edu.arizona.videoshare.service.UserService;
 import edu.arizona.videoshare.service.ViewEventService;
+import edu.arizona.videoshare.service.PlaylistService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -24,6 +26,7 @@ public class YouController {
     private final UserService userService;
     private final ChannelService channelService;
     private final ViewEventService viewEventService;
+    private final PlaylistService playlistService;
 
     @GetMapping("/you")
     public String showYouPage(HttpSession session, Model model) {
@@ -35,6 +38,7 @@ public class YouController {
 
         User user = userService.getById(loggedInUserId);
         List<Channel> channels = channelService.getChannelsByUserId(user.getId());
+        var playlists = playlistService.getByUser(user.getId());
 
         model.addAttribute("user", user);
         model.addAttribute("channels", channels);
@@ -42,6 +46,7 @@ public class YouController {
         model.addAttribute("isVerified", user.getStatus() == UserStatus.ACTIVE);
         model.addAttribute("canCreateChannel", user.getStatus() == UserStatus.ACTIVE);
         model.addAttribute("isCreator", user.getRole() == UserRole.CREATOR);
+        model.addAttribute("playlists", playlistService.getByUser(user.getId()));
 
         return "you";
     }
