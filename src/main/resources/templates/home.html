@@ -1,13 +1,9 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layout/base :: layout('VideoShare', ~{::content}, true)}">
+      th:replace="~{layout/base :: layout('VideoShare', ~{::content}, true, true)}">
 
 <th:block th:fragment="content">
     <div class="container py-5">
-        <div class="mb-4">
-            <h1 class="fw-bold mb-2">Welcome to VideoShare</h1>
-            <p class="text-muted mb-0">Discover recently uploaded videos.</p>
-        </div>
 
         <section>
             <div class="d-flex justify-content-between align-items-center mb-4">

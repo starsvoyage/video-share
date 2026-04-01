@@ -8,6 +8,7 @@ import edu.arizona.videoshare.exception.NotFoundException;
 import edu.arizona.videoshare.model.entity.*;
 import edu.arizona.videoshare.model.enums.CommentStatus;
 import edu.arizona.videoshare.model.enums.NotificationType;
+import edu.arizona.videoshare.model.enums.SourceType;
 import edu.arizona.videoshare.repository.CommentRepository;
 import edu.arizona.videoshare.repository.UserRepository;
 import edu.arizona.videoshare.repository.VideoRepository;
@@ -20,7 +21,6 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class CommentService {
-
         private final CommentRepository commentRepository;
         private final UserRepository userRepository;
         private final VideoRepository videoRepository;
@@ -30,9 +30,6 @@ public class CommentService {
         public CreateCommentResponse addComment(Long videoId, Long userId, String content, Long parentId) {
                 User user = userRepository.findById(userId)
                         .orElseThrow(() -> new NotFoundException("User not found: " + userId));
-
-                Video video = videoRepository.findById(videoId)
-                        .orElseThrow(() -> new NotFoundException("Video not found: " + videoId));
                 Notification n = new Notification();
                 n.setActorUser(user);
 
@@ -54,13 +51,11 @@ public class CommentService {
                         if (parent.getStatus() == CommentStatus.REMOVED) {
                                 throw new ConflictException("Cannot reply to removed comment");
                         }
-                        n.setRecipient(parent.getUser());
-                        n.setType(NotificationType.REPLY);
-                        n.setMessage(user.getUsername() + " replied on your video");
-                } else {
-                        n.setRecipient(video.getOwner());
-                        n.setType(NotificationType.COMMENT);
-                        n.setMessage(user.getUsername() + " commented on your video");
+
+                        if (parent.getParent() != null) {
+                                throw new ConflictException("Nested replies are not allowed; "
+                                        + "reply to the first in chain comment instead");
+                        }
                 }
 
                 notificationService.createNotification(n);
@@ -74,6 +69,22 @@ public class CommentService {
                                 .build();
 
                 Comment saved = commentRepository.save(comment);
+
+                if (parent != null) {
+                        notificationService.notify(
+                                parent.getUser(), user,
+                                NotificationType.REPLY, SourceType.COMMENT,user.getDisplayName() +
+                                        " replied to your comment");
+                }
+
+                else {
+                        Video video = videoRepository.findById(videoId).orElse(null);
+                        if (video != null && video.getOwner() != null) {
+                                notificationService.notify(video.getOwner(), user, NotificationType.COMMENT,
+                                        SourceType.COMMENT,user.getDisplayName() +
+                                                " commented on your video \"" + video.getTitle() + "\"");
+                        }
+                }
 
                 return CreateCommentResponse.builder()
                                 .id(saved.getId())
@@ -100,6 +111,15 @@ public class CommentService {
                 }
         }
 
+        @Transactional
+        public CommentResponse updateCommentStatus(Long commentId, CommentStatus newStatus) {
+                Comment c = commentRepository.findById(commentId)
+                        .orElseThrow(() -> new NotFoundException("Comment not found: " + commentId));
+
+                c.setStatus(newStatus);
+                Comment saved = commentRepository.save(c);
+                return toResponse(saved);
+        }
 
         @Transactional(readOnly = true)
         public List<CommentResponse> getTopLevelComments(Long videoId) {

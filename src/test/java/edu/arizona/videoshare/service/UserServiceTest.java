@@ -3,6 +3,7 @@ package edu.arizona.videoshare.service;
 import edu.arizona.videoshare.dto.user.UserRequest;
 import edu.arizona.videoshare.exception.ConflictException;
 import edu.arizona.videoshare.model.entity.User;
+import edu.arizona.videoshare.model.enums.UserStatus;
 import edu.arizona.videoshare.repository.UserCredentialsRepository;
 import edu.arizona.videoshare.repository.UserRepository;
 import edu.arizona.videoshare.exception.NotFoundException;
@@ -169,6 +170,24 @@ class UserServiceTest {
     void deleteNonExistingUserThrowsNotFound() {
         assertThrows(NotFoundException.class, () ->
                 userService.delete(9999L)
+        );
+    }
+
+    @Test
+    void deactivateMarksUserAsDeletedAndKeepsCredentials() {
+        User u = userService.register(req("ian6", "ian6@arizona.edu", "Password123"));
+
+        User deactivated = userService.deactivate(u.getId());
+
+        assertEquals(UserStatus.DELETED, deactivated.getStatus());
+        assertTrue(userRepository.findById(u.getId()).isPresent());
+        assertTrue(credsRepository.findById(u.getId()).isPresent());
+    }
+
+    @Test
+    void deactivateNonExistingUserThrowsNotFound() {
+        assertThrows(NotFoundException.class, () ->
+                userService.deactivate(9998L)
         );
     }
 }

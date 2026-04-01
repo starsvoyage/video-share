@@ -75,4 +75,49 @@ public class EmailService {
             throw new RuntimeException("Failed to send verification success email", e);
         }
     }
+
+    public void sendPasswordResetEmail(String email, String username, String token) {
+        String resetLink = "http://localhost:8080/reset-password?token=" + token;
+
+        Context context = new Context();
+        context.setVariable("username", username);
+        context.setVariable("resetLink", resetLink);
+
+        String html = templateEngine.process("auth/password-reset-email", context);
+
+        MimeMessage message = mailSender.createMimeMessage();
+
+        try {
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+            helper.setTo(email);
+            helper.setSubject("Reset your VideoShare password");
+            helper.setText(html, true);
+            mailSender.send(message);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to send password reset email", e);
+        }
+    }
+
+    public void sendPasswordResetSuccessEmail(String email, String username) {
+
+        Context context = new Context();
+        context.setVariable("username", username);
+
+        String html = templateEngine.process("auth/password-reset-success-email", context);
+
+        MimeMessage message = mailSender.createMimeMessage();
+
+        try {
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setTo(email);
+            helper.setSubject("Your VideoShare password was changed");
+            helper.setText(html, true);
+
+            mailSender.send(message);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to send password reset success email", e);
+        }
+    }
 }

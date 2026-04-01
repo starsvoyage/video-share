@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en"
       xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layout/base :: layout('VideoShare | ' + ${channel.user.username}, ~{::content}, true)}">
+      th:replace="~{layout/base :: layout('VideoShare | ' + ${channel.user.username}, ~{::content}, true, true)}">
 
 <th:block th:fragment="content">
     <div class="px-4 py-4">
@@ -32,13 +32,20 @@
                     <div class="text-muted mb-2">
                         by <span th:text="${channel.user.displayName}">Owner Name</span>
                         <span class="mx-2">•</span>
-                        <span th:text="${channel.subscriberCount}">0</span> subscribers
+                        <span id="subscriberCount" th:text="${channel.subscriberCount}">0</span> subscribers
                     </div>
 
-                    <div class="d-flex flex-wrap gap-2" th:if="${!isOwner}">
-                        <button type="button" class="btn btn-dark rounded-pill px-4">
+                    <div class="d-flex flex-wrap gap-2" th:if="${!isOwner and loggedInUserId != null}">
+                        <button type="button"
+                                id="subscribeBtn"
+                                class="btn rounded-pill px-4"
+                                th:classappend="${isSubscribed ? 'btn-outline-dark' : 'btn-dark'}"
+                                th:text="${isSubscribed ? 'Unsubscribe' : 'Subscribe'}">
                             Subscribe
                         </button>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2" th:if="${!isOwner and loggedInUserId == null}">
+                        <a th:href="@{/login}" class="btn btn-dark rounded-pill px-4">Sign in to Subscribe</a>
                     </div>
                 </div>
             </div>
@@ -158,6 +165,53 @@
                     sections.forEach(section => section.classList.add("d-none"));
                     document.getElementById(targetId).classList.remove("d-none");
                 });
+            });
+        });
+    </script>
+
+    <script th:inline="javascript">
+        document.addEventListener("DOMContentLoaded", function () {
+            const btn = document.getElementById("subscribeBtn");
+            if (!btn) return;
+
+            const channelId  = /*[[${channel.id}]]*/ 0;
+            const userId     = /*[[${loggedInUserId}]]*/ 0;
+            let   subscribed = /*[[${isSubscribed}]]*/ false;
+
+            btn.addEventListener("click", async function () {
+                try {
+                    let response;
+                    if (subscribed) {
+                        response = await fetch(
+                            `/api/subscriptions?subscriberId=${userId}&channelId=${channelId}`,
+                            { method: "DELETE" }
+                        );
+                    } else {
+                        response = await fetch("/api/subscriptions", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ subscriberId: userId, channelId: channelId })
+                        });
+                    }
+
+                    if (!response.ok) {
+                        const err = await response.json();
+                        alert(err.message || "Action failed");
+                        return;
+                    }
+
+                    const data = await response.json();
+
+                    document.getElementById("subscriberCount").textContent = data.subscriberCount;
+
+                    subscribed = !subscribed;
+                    btn.textContent = subscribed ? "Unsubscribe" : "Subscribe";
+                    btn.classList.toggle("btn-dark", !subscribed);
+                    btn.classList.toggle("btn-outline-dark", subscribed);
+
+                } catch (error) {
+                    console.error("Subscription error:", error);
+                }
             });
         });
     </script>

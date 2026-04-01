@@ -1,11 +1,10 @@
 package edu.arizona.videoshare.controller;
 
-import edu.arizona.videoshare.dto.user.LoginForm;
-import edu.arizona.videoshare.dto.user.RegisterForm;
-import edu.arizona.videoshare.dto.user.VerifyCodeForm;
+import edu.arizona.videoshare.dto.user.*;
 import edu.arizona.videoshare.exception.ConflictException;
 import edu.arizona.videoshare.model.entity.User;
 import edu.arizona.videoshare.service.AuthService;
+import edu.arizona.videoshare.service.PasswordResetService;
 import edu.arizona.videoshare.service.VerificationService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -18,7 +17,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import edu.arizona.videoshare.repository.VideoRepository;
+import edu.arizona.videoshare.service.VideoService;
 
 /**
  * AuthController (Presentation Layer)
@@ -33,7 +32,8 @@ public class AuthController {
 
     private final AuthService authService;
     private final VerificationService verificationService;
-    private final VideoRepository videoRepository;
+    private final VideoService videoService;
+    private final PasswordResetService passwordResetService;
 
     /**
      * GET /register
@@ -56,6 +56,7 @@ public class AuthController {
     public String register(
             @Valid @ModelAttribute("registerForm") RegisterForm form,
             BindingResult bindingResult,
+            RedirectAttributes redirectAttributes,
             Model model) {
         if (!form.getPassword().equals(form.getConfirmPassword())) {
             bindingResult.rejectValue("confirmPassword", "mismatch", "Passwords do not match");
@@ -66,10 +67,13 @@ public class AuthController {
         }
 
         try {
-            User user = authService.register(form);
-            model.addAttribute("email", user.getEmail());
-            model.addAttribute("verifyCodeForm", new VerifyCodeForm());
-            return "auth/verify-account";
+            authService.register(form);
+
+            redirectAttributes.addFlashAttribute(
+                    "successMessage",
+                    "Account created successfully."
+            );
+            return "redirect:/login";
 
         } catch (ConflictException ex) {
             String msg = ex.getMessage();
@@ -121,7 +125,7 @@ public class AuthController {
 
             return "redirect:/";
         } catch (IllegalArgumentException ex) {
-            bindingResult.reject("login.failed", "Invalid username/email or password");
+            bindingResult.reject("login.failed", ex.getMessage());
             return "auth/login";
         }
     }
@@ -143,7 +147,7 @@ public class AuthController {
      */
     @GetMapping("/")
     public String home(Model model) {
-        model.addAttribute("videos", videoRepository.findAllByOrderByCreatedAtDesc());
+        model.addAttribute("videos", videoService.getAllPublic());
         return "home";
     }
 
@@ -197,6 +201,68 @@ public class AuthController {
         } catch (IllegalArgumentException ex) {
             bindingResult.rejectValue("code", "invalid", ex.getMessage());
             return "auth/verify-account";
+        }
+    }
+
+    @GetMapping("/forgot-password")
+    public String showForgotPasswordPage(Model model) {
+        if (!model.containsAttribute("forgotPasswordForm")) {
+            model.addAttribute("forgotPasswordForm", new ForgotPasswordForm());
+        }
+        return "auth/forgot-password";
+    }
+
+    @PostMapping("/forgot-password")
+    public String requestPasswordReset(
+            @Valid @ModelAttribute("forgotPasswordForm") ForgotPasswordForm form,
+            BindingResult bindingResult,
+            RedirectAttributes redirectAttributes) {
+
+        if (bindingResult.hasErrors()) {
+            return "auth/forgot-password";
+        }
+
+        try {
+            passwordResetService.requestPasswordReset(form.getEmail());
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "Password reset instructions have been sent.");
+            return "redirect:/login";
+        } catch (IllegalArgumentException ex) {
+            bindingResult.rejectValue("email", "notFound", ex.getMessage());
+            return "auth/forgot-password";
+        }
+    }
+
+    @GetMapping("/reset-password")
+    public String showResetPasswordPage(@RequestParam("token") String token, Model model) {
+        ResetPasswordForm form = new ResetPasswordForm();
+        form.setToken(token);
+        model.addAttribute("resetPasswordForm", form);
+        return "auth/reset-password";
+    }
+
+    @PostMapping("/reset-password")
+    public String resetPassword(
+            @Valid @ModelAttribute("resetPasswordForm") ResetPasswordForm form,
+            BindingResult bindingResult,
+            RedirectAttributes redirectAttributes) {
+
+        if (!form.getPassword().equals(form.getConfirmPassword())) {
+            bindingResult.rejectValue("confirmPassword", "mismatch", "Passwords do not match");
+        }
+
+        if (bindingResult.hasErrors()) {
+            return "auth/reset-password";
+        }
+
+        try {
+            passwordResetService.resetPassword(form.getToken(), form.getPassword());
+            redirectAttributes.addFlashAttribute("successMessage",
+                    "Your password has been reset. Please sign in.");
+            return "redirect:/login";
+        } catch (IllegalArgumentException ex) {
+            bindingResult.reject("reset.failed", ex.getMessage());
+            return "auth/reset-password";
         }
     }
 }

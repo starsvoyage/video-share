@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en"
       xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layout/base :: layout('VideoShare | ' + ${video.title}, ~{::content}, true)}">
+      th:replace="~{layout/base :: layout('VideoShare | ' + ${video.title}, ~{::content}, true, true)}">
 
 <th:block th:fragment="content">
     <div class="container py-4">
@@ -39,18 +39,34 @@
                             </div>
                         </div>
 
-                        <div class="text-muted small">
-                            <span th:if="${video.createdAt != null}"
-                                  th:text="'Uploaded ' + ${#temporals.format(video.createdAt, 'MMM d, yyyy')}">
-                                Uploaded date
-                            </span>
+                        <div class="d-flex align-items-center gap-2">
+                            <div th:if="${loggedInUserId != null}" class="btn-group" role="group">
+                                <button type="button" class="btn btn-outline-dark rounded-pill rounded-end px-3" id="likeBtn" onclick="react('LIKE')">
+                                    <i class="bi bi-hand-thumbs-up me-1"></i><span id="likeCount">0</span>
+                                </button>
+                                <button type="button" class="btn btn-outline-dark rounded-pill rounded-start px-3" id="dislikeBtn" onclick="react('DISLIKE')">
+                                    <i class="bi bi-hand-thumbs-down me-1"></i><span id="dislikeCount">0</span>
+                                </button>
+                            </div>
+
+                            <div th:if="${loggedInUserId == null}" class="text-muted small">
+                                <i class="bi bi-hand-thumbs-up me-1"></i><span id="likeCountAnon">0</span>
+                                <i class="bi bi-hand-thumbs-down ms-2 me-1"></i><span id="dislikeCountAnon">0</span>
+                            </div>
+
+                            <div class="text-muted small ms-2">
+                                <span th:if="${video.createdAt != null}"
+                                      th:text="'Uploaded ' + ${#temporals.format(video.createdAt, 'MMM d, yyyy')}">
+                                    Uploaded date
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Comments Section -->
                 <div class="mt-4">
-                    <h5 class="mb-3">Comments</h5>
+                    <h5 class="mb-3" id="commentHeader">Comments</h5>
 
                     <div th:if="${loggedInUserId != null}">
                         <textarea
@@ -71,6 +87,8 @@
                     <div th:if="${loggedInUserId == null}" class="text-muted">
                         Please log in to comment.
                     </div>
+
+                    <div id="commentsList" class="mt-4"></div>
                 </div>
             </div>
 
@@ -119,52 +137,264 @@
 
     <script th:inline="javascript">
         document.addEventListener("DOMContentLoaded", function () {
-            const button = document.getElementById("submitComment");
+            const videoId = /*[[${video.id}]]*/ 0;
+            const userId  = /*[[${loggedInUserId}]]*/ null;
 
-            if (!button) return;
+            const commentsList = document.getElementById("commentsList");
+            const commentHeader = document.getElementById("commentHeader");
 
-            button.addEventListener("click", async function () {
-                const content = document.getElementById("commentInput").value.trim();
-                const messageBox = document.getElementById("commentMessage");
+            loadComments();
+            if (userId) {
+                fetch('/api/views', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: userId, videoId: videoId })
+                }).catch(() => {});
+            }
 
-                messageBox.textContent = "";
-                messageBox.className = "mt-2 small";
+            // Reactions
+            loadReactions();
 
-                if (!content) {
-                    messageBox.classList.add("text-danger");
-                    messageBox.textContent = "Comment cannot be empty.";
+            async function loadReactions() {
+                try {
+                    const res = await fetch(`/api/videos/${videoId}/reactions/count`);
+                    if (!res.ok) return;
+                    const data = await res.json();
+                    const likeEl = document.getElementById('likeCount') || document.getElementById('likeCountAnon');
+                    const dislikeEl = document.getElementById('dislikeCount') || document.getElementById('dislikeCountAnon');
+                    if (likeEl) likeEl.textContent = data.likes;
+                    if (dislikeEl) dislikeEl.textContent = data.dislikes;
+                } catch (e) {}
+            }
+
+            window.react = async function(type) {
+                if (!userId) return;
+                try {
+                    const res = await fetch(`/api/videos/${videoId}/reactions`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userId: userId, type: type })
+                    });
+                    if (!res.ok) throw new Error();
+                    loadReactions();
+                } catch (e) {}
+            };
+
+            const submitBtn = document.getElementById("submitComment");
+            if (submitBtn) {
+                submitBtn.addEventListener("click", async function () {
+                    const input = document.getElementById("commentInput");
+                    const msgBox = document.getElementById("commentMessage");
+                    const content = input.value.trim();
+
+                    msgBox.textContent = "";
+                    msgBox.className = "mt-2 small";
+
+                    if (!content) {
+                        msgBox.classList.add("text-danger");
+                        msgBox.textContent = "Comment cannot be empty.";
+                        return;
+                    }
+
+                    try {
+                        const res = await fetch(`/api/videos/${videoId}/comments`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ userId: userId, content: content, parentId: null })
+                        });
+                        if (!res.ok) throw new Error("Failed to post comment");
+                        input.value = "";
+                        msgBox.classList.add("text-success");
+                        msgBox.textContent = "Comment posted!";
+                        loadComments();
+                    } catch (e) {
+                        msgBox.classList.add("text-danger");
+                        msgBox.textContent = "Could not post comment.";
+                    }
+                });
+            }
+
+            async function loadComments() {
+                try {
+                    const res = await fetch(`/api/videos/${videoId}/comments`);
+                    if (!res.ok) throw new Error();
+                    const comments = await res.json();
+                    commentHeader.textContent = `Comments (${comments.length})`;
+                    renderComments(comments);
+                } catch (e) {
+                    commentsList.innerHTML = '<p class="text-muted">Could not load comments.</p>';
+                }
+            }
+
+            function renderComments(comments) {
+                if (comments.length === 0) {
+                    commentsList.innerHTML = '<p class="text-muted mt-3">No comments yet. Be the first!</p>';
                     return;
                 }
 
-                const videoId = /*[[${video.id}]]*/ 0;
-                const userId = /*[[${loggedInUserId}]]*/ 0;
+                commentsList.innerHTML = comments.map(c => `
+                    <div class="border rounded-3 p-3 mb-3" id="comment-${c.id}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <span class="fw-semibold">${escHtml(c.displayName || c.username)}</span>
+                                <span class="text-muted small ms-2">${formatDate(c.createdAt)}</span>
+                            </div>
+                        </div>
+                        <div class="mt-2">${c.status === 'REMOVED' ? '<span class="text-muted fst-italic">[Removed]</span>' : escHtml(c.content)}</div>
 
-                try {
-                    const response = await fetch(`/api/videos/${videoId}/comments`, {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify({
-                            userId: userId,
-                            content: content,
-                            parentId: null
-                        })
+                        <div class="mt-2 d-flex align-items-center gap-3">
+                            ${c.replyCount > 0
+                                ? `<button class="btn btn-sm btn-link text-decoration-none p-0 toggle-replies-btn"
+                                           data-comment-id="${c.id}"
+                                           data-loaded="false">
+                                       <i class="bi bi-chat-dots me-1"></i>${c.replyCount} ${c.replyCount === 1 ? 'reply' : 'replies'}
+                                   </button>`
+                                : ''}
+                            ${userId && c.status !== 'REMOVED'
+                                ? `<button class="btn btn-sm btn-link text-decoration-none p-0 show-reply-form-btn"
+                                           data-comment-id="${c.id}">
+                                       <i class="bi bi-reply me-1"></i>Reply
+                                   </button>`
+                                : ''}
+                            ${userId && c.userId === userId && c.status !== 'REMOVED'
+                                ? `<button class="btn btn-sm btn-link text-decoration-none text-danger p-0 delete-comment-btn"
+                                           data-comment-id="${c.id}">
+                                       <i class="bi bi-trash me-1"></i>Delete
+                                   </button>`
+                                : ''}
+                        </div>
+
+                        <!-- reply form placeholder -->
+                        <div id="reply-form-${c.id}" class="mt-2 d-none">
+                            <textarea class="form-control form-control-sm" rows="2"
+                                      placeholder="Write a reply..." id="reply-input-${c.id}"></textarea>
+                            <div class="mt-1">
+                                <button class="btn btn-sm btn-dark post-reply-btn" data-comment-id="${c.id}">Post Reply</button>
+                                <button class="btn btn-sm btn-outline-secondary ms-1 cancel-reply-btn" data-comment-id="${c.id}">Cancel</button>
+                            </div>
+                            <div id="reply-msg-${c.id}" class="mt-1 small"></div>
+                        </div>
+
+                        <!-- replies container -->
+                        <div id="replies-${c.id}" class="ms-4 mt-2"></div>
+                    </div>
+                `).join('');
+
+                attachCommentEventListeners();
+            }
+
+            function attachCommentEventListeners() {
+                document.querySelectorAll(".toggle-replies-btn").forEach(btn => {
+                    btn.addEventListener("click", async function () {
+                        const cid = this.dataset.commentId;
+                        const container = document.getElementById(`replies-${cid}`);
+
+                        if (container.classList.contains("d-none") && this.dataset.loaded === "true") {
+                            container.classList.remove("d-none");
+                            return;
+                        }
+                        if (!container.classList.contains("d-none") && this.dataset.loaded === "true") {
+                            container.classList.add("d-none");
+                            return;
+                        }
+
+                        try {
+                            const res = await fetch(`/api/videos/${videoId}/comments/${cid}/replies`);
+                            if (!res.ok) throw new Error();
+                            const replies = await res.json();
+                            container.innerHTML = replies.map(r => `
+                                <div class="border-start ps-3 py-2 mb-1">
+                                    <span class="fw-semibold small">${escHtml(r.displayName || r.username)}</span>
+                                    <span class="text-muted small ms-2">${formatDate(r.createdAt)}</span>
+                                    <div class="small mt-1">${escHtml(r.content)}</div>
+                                </div>
+                            `).join('');
+                            container.classList.remove("d-none");
+                            this.dataset.loaded = "true";
+                        } catch (e) {
+                            container.innerHTML = '<p class="text-danger small">Could not load replies.</p>';
+                            container.classList.remove("d-none");
+                        }
                     });
+                });
 
-                    if (!response.ok) {
-                        throw new Error("Failed to post comment");
-                    }
+                document.querySelectorAll(".show-reply-form-btn").forEach(btn => {
+                    btn.addEventListener("click", function () {
+                        const cid = this.dataset.commentId;
+                        document.getElementById(`reply-form-${cid}`).classList.remove("d-none");
+                    });
+                });
 
-                    document.getElementById("commentInput").value = "";
-                    messageBox.classList.add("text-success");
-                    messageBox.textContent = "Comment posted successfully!";
-                } catch (error) {
-                    messageBox.classList.add("text-danger");
-                    messageBox.textContent = "Could not post comment. Please try again.";
-                    console.error(error);
-                }
-            });
+                document.querySelectorAll(".cancel-reply-btn").forEach(btn => {
+                    btn.addEventListener("click", function () {
+                        const cid = this.dataset.commentId;
+                        document.getElementById(`reply-form-${cid}`).classList.add("d-none");
+                        document.getElementById(`reply-input-${cid}`).value = "";
+                    });
+                });
+
+                document.querySelectorAll(".post-reply-btn").forEach(btn => {
+                    btn.addEventListener("click", async function () {
+                        const cid = this.dataset.commentId;
+                        const input = document.getElementById(`reply-input-${cid}`);
+                        const msgBox = document.getElementById(`reply-msg-${cid}`);
+                        const content = input.value.trim();
+
+                        msgBox.textContent = "";
+                        msgBox.className = "mt-1 small";
+
+                        if (!content) {
+                            msgBox.classList.add("text-danger");
+                            msgBox.textContent = "Reply cannot be empty.";
+                            return;
+                        }
+
+                        try {
+                            const res = await fetch(`/api/videos/${videoId}/comments`, {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ userId: userId, content: content, parentId: parseInt(cid) })
+                            });
+                            if (!res.ok) {
+                                const err = await res.json();
+                                throw new Error(err.message || "Failed");
+                            }
+                            input.value = "";
+                            document.getElementById(`reply-form-${cid}`).classList.add("d-none");
+                            loadComments();
+                        } catch (e) {
+                            msgBox.classList.add("text-danger");
+                            msgBox.textContent = e.message || "Could not post reply.";
+                        }
+                    });
+                });
+
+                document.querySelectorAll(".delete-comment-btn").forEach(btn => {
+                    btn.addEventListener("click", async function () {
+                        if (!confirm("Delete this comment?")) return;
+                        const cid = this.dataset.commentId;
+                        try {
+                            const res = await fetch(`/api/videos/${videoId}/comments/${cid}`, {
+                                method: 'DELETE'
+                            });
+                            if (!res.ok) throw new Error();
+                            loadComments();
+                        } catch (e) {}
+                    });
+                });
+            }
+
+            function escHtml(str) {
+                const d = document.createElement("div");
+                d.textContent = str || "";
+                return d.innerHTML;
+            }
+
+            function formatDate(iso) {
+                if (!iso) return "";
+                const d = new Date(iso);
+                return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+            }
         });
     </script>
 </th:block>

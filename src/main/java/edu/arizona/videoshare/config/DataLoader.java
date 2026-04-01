@@ -1,16 +1,15 @@
 package edu.arizona.videoshare.config;
 
 import edu.arizona.videoshare.dto.user.UserRequest;
-import edu.arizona.videoshare.model.entity.Channel;
-import edu.arizona.videoshare.model.entity.Subscription;
-import edu.arizona.videoshare.model.entity.User;
+import edu.arizona.videoshare.model.entity.*;
 import edu.arizona.videoshare.model.entity.Subscription.SubscriptionStatus;
-import edu.arizona.videoshare.model.entity.UserCredentials;
 import edu.arizona.videoshare.model.enums.UserRole;
 import edu.arizona.videoshare.model.enums.UserStatus;
+import edu.arizona.videoshare.model.enums.VideoVisibility;
 import edu.arizona.videoshare.repository.ChannelRepository;
 import edu.arizona.videoshare.repository.SubscriptionRepository;
 import edu.arizona.videoshare.repository.UserRepository;
+import edu.arizona.videoshare.repository.VideoRepository;
 import edu.arizona.videoshare.service.UserService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -33,17 +32,20 @@ public class DataLoader implements CommandLineRunner {
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
     private final SubscriptionRepository subscriptionRepository;
+    private final VideoRepository videoRepository;
     private final BCryptPasswordEncoder encoder;
 
     public DataLoader(UserService userService,
-            UserRepository userRepository,
-            ChannelRepository channelRepository,
-            SubscriptionRepository subscriptionRepository,
-            BCryptPasswordEncoder encoder) {
+                      UserRepository userRepository,
+                      ChannelRepository channelRepository,
+                      SubscriptionRepository subscriptionRepository,
+                      VideoRepository videoRepository,
+                      BCryptPasswordEncoder encoder) {
 
         this.userRepository = userRepository;
         this.channelRepository = channelRepository;
         this.subscriptionRepository = subscriptionRepository;
+        this.videoRepository = videoRepository;
         this.encoder = encoder;
     }
 
@@ -76,6 +78,23 @@ public class DataLoader implements CommandLineRunner {
             channel2.setDescription("Gaming content");
             channel2.setUser(user1);
             channelRepository.save(channel2);
+
+            //Adding videos
+            Video video1 = new Video();
+            video1.setTitle("Welcome Video");
+            video1.setOwner(ian);
+            video1.setChannel(channel1);
+            video1.setVisibility(VideoVisibility.PUBLIC);
+            video1.setDuration(120);
+            videoRepository.save(video1);
+
+            Video video2 = new Video();
+            video2.setTitle("Gaming Highlights");
+            video2.setOwner(user1);
+            video2.setChannel(channel2);
+            video2.setVisibility(VideoVisibility.PUBLIC);
+            video2.setDuration(300);
+            videoRepository.save(video2);
 
             // Adding subscriptions
             Subscription sub1 = new Subscription();

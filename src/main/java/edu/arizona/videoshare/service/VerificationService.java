@@ -23,9 +23,9 @@ public class VerificationService {
 
     @Transactional
     public void createAndSendVerification(User user) {
-        tokens.findByUserId(user.getId()).ifPresent(tokens::delete);
+        VerificationToken verification = tokens.findByUserId(user.getId())
+                .orElseGet(VerificationToken::new);
 
-        VerificationToken verification = new VerificationToken();
         verification.setUser(user);
         verification.setToken(UUID.randomUUID().toString());
         verification.setCode(generateSixDigitCode());
@@ -46,6 +46,10 @@ public class VerificationService {
     public void resendVerification(String email) {
         User user = users.findByEmailIgnoreCase(email)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        if (user.getStatus() == UserStatus.DELETED) {
+            throw new IllegalArgumentException("This account has been deactivated");
+        }
 
         if (user.getStatus() == UserStatus.ACTIVE) {
             throw new IllegalArgumentException("Account already verified");
