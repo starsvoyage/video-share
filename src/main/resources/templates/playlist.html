@@ -27,16 +27,68 @@
 
 <div th:if="${playlist.items != null and !#lists.isEmpty(playlist.items)}" class="row g-4">
     <div class="col-md-6 col-lg-4" th:each="item : ${playlist.items}">
-        <a th:href="@{/videos/{id}(id=${item.videoId})}"
-           class="text-decoration-none text-dark">
-            <div class="card h-100 border-0 shadow-sm rounded-4 p-3">
+        <div class="card h-100 border-0 shadow-sm rounded-4 p-3">
+            <a th:href="@{/videos/{id}(id=${item.videoId})}"
+               class="text-decoration-none text-dark">
                 <div class="fw-semibold mb-2" th:text="${item.videoTitle}">Video Title</div>
-                <div class="text-muted small">Click to watch</div>
-            </div>
-        </a>
+                <div class="text-muted small mb-3">Click to watch</div>
+            </a>
+
+            <button type="button"
+        class="btn btn-outline-danger btn-sm rounded-pill remove-playlist-video-btn"
+        th:attr="data-playlist-id=${playlist.id},data-playlist-video-id=${item.id}">
+    Remove
+</button>
+        </div>
     </div>
 </div>
 
+<div id="playlistRemoveMessage" class="small mt-3"></div>
+
     </div>
+
+    <script th:inline="javascript">
+    document.addEventListener("DOMContentLoaded", function () {
+        const removeMessage = document.getElementById("playlistRemoveMessage");
+
+        document.querySelectorAll(".remove-playlist-video-btn").forEach(btn => {
+            btn.addEventListener("click", async function () {
+                const playlistId = this.dataset.playlistId;
+                const playlistVideoId = this.dataset.playlistVideoId;
+
+                if (!confirm("Remove this video from the playlist?")) return;
+
+                if (removeMessage) {
+                    removeMessage.textContent = "";
+                    removeMessage.className = "small mt-3";
+                }
+
+                try {
+                    const res = await fetch(`/api/playlists/${playlistId}/videos/${playlistVideoId}`, {
+                        method: "DELETE"
+                    });
+
+                    if (!res.ok) {
+                        const err = await res.json().catch(() => null);
+                        throw new Error(err?.message || "Could not remove video from playlist.");
+                    }
+
+                    if (removeMessage) {
+                        removeMessage.classList.add("text-success");
+                        removeMessage.textContent = "Video removed from playlist.";
+                    }
+
+                    setTimeout(() => window.location.reload(), 500);
+                } catch (e) {
+                    if (removeMessage) {
+                        removeMessage.classList.add("text-danger");
+                        removeMessage.textContent = e.message || "Could not remove video from playlist.";
+                    }
+                }
+            });
+        });
+    });
+</script>
+
 </th:block>
 </html>
