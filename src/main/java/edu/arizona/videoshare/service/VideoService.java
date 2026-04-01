@@ -1,28 +1,30 @@
 package edu.arizona.videoshare.service;
 
 import edu.arizona.videoshare.exception.NotFoundException;
-import edu.arizona.videoshare.model.entity.*;
-
-import edu.arizona.videoshare.model.enums.*;
-import edu.arizona.videoshare.repository.*;
+import edu.arizona.videoshare.model.entity.Channel;
+import edu.arizona.videoshare.model.entity.Subscription;
+import edu.arizona.videoshare.model.entity.User;
+import edu.arizona.videoshare.model.entity.Video;
+import edu.arizona.videoshare.model.enums.NotificationType;
+import edu.arizona.videoshare.model.enums.SourceType;
+import edu.arizona.videoshare.model.enums.UserRole;
+import edu.arizona.videoshare.model.enums.UserStatus;
+import edu.arizona.videoshare.model.enums.VideoVisibility;
+import edu.arizona.videoshare.repository.ChannelRepository;
+import edu.arizona.videoshare.repository.SubscriptionRepository;
+import edu.arizona.videoshare.repository.UserRepository;
+import edu.arizona.videoshare.repository.VideoRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import lombok.RequiredArgsConstructor;
-
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
-
-import edu.arizona.videoshare.model.entity.Video;
-import edu.arizona.videoshare.repository.ChannelRepository;
-import edu.arizona.videoshare.repository.VideoRepository;
-
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -34,31 +36,19 @@ public class VideoService {
     private final NotificationService notificationService;
     private final SubscriptionRepository subscriptionRepository;
 
+    private static final long MAX_VIDEO_SIZE_BYTES = 50L * 1024L * 1024L;
+
     public Video create(Long channelId, MultipartFile file, String title) {
-        Channel channel = channelRepository.findById(channelId).orElseThrow(() -> new NotFoundException("Channel not found"));
+        Channel channel = channelRepository.findById(channelId)
+                .orElseThrow(() -> new NotFoundException("Channel not found"));
+
         Video video = new Video();
-        if (title == null || title.isEmpty()) {
-            video.setTitle("Untitled Video");
-        } else {
-            video.setTitle(title);
-        }
+        video.setTitle((title == null || title.isBlank()) ? "Untitled Video" : title.trim());
         video.setChannel(channel);
+        video.setOwner(channel.getUser());
+        video.setVisibility(VideoVisibility.PUBLIC);
 
-        //Saving file to local storage
-        String fileName = "video_" + System.currentTimeMillis() + ".mp4";
-        String filePath = "uploads/videos/" + fileName;
-        video.setFilePath(filePath);
-
-        try {
-            //Create directory if needed
-            java.io.File dir = new java.io.File("uploads/videos");
-            if (!dir.exists()) dir.mkdirs();
-            
-            // Save the file
-            Files.copy(file.getInputStream(), Paths.get(filePath));
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to save file", e);
-        }
+        attachUploadedVideo(video, file);
 
         return videoRepository.save(video);
     }
@@ -82,14 +72,15 @@ public class VideoService {
     }
 
     public List<Video> getPublicVideosForChannel(Long channelId) {
-        return videoRepository.findAllByChannelIdAndVisibilityOrderByCreatedAtDesc(channelId, VideoVisibility.PUBLIC);
+        return videoRepository.findAllByChannelIdAndVisibilityOrderByCreatedAtDesc(
+                channelId, VideoVisibility.PUBLIC);
     }
 
     public void delete(Long id) {
         videoRepository.deleteById(id);
     }
 
-    public Video createVideoForUser(Long userId, Long channelId, String title) {
+    public Video createVideoForUser(Long userId, Long channelId, String title, MultipartFile file) {
         if (userId == null) {
             throw new IllegalArgumentException("You must be logged in to upload a video.");
         }
@@ -130,17 +121,83 @@ public class VideoService {
         video.setChannel(channel);
         video.setVisibility(VideoVisibility.PUBLIC);
 
+        attachUploadedVideo(video, file);
+
         Video saved = videoRepository.save(video);
 
         List<Subscription> subs = subscriptionRepository.findByChannelIdAndStatus(
                 channelId, Subscription.SubscriptionStatus.ACTIVE);
+
         for (Subscription s : subs) {
             notificationService.notify(
-                    s.getSubscriber(), user,
-                    NotificationType.UPLOAD, SourceType.VIDEO,
+                    s.getSubscriber(),
+                    user,
+                    NotificationType.UPLOAD,
+                    SourceType.VIDEO,
                     user.getDisplayName() + " uploaded \"" + title.trim() + "\" to " + channel.getName());
         }
 
         return saved;
+    }
+
+    private void attachUploadedVideo(Video video, MultipartFile file) {
+        validateVideoFile(file);
+
+        String originalName = file.getOriginalFilename() == null
+                ? "video.mp4"
+                : file.getOriginalFilename();
+
+        String extension = extractExtension(originalName);
+        String fileName = UUID.randomUUID() + extension;
+
+        Path uploadDir = Paths.get("uploads", "videos").toAbsolutePath().normalize();
+        Path target = uploadDir.resolve(fileName);
+
+        try {
+            Files.createDirectories(uploadDir);
+            Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to save uploaded video.", e);
+        }
+
+        video.setFilePath(target.toString());
+        video.setMediaUrl("/uploads/videos/" + fileName);
+    }
+
+    private void validateVideoFile(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("Please choose a video file to upload.");
+        }
+
+        if (file.getSize() > MAX_VIDEO_SIZE_BYTES) {
+            throw new IllegalArgumentException("Video file must be 6 MB or smaller.");
+        }
+
+        String contentType = file.getContentType();
+        String originalName = file.getOriginalFilename() == null
+                ? ""
+                : file.getOriginalFilename().toLowerCase();
+
+        boolean looksLikeVideo = (contentType != null && contentType.startsWith("video/"))
+                || originalName.endsWith(".mp4")
+                || originalName.endsWith(".webm")
+                || originalName.endsWith(".ogg");
+
+        if (!looksLikeVideo) {
+            throw new IllegalArgumentException("Please upload an MP4, WebM, or OGG video file.");
+        }
+    }
+
+    private String extractExtension(String filename) {
+        int dotIndex = filename.lastIndexOf('.');
+        if (dotIndex < 0) {
+            return ".mp4";
+        }
+
+        String extension = filename.substring(dotIndex).toLowerCase();
+        return switch (extension) {
+            case ".mp4", ".webm", ".ogg" -> extension;
+            default -> ".mp4";
+        };
     }
 }
