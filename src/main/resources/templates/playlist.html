@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout('VideoShare | ' + ${playlist.name}, ~{::content}, true, true)}">
+
+<th:block th:fragment="content">
+    <div class="container py-4">
+
+        <div class="pb-4 border-bottom mb-4">
+            <h1 class="h3 fw-bold mb-2" th:text="${playlist.name}">Playlist Name</h1>
+
+            <div class="text-muted mb-2"
+                 th:text="${playlist.description != null and !#strings.isEmpty(playlist.description) ? playlist.description : 'No description'}">
+                Playlist description
+            </div>
+
+            <div class="text-muted small">
+                <span th:text="${playlist.visibility}">PRIVATE</span>
+                <span class="mx-2">•</span>
+                <span th:text="${playlist.items != null ? #lists.size(playlist.items) : 0}">0</span> videos
+            </div>
+        </div>
+
+       <div th:if="${playlist.items == null or #lists.isEmpty(playlist.items)}" class="text-muted">
+    No saved videos yet.
+</div>
+
+<div th:if="${playlist.items != null and !#lists.isEmpty(playlist.items)}" class="row g-4">
+    <div class="col-md-6 col-lg-4" th:each="item : ${playlist.items}">
+        <a th:href="@{/videos/{id}(id=${item.videoId})}"
+           class="text-decoration-none text-dark">
+            <div class="card h-100 border-0 shadow-sm rounded-4 p-3">
+                <div class="fw-semibold mb-2" th:text="${item.videoTitle}">Video Title</div>
+                <div class="text-muted small">Click to watch</div>
+            </div>
+        </a>
+    </div>
+</div>
+
+    </div>
+</th:block>
+</html>

@@ -8,7 +8,6 @@ import edu.arizona.videoshare.service.ChannelService;
 import edu.arizona.videoshare.service.PlaylistService;
 import edu.arizona.videoshare.service.UserService;
 import edu.arizona.videoshare.service.ViewEventService;
-import edu.arizona.videoshare.service.PlaylistService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -38,7 +37,6 @@ public class YouController {
 
         User user = userService.getById(loggedInUserId);
         List<Channel> channels = channelService.getChannelsByUserId(user.getId());
-        var playlists = playlistService.getByUser(user.getId());
 
         model.addAttribute("user", user);
         model.addAttribute("channels", channels);

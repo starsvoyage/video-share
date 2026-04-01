@@ -195,19 +195,22 @@
 
     <div th:if="${playlists != null and !#lists.isEmpty(playlists)}" class="row g-4">
         <div class="col-12" th:each="playlist : ${playlists}">
-            <div class="card border-0 shadow-sm rounded-4">
-                <div class="card-body">
-                    <h4 class="h6 fw-semibold mb-1" th:text="${playlist.name}">Playlist Name</h4>
-                    <div class="text-muted small"
-                         th:text="${playlist.description != null and !#strings.isEmpty(playlist.description) ? playlist.description : 'No description'}">
-                        Playlist description
-                    </div>
-                    <div class="text-muted small mt-1">
-                        <span th:text="${playlist.visibility}">PRIVATE</span>
-                    </div>
+    <a th:href="@{/playlists/{id}(id=${playlist.id})}"
+       class="text-decoration-none text-dark">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body">
+                <h4 class="h6 fw-semibold mb-1" th:text="${playlist.name}">Playlist Name</h4>
+                <div class="text-muted small"
+                     th:text="${playlist.description != null and !#strings.isEmpty(playlist.description) ? playlist.description : 'No description'}">
+                    Playlist description
+                </div>
+                <div class="text-muted small mt-1">
+                    <span th:text="${playlist.visibility}">PRIVATE</span>
                 </div>
             </div>
         </div>
+    </a>
+</div>
     </div>
 </div>
 

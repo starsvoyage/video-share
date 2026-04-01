@@ -170,7 +170,7 @@ public class VideoService {
         }
 
         if (file.getSize() > MAX_VIDEO_SIZE_BYTES) {
-            throw new IllegalArgumentException("Video file must be 6 MB or smaller.");
+            throw new IllegalArgumentException("Video file must be 50 MB or smaller.");
         }
 
         String contentType = file.getContentType();
