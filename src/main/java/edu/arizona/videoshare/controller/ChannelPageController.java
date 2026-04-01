@@ -1,8 +1,9 @@
 package edu.arizona.videoshare.controller;
 
 import edu.arizona.videoshare.model.entity.Channel;
+import edu.arizona.videoshare.model.entity.Subscription;
+import edu.arizona.videoshare.repository.SubscriptionRepository;
 import edu.arizona.videoshare.service.ChannelService;
-import edu.arizona.videoshare.service.SubscriptionService;
 import edu.arizona.videoshare.service.VideoService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +18,7 @@ public class ChannelPageController {
 
     private final ChannelService channelService;
     private final VideoService videoService;
-    private final SubscriptionService subscriptionService;
+    private final SubscriptionRepository subscriptionRepository;
 
     @GetMapping("/{username}/channel/{channelName}")
     public String showChannelPage(
@@ -25,6 +26,7 @@ public class ChannelPageController {
             @PathVariable String channelName,
             HttpSession session,
             Model model) {
+
         Channel channel = channelService.getChannelByUsernameAndName(username, channelName);
 
         Long loggedInUserId = (Long) session.getAttribute("loggedInUserId");
@@ -32,13 +34,16 @@ public class ChannelPageController {
 
         boolean isSubscribed = false;
         if (loggedInUserId != null && !isOwner) {
-            isSubscribed = subscriptionService.isSubscribed(loggedInUserId, channel.getId());
+            isSubscribed = subscriptionRepository.existsBySubscriberIdAndChannelIdAndStatus(
+                    loggedInUserId,
+                    channel.getId(),
+                    Subscription.SubscriptionStatus.ACTIVE);
         }
 
         model.addAttribute("channel", channel);
+        model.addAttribute("loggedInUserId", loggedInUserId);
         model.addAttribute("isOwner", isOwner);
         model.addAttribute("isSubscribed", isSubscribed);
-        model.addAttribute("loggedInUserId", loggedInUserId);
         model.addAttribute("videos", isOwner
                 ? channel.getVideosOnChannel()
                 : videoService.getPublicVideosForChannel(channel.getId()));
