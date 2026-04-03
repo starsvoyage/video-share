@@ -292,16 +292,36 @@
             }
 
             async function loadComments() {
-                try {
-                    const res = await fetch(`/api/videos/${videoId}/comments`);
-                    if (!res.ok) throw new Error();
-                    const comments = await res.json();
-                    commentHeader.textContent = `Comments (${comments.length})`;
-                    renderComments(comments);
-                } catch (e) {
-                    commentsList.innerHTML = '<p class="text-muted">Could not load comments.</p>';
+    try {
+        const res = await fetch(`/api/videos/${videoId}/comments`);
+        if (!res.ok) throw new Error();
+
+        const comments = await res.json();
+
+        for (const c of comments) {
+            try {
+                const countRes = await fetch(`/api/comments/${c.id}/reactions/count`);
+                if (countRes.ok) {
+                    const counts = await countRes.json();
+                    c.likes = counts.likes;
+                    c.dislikes = counts.dislikes;
+                } else {
+                    c.likes = 0;
+                    c.dislikes = 0;
                 }
+            } catch {
+                c.likes = 0;
+                c.dislikes = 0;
             }
+        }
+
+        commentHeader.textContent = `Comments (${comments.length})`;
+        renderComments(comments);
+
+    } catch (e) {
+        commentsList.innerHTML = '<p class="text-muted">Could not load comments.</p>';
+    }
+}
 
             function renderComments(comments) {
                 if (comments.length === 0) {
@@ -320,6 +340,18 @@
                         <div class="mt-2">${c.status === 'REMOVED' ? '<span class="text-muted fst-italic">[Removed]</span>' : escHtml(c.content)}</div>
 
                         <div class="mt-2 d-flex align-items-center gap-3">
+                       ${userId && c.status !== 'REMOVED'
+    ? `<button class="btn btn-sm btn-link text-decoration-none p-0 react-comment-btn"
+               data-comment-id="${c.id}"
+               data-type="LIKE">
+           <i class="bi bi-hand-thumbs-up me-1"></i>Like (${c.likes ?? 0})
+       </button>
+       <button class="btn btn-sm btn-link text-decoration-none p-0 react-comment-btn"
+               data-comment-id="${c.id}"
+               data-type="DISLIKE">
+           <i class="bi bi-hand-thumbs-down me-1"></i>Dislike (${c.dislikes ?? 0})
+       </button>`
+    : ''}
                             ${c.replyCount > 0
                                 ? `<button class="btn btn-sm btn-link text-decoration-none p-0 toggle-replies-btn"
                                            data-comment-id="${c.id}"
@@ -361,6 +393,32 @@
             }
 
             function attachCommentEventListeners() {
+                document.querySelectorAll(".react-comment-btn").forEach(btn => {
+    btn.addEventListener("click", async function () {
+        const cid = this.dataset.commentId;
+        const type = this.dataset.type;
+
+        try {
+            const res = await fetch(`/api/comments/${cid}/reactions`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    userId: userId,
+                    type: type
+                })
+            });
+
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                throw new Error(err.message || "Could not react to comment.");
+            }
+
+            loadComments();
+        } catch (e) {
+            alert(e.message || "Could not react to comment.");
+        }
+    });
+});
                 document.querySelectorAll(".toggle-replies-btn").forEach(btn => {
                     btn.addEventListener("click", async function () {
                         const cid = this.dataset.commentId;
