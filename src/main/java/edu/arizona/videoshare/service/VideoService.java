@@ -76,6 +76,16 @@ public class VideoService {
                 channelId, VideoVisibility.PUBLIC);
     }
 
+    public List<Video> getSubscribedVideos(Long userId) {
+        if (userId == null) {
+            throw new IllegalArgumentException("User must be logged in.");
+        }
+
+        return videoRepository.findSubscribedVideosBySubscriberIdAndVisibility(
+                userId,
+                VideoVisibility.PUBLIC);
+    }
+
     public void delete(Long id) {
         videoRepository.deleteById(id);
     }
