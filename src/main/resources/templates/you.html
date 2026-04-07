@@ -134,6 +134,127 @@
             </div>
         </section>
 
+        <div class="mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="h5 mb-0">My Playlists</h3>
+
+        <button type="button"
+                id="showCreatePlaylistFormBtn"
+                class="btn btn-dark rounded-pill px-4">
+            Create Playlist
+        </button>
+    </div>
+
+    <!-- Hidden create form -->
+    <div id="createPlaylistFormCard" class="card border-0 shadow-sm rounded-4 mb-4 d-none">
+        <div class="card-body">
+            <h4 class="h6 fw-semibold mb-3">New Playlist</h4>
+
+            <div class="row g-3">
+                <div class="col-md-5">
+                    <input type="text"
+                           id="playlistName"
+                           class="form-control rounded-3"
+                           placeholder="Playlist name">
+                </div>
+
+                <div class="col-md-5">
+                    <input type="text"
+                           id="playlistDescription"
+                           class="form-control rounded-3"
+                           placeholder="Description (optional)">
+                </div>
+
+                <div class="col-md-2">
+                    <select id="playlistVisibility" class="form-select rounded-3">
+                        <option value="PRIVATE">Private</option>
+                        <option value="PUBLIC">Public</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2 mt-3">
+                <button id="createPlaylistBtn" class="btn btn-dark rounded-pill px-4">
+                    Save Playlist
+                </button>
+
+                <button type="button"
+                        id="cancelCreatePlaylistBtn"
+                        class="btn btn-outline-secondary rounded-pill px-4">
+                    Cancel
+                </button>
+            </div>
+
+            <div id="playlistCreateMessage" class="small mt-2"></div>
+        </div>
+    </div>
+
+    <div th:if="${playlists == null or #lists.isEmpty(playlists)}" class="text-muted">
+        No playlists yet.
+    </div>
+
+    <div th:if="${playlists != null and !#lists.isEmpty(playlists)}" class="row g-4">
+        <div class="col-12" th:each="playlist : ${playlists}">
+    <a th:href="@{/playlists/{id}(id=${playlist.id})}"
+       class="text-decoration-none text-dark">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body">
+                <h4 class="h6 fw-semibold mb-1" th:text="${playlist.name}">Playlist Name</h4>
+                <div class="text-muted small"
+                     th:text="${playlist.description != null and !#strings.isEmpty(playlist.description) ? playlist.description : 'No description'}">
+                    Playlist description
+                </div>
+                <div class="text-muted small mt-1">
+                    <span th:text="${playlist.visibility}">PRIVATE</span>
+                </div>
+            </div>
+        </div>
+    </a>
+</div>
+    </div>
+</div>
+
+<!-- Subscribed Videos Section -->
+<section class="you-section">
+    <div class="d-flex justify-content-between align-items-center you-section-header">
+        <div>
+            <h3 class="h5 mb-1">Subscribed Videos</h3>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-12" th:if="${subscribedVideos == null or #lists.isEmpty(subscribedVideos)}">
+            <p class="text-muted mb-0">No videos from subscribed channels yet.</p>
+        </div>
+
+        <div class="col-12 col-md-6 col-lg-4" th:each="video : ${subscribedVideos}">
+            <a th:href="@{/videos/{id}(id=${video.id})}" class="text-decoration-none text-dark">
+                <div class="card h-100 border-0 bg-white shadow-sm rounded-4 p-3">
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="flex-shrink-0">
+                            <div class="rounded-3 bg-light d-flex align-items-center justify-content-center"
+                                 style="width:80px; height:56px;">
+                                <i class="bi bi-play-circle text-muted" style="font-size:1.5rem;"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="fw-semibold text-truncate" th:text="${video.title}">Video Title</div>
+                            <div class="text-muted small"
+                                 th:text="${video.channel != null ? video.channel.name : 'Unknown Channel'}">
+                                Channel Name
+                            </div>
+                            <div class="text-muted small" th:if="${video.createdAt != null}"
+                                 th:text="'Uploaded ' + ${#temporals.format(video.createdAt, 'MMM d, yyyy')}">
+                                Uploaded date
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+</section>
+
         <!-- History Section -->
         <section class="you-section" id="history">
             <div class="d-flex justify-content-between align-items-center you-section-header">
@@ -172,20 +293,6 @@
             </div>
         </section>
 
-        <!-- Playlists Section -->
-        <section class="you-section">
-            <div class="d-flex justify-content-between align-items-center you-section-header">
-                <div>
-                    <h3 class="h5 mb-1">Playlists</h3>
-                </div>
-            </div>
-
-            <div class="row g-4">
-                <div class="col-12" th:if="${playlists == null or #lists.isEmpty(playlists)}">
-                    <p class="text-muted mb-0">No playlists yet.</p>
-                </div>
-            </div>
-        </section>
 
         <!-- Liked Videos -->
         <section class="you-section">
@@ -273,5 +380,81 @@
             }
         });
     </script>
+
+    <script th:inline="javascript">
+    document.addEventListener("DOMContentLoaded", function () {
+        const userId = /*[[${user.id}]]*/ 0;
+
+        const showBtn = document.getElementById("showCreatePlaylistFormBtn");
+        const cancelBtn = document.getElementById("cancelCreatePlaylistBtn");
+        const formCard = document.getElementById("createPlaylistFormCard");
+        const createBtn = document.getElementById("createPlaylistBtn");
+        const msg = document.getElementById("playlistCreateMessage");
+
+        if (showBtn && formCard) {
+            showBtn.addEventListener("click", function () {
+                formCard.classList.remove("d-none");
+                showBtn.classList.add("d-none");
+            });
+        }
+
+        if (cancelBtn && formCard) {
+            cancelBtn.addEventListener("click", function () {
+                formCard.classList.add("d-none");
+                showBtn.classList.remove("d-none");
+
+                document.getElementById("playlistName").value = "";
+                document.getElementById("playlistDescription").value = "";
+                document.getElementById("playlistVisibility").value = "PRIVATE";
+                msg.textContent = "";
+                msg.className = "small mt-2";
+            });
+        }
+
+        if (!createBtn) return;
+
+        createBtn.addEventListener("click", async function () {
+            const name = document.getElementById("playlistName").value.trim();
+            const description = document.getElementById("playlistDescription").value.trim();
+            const visibility = document.getElementById("playlistVisibility").value;
+
+            msg.textContent = "";
+            msg.className = "small mt-2";
+
+            if (!name) {
+                msg.classList.add("text-danger");
+                msg.textContent = "Playlist name is required.";
+                return;
+            }
+
+            try {
+                const res = await fetch("/api/playlists", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        userId: userId,
+                        name: name,
+                        description: description,
+                        visibility: visibility
+                    })
+                });
+
+                if (!res.ok) {
+                    const err = await res.json().catch(() => null);
+                    throw new Error(err?.message || "Could not create playlist.");
+                }
+
+                msg.classList.add("text-success");
+                msg.textContent = "Playlist created successfully.";
+
+                setTimeout(() => window.location.reload(), 600);
+            } catch (e) {
+                msg.classList.add("text-danger");
+                msg.textContent = e.message || "Could not create playlist.";
+            }
+        });
+    });
+</script>
+
 </th:block>
 </html>
