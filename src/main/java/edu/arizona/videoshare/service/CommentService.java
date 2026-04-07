@@ -30,12 +30,8 @@ public class CommentService {
         public CreateCommentResponse addComment(Long videoId, Long userId, String content, Long parentId) {
                 User user = userRepository.findById(userId)
                         .orElseThrow(() -> new NotFoundException("User not found: " + userId));
-                Notification n = new Notification();
-                n.setActorUser(user);
-
-                if (!videoRepository.existsById(videoId)) {
-                        throw new NotFoundException("Video not found: " + videoId);
-                }
+                Video video = videoRepository.findById(videoId)
+                        .orElseThrow(() -> new NotFoundException("Video not found: " + videoId));
 
                 Comment parent = null;
                 if (parentId != null) {
@@ -58,8 +54,6 @@ public class CommentService {
                         }
                 }
 
-                notificationService.createNotification(n);
-
                 Comment comment = Comment.builder()
                                 .user(user)
                                 .videoId(videoId)
@@ -78,7 +72,7 @@ public class CommentService {
                 }
 
                 else {
-                        Video video = videoRepository.findById(videoId).orElse(null);
+                        
                         if (video != null && video.getOwner() != null) {
                                 notificationService.notify(video.getOwner(), user, NotificationType.COMMENT,
                                         SourceType.COMMENT,user.getDisplayName() +
