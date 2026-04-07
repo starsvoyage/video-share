@@ -7,6 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.multipart.MultipartFile;
 
 @Controller
 public class VideoFormController {
@@ -21,6 +22,7 @@ public class VideoFormController {
     public String createVideo(
             @RequestParam(required = false) String title,
             @RequestParam(required = false) Long channelId,
+            @RequestParam(required = false, name = "file") MultipartFile file,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
 
@@ -35,7 +37,8 @@ public class VideoFormController {
             Video createdVideo = videoService.createVideoForUser(
                     loggedInUserId,
                     channelId,
-                    title);
+                    title,
+                    file);
 
             redirectAttributes.addFlashAttribute(
                     "successMessage",

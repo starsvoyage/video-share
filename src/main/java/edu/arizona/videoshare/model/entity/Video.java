@@ -31,6 +31,7 @@ public class Video {
     @Column(nullable = false, length = 200)
     private String title;
 
+    @Setter
     @Column(name = "media_url", length = 1000)
     private String mediaUrl;
 
@@ -50,7 +51,7 @@ public class Video {
 
     private LocalDateTime updatedAt;
 
-    //For the file path, when we need to access the video file
+    // For the file path, when we need to access the video file
     @Setter
     private String filePath;
 
@@ -64,7 +65,8 @@ public class Video {
     @Column(nullable = false)
     private int duration = 0;
 
-    public Video() {}
+    public Video() {
+    }
 
     @PrePersist
     void onCreate() {

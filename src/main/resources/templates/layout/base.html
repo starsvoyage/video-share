@@ -57,7 +57,7 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 rounded-4 shadow-lg">
 
-            <form th:action="@{/videos/create}" method="post">
+            <form th:action="@{/videos/create}" method="post"enctype="multipart/form-data">
 
                 <div class="modal-header border-0 pb-0">
                     <h5 class="modal-title fw-semibold">Upload Video</h5>
@@ -76,6 +76,16 @@
                                placeholder="My Video Title"
                                th:value="${videoTitleValue}">
                     </div>
+
+                    <div class="mb-3">
+    <label class="form-label small text-muted">Video File</label>
+    <input type="file"
+           name="file"
+           accept="video/mp4,video/webm,video/ogg,.mp4,.webm,.ogg"
+           required
+           class="form-control rounded-4 px-3">
+    <div class="form-text">Upload an MP4, WebM, or OGG file up to 50 MB.</div>
+</div>
 
                     <div class="mb-2">
                         <label class="form-label small text-muted">Channel</label>
