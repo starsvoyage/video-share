@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import edu.arizona.videoshare.model.enums.VideoVisibility;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.time.LocalDateTime;
 
@@ -16,6 +17,7 @@ import java.time.LocalDateTime;
  * Minimal implementation so other domains (like PlaylistVideo) can reference
  * it.
  */
+
 @Getter
 @Entity
 @Table(name = "videos")
@@ -38,12 +40,15 @@ public class Video {
     @Setter
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_user_id", foreignKey = @ForeignKey(name = "fk_videos_owner_user"))
+
+    @JsonIgnoreProperties({ "credentials" })
     private User owner;
 
     // Added this to make the channel and subscription entities work
     @Setter
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "channel_id", nullable = false)
+    @JsonIgnoreProperties({ "videosOnChannel", "subscribers", "user" })
     private Channel channel;
 
     @Column(nullable = false)

@@ -27,7 +27,7 @@ import jakarta.validation.constraints.NotNull;
 @Setter
 @Entity
 public class Channel {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -47,25 +47,22 @@ public class Channel {
 
     private Long subscriberCount = 0L;
 
-
     @NotNull
     @ManyToOne(optional = false)
     @JoinColumn(name = "user_id")
-    @JsonIgnoreProperties({"channels", "credentials"})
+    @JsonIgnoreProperties({ "channels", "credentials" })
     private User user;
 
     @OneToMany(mappedBy = "channel")
+    @JsonIgnore
     private List<Video> videosOnChannel;
 
     @OneToMany(mappedBy = "channel", fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Subscription> subscribers;
 
-
     public Channel() {
 
     }
-
-
 
 }
