@@ -83,8 +83,7 @@ public class PlaylistController {
     @PostMapping("/{playlistId}/videos")
     public PlaylistResponse addVideo(
             @PathVariable Long playlistId,
-            @Valid @RequestBody PlaylistAddVideoRequest req
-    ) {
+            @Valid @RequestBody PlaylistAddVideoRequest req) {
         return PlaylistResponse.of(service.addVideo(playlistId, req));
     }
 
@@ -96,8 +95,7 @@ public class PlaylistController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void removeVideo(
             @PathVariable Long playlistId,
-            @PathVariable Long playlistVideoId
-    ) {
+            @PathVariable Long playlistVideoId) {
         service.removeItem(playlistId, playlistVideoId);
     }
 

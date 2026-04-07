@@ -19,14 +19,14 @@ public class ReactionController {
     @PostMapping("/videos/{videoId}/reactions")
     @ResponseStatus(HttpStatus.CREATED)
     public ReactResponse reactToVideo(@PathVariable Long videoId,
-                                      @Valid @RequestBody ReactRequest req) {
+            @Valid @RequestBody ReactRequest req) {
         return reactionService.reactToVideo(videoId, req.getUserId(), req.getType());
     }
 
     @PostMapping("/comments/{commentId}/reactions")
     @ResponseStatus(HttpStatus.CREATED)
     public ReactResponse reactToComment(@PathVariable Long commentId,
-                                        @Valid @RequestBody ReactRequest req) {
+            @Valid @RequestBody ReactRequest req) {
         return reactionService.reactToComment(commentId, req.getUserId(), req.getType());
     }
 
@@ -34,4 +34,10 @@ public class ReactionController {
     public ReactionCountResponse getVideoReactionCounts(@PathVariable Long videoId) {
         return reactionService.getVideoReactionCounts(videoId);
     }
+
+    @GetMapping("/comments/{commentId}/reactions/count")
+    public ReactionCountResponse getCommentReactionCounts(@PathVariable Long commentId) {
+        return reactionService.getCommentReactionCounts(commentId);
+    }
+
 }

@@ -4,6 +4,7 @@ import edu.arizona.videoshare.exception.ForbiddenException;
 import edu.arizona.videoshare.model.entity.Video;
 import edu.arizona.videoshare.model.enums.VideoVisibility;
 import edu.arizona.videoshare.service.VideoService;
+import edu.arizona.videoshare.service.PlaylistService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 public class VideoPageController {
 
     private final VideoService videoService;
+    private final PlaylistService playlistService;
 
     @GetMapping("/videos/{videoId}")
     public String showVideoPage(
@@ -37,6 +39,10 @@ public class VideoPageController {
 
         model.addAttribute("video", video);
         model.addAttribute("loggedInUserId", loggedInUserId);
+
+        if (loggedInUserId != null) {
+            model.addAttribute("playlists", playlistService.getByUser(loggedInUserId));
+        }
 
         return "video";
     }

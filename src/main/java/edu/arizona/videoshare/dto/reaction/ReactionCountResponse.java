@@ -11,5 +11,6 @@ import lombok.*;
 public class ReactionCountResponse {
     private long likes;
     private long dislikes;
-    private long videoId;
+    private Long videoId;
+    private Long commentId;
 }

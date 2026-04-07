@@ -3,6 +3,7 @@ package edu.arizona.videoshare.service;
 import edu.arizona.videoshare.dto.playlist.PlaylistAddVideoRequest;
 import edu.arizona.videoshare.dto.playlist.PlaylistCreateRequest;
 import edu.arizona.videoshare.exception.ConflictException;
+import edu.arizona.videoshare.exception.ForbiddenException;
 import edu.arizona.videoshare.exception.NotFoundException;
 import edu.arizona.videoshare.model.entity.Playlist;
 import edu.arizona.videoshare.model.entity.PlaylistVideo;
@@ -109,9 +110,19 @@ public class PlaylistService {
         return playlists.findWithItemsById(saved.getId()).orElse(saved);
     }
 
-    /**
-     * REMOVE a playlist item.
-     */
+    public void removeVideo(Long userId, Long playlistId, Long videoId) {
+        var playlist = getById(playlistId);
+
+        if (!playlist.getUser().getId().equals(userId)) {
+            throw new ForbiddenException("You cannot modify this playlist");
+        }
+
+        var item = playlistVideos.findByPlaylistIdAndVideoId(playlistId, videoId)
+                .orElseThrow(() -> new NotFoundException("Video is not in this playlist"));
+
+        playlistVideos.delete(item);
+    }
+
     @Transactional
     public void removeItem(Long playlistId, Long playlistVideoId) {
         Playlist p = playlists.findById(playlistId)
