@@ -10,9 +10,10 @@
             <!-- Main Video Area -->
             <div class="col-lg-8">
                <div class="bg-dark rounded-4 shadow-sm overflow-hidden">
-    <video th:if="${video.mediaUrl != null and !#strings.isEmpty(video.mediaUrl)}"
-           class="w-100 d-block"
-           controls
+   <video id="videoPlayer"
+       th:if="..."
+       class="w-100 d-block"
+       controls
            preload="metadata"
            style="max-height: 480px; background-color: #000;"
            th:src="${video.mediaUrl}">
@@ -220,14 +221,51 @@
             const commentHeader = document.getElementById("commentHeader");
             const playlistAddMessage = document.getElementById("playlistAddMessage");
 
-            loadComments();
-            if (userId) {
-                fetch('/api/views', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userId: userId, videoId: videoId })
-                }).catch(() => {});
-            }
+           loadComments();
+
+const videoPlayer = document.getElementById("videoPlayer");
+let viewEventId = null;
+let maxSecondsWatched = 0;
+
+if (userId && videoPlayer) {
+    // create view event
+    fetch('/api/views', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: userId, videoId: videoId })
+    })
+    .then(res => {
+        if (!res.ok) throw new Error();
+        return res.json();
+    })
+    .then(data => {
+        viewEventId = data.id;
+    })
+    .catch(() => {});
+
+    // track watch time
+    videoPlayer.addEventListener("timeupdate", function () {
+        const seconds = Math.floor(videoPlayer.currentTime);
+        if (seconds > maxSecondsWatched) {
+            maxSecondsWatched = seconds;
+        }
+    });
+
+    // send to backend
+    function sendWatchDuration() {
+        if (!viewEventId) return;
+
+        fetch(`/api/views/${viewEventId}/duration`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ watchDuration: maxSecondsWatched })
+        }).catch(() => {});
+    }
+
+    videoPlayer.addEventListener("pause", sendWatchDuration);
+    videoPlayer.addEventListener("ended", sendWatchDuration);
+    window.addEventListener("beforeunload", sendWatchDuration);
+}
 
             // Reactions
             loadReactions();
