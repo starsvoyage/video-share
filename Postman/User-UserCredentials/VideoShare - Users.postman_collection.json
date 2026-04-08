@@ -1,264 +1,41 @@
 {
   "info": {
-    "_postman_id": "3de2ecd7-1f29-4ae4-8300-cd582b87ec88",
-    "name": "VideoShare - Users",
+    "_postman_id": "2c7fc6b4-d864-486c-a06b-56b9924145bf",
+    "name": "BonusAssignment API",
+    "description": "Postman collection for the BonusAssignment shopping cart total cost calculation endpoint.\n\nMain assignment flow:\n1. Call GET /api/carts/{{cartId}}/total\n2. Verify the response contains the cart total\n3. Demonstrate error handling with a missing cart",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "51648836",
-    "_collection_link": "https://go.postman.co/collection/51648836-3de2ecd7-1f29-4ae4-8300-cd582b87ec88?source=collection_link"
+    "_collection_link": "https://go.postman.co/collection/51648836-2c7fc6b4-d864-486c-a06b-56b9924145bf?source=collection_link"
   },
   "item": [
     {
-      "name": "0 Health - list users (200)",
+      "name": "Get Cart Total",
       "event": [
         {
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test('Status is 200', function () {",
-              "  pm.response.to.have.status(200);",
-              "});"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/users",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "users"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "1 POST register - success (stores userId)",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test('Status is 201', function () {",
-              "  pm.response.to.have.status(201);",
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
               "});",
               "",
-              "// capture returned id if response includes it",
-              "let json = {};",
-              "try { json = pm.response.json(); } catch (e) {}",
-              "",
-              "let id = json.id || (json.data && json.data.id);",
-              "if (id) {",
-              "  pm.environment.set('userId', id);",
-              "} else {",
-              "  console.warn('Could not auto-detect id in response. Update this test if needed.');",
-              "}",
-              "",
-              "// save username and email",
-              "pm.environment.set('username', 'ian_postman_1');",
-              "pm.environment.set('email', 'ian_postman_1@arizona.edu');"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"username\": \"ian_postman_1\",\n  \"email\": \"ian_postman_1@arizona.edu\",\n  \"displayName\": \"Ian Postman\",\n  \"password\": \"Password123!\"\n}"
-        },
-        "url": {
-          "raw": "{{baseUrl}}/api/users",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "users"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "2 POST register - fail duplicate username (409)",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test('Status is 409 Conflict', function () {",
-              "  pm.response.to.have.status(409);",
-              "});"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"username\": \"ian_postman_1\",\n  \"email\": \"ian_postman_2@arizona.edu\",\n  \"displayName\": \"Dup Username\",\n  \"password\": \"Password123!\"\n}"
-        },
-        "url": {
-          "raw": "{{baseUrl}}/api/users",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "users"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "3 POST register - fail duplicate email (409)",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test('Status is 409 Conflict', function () {",
-              "  pm.response.to.have.status(409);",
-              "});"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"username\": \"ian_postman_3\",\n  \"email\": \"ian_postman_1@arizona.edu\",\n  \"displayName\": \"Dup Email\",\n  \"password\": \"Password123!\"\n}"
-        },
-        "url": {
-          "raw": "{{baseUrl}}/api/users",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "users"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "4 POST register - fail short password (400)",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test('Status is 400 Bad Request', function () {",
-              "  pm.response.to.have.status(400);",
-              "});"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"username\": \"ab\",\n  \"email\": \"bademail\",\n  \"displayName\": \"\",\n  \"password\": \"short\"\n}"
-        },
-        "url": {
-          "raw": "{{baseUrl}}/api/users",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "users"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "5 GET all users - success (200)",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test('Status is 200', function () { pm.response.to.have.status(200); });"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/users",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "users"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "6 GET by id - success (200)",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test('Status is 200', function () {",
-              "  pm.response.to.have.status(200);",
+              "pm.test('Response is JSON', function () {",
+              "    pm.response.to.be.json;",
               "});",
               "",
-              "pm.test('Response has an id', function () {",
-              "  const json = pm.response.json();",
-              "  pm.expect(json.id || (json.data && json.data.id)).to.exist;",
+              "const body = pm.response.json();",
+              "",
+              "pm.test('cartId is present', function () {",
+              "    pm.expect(body).to.have.property('cartId');",
+              "});",
+              "",
+              "pm.test('totalCost is present', function () {",
+              "    pm.expect(body).to.have.property('totalCost');",
               "});"
             ],
-            "type": "text/javascript"
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
           }
         }
       ],
@@ -266,29 +43,33 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "{{baseUrl}}/api/users/{{userId}}",
+          "raw": "{{baseUrl}}/api/carts/{{cartId}}/total",
           "host": [
             "{{baseUrl}}"
           ],
           "path": [
             "api",
-            "users",
-            "{{userId}}"
+            "carts",
+            "{{cartId}}",
+            "total"
           ]
-        }
+        },
+        "description": "Calculates the total cost of the shopping cart by summing quantity × product price for each cart item."
       },
       "response": []
     },
     {
-      "name": "7 GET by id - fail not found (404)",
+      "name": "Get Cart Total - Missing Cart",
       "event": [
         {
           "listen": "test",
           "script": {
+            "type": "text/javascript",
             "exec": [
-              "pm.test('Status is 404 Not Found', () => pm.response.to.have.status(404));"
-            ],
-            "type": "text/javascript"
+              "pm.test('Status code is an error status', function () {",
+              "    pm.expect(pm.response.code).to.be.oneOf([404, 500]);",
+              "});"
+            ]
           }
         }
       ],
@@ -296,156 +77,30 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "{{baseUrl}}/api/users/99999999",
+          "raw": "{{baseUrl}}/api/carts/{{missingCartId}}/total",
           "host": [
             "{{baseUrl}}"
           ],
           "path": [
             "api",
-            "users",
-            "99999999"
+            "carts",
+            "{{missingCartId}}",
+            "total"
           ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "8 PUT update - success updates displayName(200)",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test('Status is 200', () => pm.response.to.have.status(200));"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "PUT",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"username\": \"ian_postman_1\",\n  \"email\": \"ian_postman_1@arizona.edu\",\n  \"displayName\": \"Ian Updated\",\n  \"password\": \"Password123!\"\n}"
         },
-        "url": {
-          "raw": "{{baseUrl}}/api/users/{{userId}}",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "users",
-            "{{userId}}"
-          ]
-        }
+        "description": "Negative test case. Use this request after you add exception handling for missing carts. If you currently throw a plain RuntimeException, this may return 500 instead of 404."
       },
       "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "expectedTotal",
+      "value": "49.97"
     },
     {
-      "name": "9 PUT update - fail missing required fields (400)",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test('Status is 400 Bad Request', () => pm.response.to.have.status(400));"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "PUT",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"displayName\": \"OnlyName\"\n}"
-        },
-        "url": {
-          "raw": "{{baseUrl}}/api/users/{{userId}}",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "users",
-            "{{userId}}"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "10 DELETE - success delete userId (204)",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test('Status is 204 No Content', () => pm.response.to.have.status(204));"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "DELETE",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/users/{{userId}}",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "users",
-            "{{userId}}"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "11 DELETE - fail userId not found (404)",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test('Status is 404 Not Found', () => pm.response.to.have.status(404));"
-            ],
-            "type": "text/javascript"
-          }
-        }
-      ],
-      "request": {
-        "method": "DELETE",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/api/users/{{userId}}",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "users",
-            "{{userId}}"
-          ]
-        }
-      },
-      "response": []
+      "key": "missingCartId",
+      "value": "999"
     }
   ]
 }

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout('VideoShare | ' + ${playlist.name}, ~{::content}, true, true)}">
+
+<th:block th:fragment="content">
+    <div class="container py-4">
+
+        <div class="pb-4 border-bottom mb-4">
+            <h1 class="h3 fw-bold mb-2" th:text="${playlist.name}">Playlist Name</h1>
+
+            <div class="text-muted mb-2"
+                 th:text="${playlist.description != null and !#strings.isEmpty(playlist.description) ? playlist.description : 'No description'}">
+                Playlist description
+            </div>
+
+            <div class="text-muted small">
+                <span th:text="${playlist.visibility}">PRIVATE</span>
+                <span class="mx-2">•</span>
+                <span th:text="${playlist.items != null ? #lists.size(playlist.items) : 0}">0</span> videos
+            </div>
+        </div>
+
+       <div th:if="${playlist.items == null or #lists.isEmpty(playlist.items)}" class="text-muted">
+    No saved videos yet.
+</div>
+
+<div th:if="${playlist.items != null and !#lists.isEmpty(playlist.items)}" class="row g-4">
+    <div class="col-md-6 col-lg-4" th:each="item : ${playlist.items}">
+        <div class="card h-100 border-0 shadow-sm rounded-4 p-3">
+
+            <div class="mb-2 text-muted small">
+                <i class="bi bi-arrows-move me-2" style="cursor: grab;"></i>
+                <span class="position-badge">Drag to reorder</span>
+            </div>
+
+            <a th:href="@{/videos/{id}(id=${item.videoId})}"
+               class="text-decoration-none text-dark">
+                <div class="fw-semibold mb-2" th:text="${item.videoTitle}">Video Title</div>
+                <div class="text-muted small mb-3">Click to watch</div>
+            </a>
+
+            <button type="button"
+        class="btn btn-outline-danger btn-sm rounded-pill remove-playlist-video-btn"
+        th:attr="data-playlist-id=${playlist.id},data-playlist-video-id=${item.id}">
+    Remove
+</button>
+        </div>
+    </div>
+</div>
+
+<div id="playlistRemoveMessage" class="small mt-3"></div>
+
+<div id="playlistReorderMessage" class="small mt-3"></div>
+
+    </div>
+
+    <script th:inline="javascript">
+    document.addEventListener("DOMContentLoaded", function () {
+        const removeMessage = document.getElementById("playlistRemoveMessage");
+
+        document.querySelectorAll(".remove-playlist-video-btn").forEach(btn => {
+            btn.addEventListener("click", async function () {
+                const playlistId = this.dataset.playlistId;
+                const playlistVideoId = this.dataset.playlistVideoId;
+
+                if (!confirm("Remove this video from the playlist?")) return;
+
+                if (removeMessage) {
+                    removeMessage.textContent = "";
+                    removeMessage.className = "small mt-3";
+                }
+
+                try {
+                    const res = await fetch(`/api/playlists/${playlistId}/videos/${playlistVideoId}`, {
+                        method: "DELETE"
+                    });
+
+                    if (!res.ok) {
+                        const err = await res.json().catch(() => null);
+                        throw new Error(err?.message || "Could not remove video from playlist.");
+                    }
+
+                    if (removeMessage) {
+                        removeMessage.classList.add("text-success");
+                        removeMessage.textContent = "Video removed from playlist.";
+                    }
+
+                    setTimeout(() => window.location.reload(), 500);
+                } catch (e) {
+                    if (removeMessage) {
+                        removeMessage.classList.add("text-danger");
+                        removeMessage.textContent = e.message || "Could not remove video from playlist.";
+                    }
+                }
+            });
+        });
+
+        const playlistId = /*[[${playlist.id}]]*/ 0;
+        const reorderMessage = document.getElementById("playlistReorderMessage");
+        let draggedElement = null;
+
+        document.querySelectorAll(".col-md-6").forEach(card => {
+            card.setAttribute("draggable", "true");
+            
+            card.addEventListener("dragstart", function () {
+                draggedElement = this;
+                this.style.opacity = "0.5";
+            });
+
+            card.addEventListener("dragend", function () {
+                this.style.opacity = "1";
+            });
+
+            card.addEventListener("dragover", function (e) {
+                e.preventDefault();
+                this.style.borderTop = "3px solid #0d6efd";
+            });
+
+            card.addEventListener("dragleave", function () {
+                this.style.borderTop = "none";
+            });
+
+            card.addEventListener("drop", async function (e) {
+                e.preventDefault();
+                this.style.borderTop = "none";
+                if (draggedElement === this) return;
+
+                const draggedVideoId = draggedElement.querySelector(".remove-playlist-video-btn").dataset.playlistVideoId;
+                const droppedPosition = Array.from(document.querySelectorAll(".col-md-6")).indexOf(this);
+
+                try {
+                    const res = await fetch(`/api/playlists/${playlistId}/videos/${draggedVideoId}/reorder?newPosition=${droppedPosition}`, {
+                        method: "PATCH"
+                    });
+                    if (!res.ok) throw new Error("Could not reorder");
+                    reorderMessage.classList.remove("text-danger");
+                    reorderMessage.classList.add("text-success");
+                    setTimeout(() => window.location.reload(), 800);
+                } catch (e) {
+                    reorderMessage.classList.add("text-danger");
+                    reorderMessage.textContent = "Error reordering videos";
+                }
+            });
+        });
+
+    });
+</script>
+
+</th:block>
+</html>

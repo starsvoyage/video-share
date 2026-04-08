@@ -3,6 +3,7 @@ package edu.arizona.videoshare.service;
 import edu.arizona.videoshare.dto.playlist.PlaylistAddVideoRequest;
 import edu.arizona.videoshare.dto.playlist.PlaylistCreateRequest;
 import edu.arizona.videoshare.exception.ConflictException;
+import edu.arizona.videoshare.exception.ForbiddenException;
 import edu.arizona.videoshare.exception.NotFoundException;
 import edu.arizona.videoshare.model.entity.Playlist;
 import edu.arizona.videoshare.model.entity.PlaylistVideo;
@@ -109,9 +110,19 @@ public class PlaylistService {
         return playlists.findWithItemsById(saved.getId()).orElse(saved);
     }
 
-    /**
-     * REMOVE a playlist item.
-     */
+    public void removeVideo(Long userId, Long playlistId, Long videoId) {
+        var playlist = getById(playlistId);
+
+        if (!playlist.getUser().getId().equals(userId)) {
+            throw new ForbiddenException("You cannot modify this playlist");
+        }
+
+        var item = playlistVideos.findByPlaylistIdAndVideoId(playlistId, videoId)
+                .orElseThrow(() -> new NotFoundException("Video is not in this playlist"));
+
+        playlistVideos.delete(item);
+    }
+
     @Transactional
     public void removeItem(Long playlistId, Long playlistVideoId) {
         Playlist p = playlists.findById(playlistId)
@@ -138,4 +149,44 @@ public class PlaylistService {
         }
         playlistVideos.saveAll(remaining);
     }
+
+
+    /**
+     * REORDER a playlist item.
+     */
+    @Transactional
+    public Playlist reorderItem(Long playlistId, Long playlistVideoId, int newPosition) {
+        Playlist playList = playlists.findById(playlistId)
+                .orElseThrow(() -> new NotFoundException("Playlist not found: " + playlistId));
+
+        PlaylistVideo playlistVideo = playlistVideos.findById(playlistVideoId)
+                .orElseThrow(() -> new NotFoundException("PlaylistVideo not found: " + playlistVideoId));
+
+        // Safety check: make sure the item belongs to that playlist
+        if (!playlistVideo.getPlaylist().getId().equals(playlistId)) {
+            throw new ConflictException("That playlist item does not belong to this playlist");
+        }
+
+        int currentPos = playlistVideo.getPosition();
+        newPosition = Math.max(0, Math.min(newPosition, playList.getItems().size() - 1));
+
+        if (currentPos == newPosition) {
+            return playList;
+        }
+
+        // Shift positions of existing items
+        for (PlaylistVideo existing : playList.getItems()) {
+            if (existing.getPosition() >= Math.min(currentPos, newPosition) && existing.getPosition() <= Math.max(currentPos, newPosition)) {
+                if (existing.getPosition() == currentPos) {
+                    existing.setPosition(newPosition);
+                } else {
+                    existing.setPosition(existing.getPosition() + (currentPos < newPosition ? -1 : 1));
+                }
+            }
+        }
+
+        Playlist saved = playlists.save(playList);
+        return playlists.findWithItemsById(saved.getId()).orElse(saved);
+    }
+
 }

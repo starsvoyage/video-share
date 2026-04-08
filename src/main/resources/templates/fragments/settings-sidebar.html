@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div th:fragment="settingsSidebar(activeSection)"
+     class="settings-sidebar bg-dark text-white p-3 h-100">
+
+    <h4 class="fw-bold mb-4">Settings</h4>
+
+    <ul class="nav nav-pills flex-column mb-4">
+
+        <li class="nav-item mb-2">
+            <a th:href="@{/settings/account}"
+               class="nav-link text-white d-flex align-items-center justify-content-between gap-3 settings-nav-link"
+               th:classappend="${activeSection == 'account'} ? ' active' : ''">
+                <span class="d-flex align-items-center gap-3">
+                    <span class="sidebar-icon">
+                        <i class="bi bi-person"></i>
+                    </span>
+                    <span class="sidebar-text">Your account</span>
+                </span>
+                <i class="bi bi-chevron-right"></i>
+            </a>
+        </li>
+
+        <li class="nav-item mb-2">
+            <a th:href="@{#}"
+               class="nav-link text-white d-flex align-items-center justify-content-between gap-3 settings-nav-link"
+               th:classappend="${activeSection == 'premium'} ? ' active' : ''">
+                <span class="d-flex align-items-center gap-3">
+                    <span class="sidebar-icon">
+                        <i class="bi bi-star"></i>
+                    </span>
+                    <span class="sidebar-text">Premium</span>
+                </span>
+                <i class="bi bi-chevron-right"></i>
+            </a>
+        </li>
+
+        <li class="nav-item mb-2">
+            <a th:href="@{#}"
+               class="nav-link text-white d-flex align-items-center justify-content-between gap-3 settings-nav-link"
+               th:classappend="${activeSection == 'followed-channels'} ? ' active' : ''">
+                <span class="d-flex align-items-center gap-3">
+                    <span class="sidebar-icon">
+                        <i class="bi bi-people"></i>
+                    </span>
+                    <span class="sidebar-text">Followed Channels</span>
+                </span>
+                <i class="bi bi-chevron-right"></i>
+            </a>
+        </li>
+
+        <li class="nav-item mb-2">
+            <a th:href="@{#}"
+               class="nav-link text-white d-flex align-items-center justify-content-between gap-3 settings-nav-link"
+               th:classappend="${activeSection == 'notifications'} ? ' active' : ''">
+                <span class="d-flex align-items-center gap-3">
+                    <span class="sidebar-icon">
+                        <i class="bi bi-bell"></i>
+                    </span>
+                    <span class="sidebar-text">Notifications</span>
+                </span>
+                <i class="bi bi-chevron-right"></i>
+            </a>
+        </li>
+
+    </ul>
+</div>
+
+</body>
+</html>

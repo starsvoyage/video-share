@@ -1,16 +1,21 @@
 package edu.arizona.videoshare.service;
 
+import org.springframework.web.multipart.MultipartFile;
+import edu.arizona.videoshare.dto.user.RegisterForm;
 import edu.arizona.videoshare.dto.user.UserRequest;
-import edu.arizona.videoshare.exception.ConflictException;
 import edu.arizona.videoshare.exception.NotFoundException;
 import edu.arizona.videoshare.model.entity.User;
-import edu.arizona.videoshare.model.entity.UserCredentials;
+import edu.arizona.videoshare.model.enums.UserStatus;
 import edu.arizona.videoshare.repository.UserRepository;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.UUID;
 import java.util.List;
 
 /**
@@ -24,43 +29,18 @@ import java.util.List;
 public class UserService {
 
     private final UserRepository users;
-    private final BCryptPasswordEncoder encoder;
+    private final AuthService authService;
 
-//    public UserService(UserRepository users, BCryptPasswordEncoder encoder) {
-//        this.users = users;
-//        this.encoder = encoder;
-//    }
-
-    /**
-     * CREATE: Registers a new user account.
-     */
     @Transactional
     public User register(UserRequest req) {
 
-        // Business rule: username/email unique
-        if (users.existsByUsername(req.username)) {
-            throw new ConflictException("Username already exists");
-        }
-        if (users.existsByEmail(req.email)) {
-            throw new ConflictException("Email already exists");
-        }
+        RegisterForm form = new RegisterForm();
+        form.setUsername(req.username);
+        form.setEmail(req.email);
+        form.setPassword(req.password);
+        form.setConfirmPassword(req.password);
 
-        // Create user profile
-        User u = new User();
-        u.setUsername(req.username.trim());
-        u.setEmail(req.email.trim().toLowerCase());
-        u.setDisplayName(req.displayName.trim());
-
-        // Create credentials
-        // Because UserCredentials uses @MapsId, credentials will share the same PK as the user.
-        UserCredentials creds = new UserCredentials();
-        creds.setPasswordHash(encoder.encode(req.password));
-
-        // attachCredentials keeps both sides of the 1:1 mapping consistent in memory
-        u.attachCredentials(creds);
-
-        // Saving user cascades creds due to cascade=ALL on User.credentials
-        return users.save(u);
+        return authService.register(form);
     }
 
     /**
@@ -97,6 +77,18 @@ public class UserService {
     }
 
     /**
+     * UPDATE: Marks a user account as deactivated without removing persisted data.
+     */
+    @Transactional
+    public User deactivate(Long id) {
+        User user = users.findById(id)
+                .orElseThrow(() -> new NotFoundException("User not found: " + id));
+
+        user.setStatus(UserStatus.DELETED);
+        return users.save(user);
+    }
+
+    /**
      * DELETE: Deletes a user by id.
      */
     @Transactional
@@ -107,4 +99,58 @@ public class UserService {
         users.deleteById(id);
     }
 
+    @Transactional
+    public User updateAccountInformation(Long userId, String displayName, String bio, MultipartFile avatar) throws IOException {
+        User user = users.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found: " + userId));
+
+        user.setDisplayName(displayName.trim());
+
+        if (bio == null || bio.trim().isEmpty()) {
+            user.setBio(null);
+        } else {
+            user.setBio(bio.trim());
+        }
+
+        if (avatar != null && !avatar.isEmpty()) {
+
+            long maxSize = 5 * 1024 * 1024;
+            if (avatar.getSize() > maxSize) {
+                throw new IllegalArgumentException("Avatar image must be smaller than 5MB.");
+            }
+
+            String contentType = avatar.getContentType();
+            if (contentType == null ||
+                    !(contentType.equals("image/png")
+                            || contentType.equals("image/jpeg")
+                            || contentType.equals("image/jpg")
+                            || contentType.equals("image/webp"))) {
+                throw new IllegalArgumentException("Only PNG, JPG, JPEG, or WEBP images are allowed.");
+            }
+
+            String originalFilename = avatar.getOriginalFilename();
+            String extension = "";
+
+            if (originalFilename != null && originalFilename.contains(".")) {
+                extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+            }
+
+            String fileName = UUID.randomUUID() + extension;
+
+            Path uploadDir = Paths.get(
+                    System.getProperty("user.dir"),
+                    "uploads",
+                    "user-avatars"
+            ).toAbsolutePath().normalize();
+
+            Files.createDirectories(uploadDir);
+
+            Path filePath = uploadDir.resolve(fileName);
+            avatar.transferTo(filePath.toFile());
+
+            user.setAvatarUrl("/uploads/user-avatars/" + fileName);
+        }
+
+        return users.save(user);
+    }
 }

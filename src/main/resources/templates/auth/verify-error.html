@@ -1,0 +1,59 @@
+<!--
+    verify-error.html (View Layer - Thymeleaf Template)
+
+    Displayed when a verification link or code is invalid,
+    expired, or already used.
+-->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout('VideoShare | Verification Error', ~{::content}, false, false)}">
+
+<th:block th:fragment="content">
+    <div class="login-page d-flex align-items-start justify-content-center">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-11 col-sm-9 col-md-7 col-lg-5 col-xl-4">
+
+                    <div class="card border-0 shadow-sm mt-5">
+                        <div class="card-body p-4 p-md-5 text-center">
+
+                            <img th:src="@{/images/vs-logo.svg}"
+                                 alt="VideoShare"
+                                 height="64"
+                                 style="margin-bottom:16px;">
+
+                            <h1 class="h3 fw-bold mb-3">Verification failed</h1>
+
+                            <p class="text-muted mb-4"
+                               th:text="${errorMessage}">
+                                This verification link is invalid or has expired.
+                            </p>
+
+                            <a th:href="@{/verify/account}"
+                               class="btn btn-success btn-lg w-100 mb-3">
+                                Enter verification code
+                            </a>
+
+                            <form th:action="@{/verify/resend}" method="post">
+                                <input type="hidden" name="email" th:value="${email}">
+                                <button type="submit" class="btn btn-outline-secondary w-100">
+                                    Send new verification email
+                                </button>
+                            </form>
+
+                            <div class="mt-4">
+                                <a th:href="@{/login}" class="text-decoration-none">
+                                    Back to sign in
+                                </a>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</th:block>
+
+</html>

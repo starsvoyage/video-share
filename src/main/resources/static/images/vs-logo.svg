@@ -1,0 +1,44 @@
+<svg width="256" height="256" viewBox="118 78 276 309" fill="none" xmlns="http://www.w3.org/2000/svg">
+
+  <defs>
+    <linearGradient id="frameGrad" x1="120" y1="96" x2="392" y2="416" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#5EA2FF"/>
+      <stop offset="1" stop-color="#8F7CFF"/>
+    </linearGradient>
+
+    <linearGradient id="playGrad" x1="188" y1="162" x2="322" y2="330" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#D9E6FF"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Hexagon frame -->
+  <path d="M256 88L384 160V304L256 376L128 304V160L256 88Z"
+        fill="none"
+        stroke="url(#frameGrad)"
+        stroke-width="16"
+        stroke-linejoin="round"/>
+
+  <!-- Inner hexagon -->
+  <path d="M256 126L350 179V285L256 338L162 285V179L256 126Z"
+        fill="none"
+        stroke="#405278"
+        stroke-width="8"
+        stroke-linejoin="round"/>
+
+  <!-- Inner core -->
+  <path d="M256 156L323 194V270L256 308L189 270V194L256 156Z"
+        fill="none"
+        stroke="#405278"
+        stroke-width="6"
+        stroke-linejoin="round"/>
+
+  <!-- Architecture layers -->
+  <rect x="201" y="193" width="110" height="18" rx="9" fill="#5EA2FF"/>
+  <rect x="201" y="223" width="110" height="18" rx="9" fill="#5EA2FF"/>
+  <rect x="201" y="253" width="110" height="18" rx="9" fill="#5EA2FF"/>
+
+  <!-- Play symbol -->
+  <path d="M228 190L300 232L228 274V190Z" fill="url(#playGrad)"/>
+
+</svg>

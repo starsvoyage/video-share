@@ -1,0 +1,130 @@
+.you-section {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.you-section-header {
+    margin-bottom: 1.25rem;
+}
+
+.you-card-col {
+    display: flex;
+}
+
+.you-card-col > a,
+.you-card-col > div,
+.you-card-col > button {
+    width: 100%;
+}
+
+.you-item-card,
+.you-create-tile {
+    background: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 1rem;
+    min-height: 180px;
+    width: 100%;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.you-item-card:hover,
+.you-create-tile:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 .5rem 1rem rgba(0, 0, 0, 0.08);
+}
+
+.you-create-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.you-plus-circle {
+    width: 64px;
+    height: 64px;
+    font-size: 2rem;
+    border-radius: 999px;
+    border: 1px solid #dee2e6;
+    background: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+}
+
+.you-avatar-sm {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+}
+
+.you-avatar-lg {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+}
+
+.you-letter-avatar-sm {
+    width: 64px;
+    height: 64px;
+    font-size: 1.375rem;
+    border-radius: 999px;
+    border: 1px solid #dee2e6;
+    background: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+}
+
+.you-letter-avatar-lg {
+    width: 120px;
+    height: 120px;
+    font-size: 3rem;
+    border-radius: 999px;
+    border: 1px solid #dee2e6;
+    background: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+}
+
+.you-view-all-btn {
+    border-radius: 999px;
+}
+
+.you-muted-label {
+    color: #6c757d;
+    font-size: 0.95rem;
+}
+
+.you-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+}
+
+.you-card {
+    width: 260px;
+    flex-shrink: 0;
+}
+
+.you-item-card,
+.you-create-tile {
+    width: 100%;
+    height: 170px;
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 1rem;
+    padding: 1rem;
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.you-item-card:hover,
+.you-create-tile:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 .5rem 1rem rgba(0,0,0,.1);
+}

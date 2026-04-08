@@ -6,9 +6,12 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
+import edu.arizona.videoshare.exception.ForbiddenException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
@@ -88,11 +91,38 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handles authorization failures.
+     * Returns HTTP 403 Forbidden.
+     */
+    @ExceptionHandler(ForbiddenException.class)
+    ResponseEntity<ApiError> handleForbidden(ForbiddenException ex) {
+        ApiError body = new ApiError(
+                HttpStatus.FORBIDDEN.value(),
+                "Forbidden",
+                ex.getMessage(),
+                List.of()
+            );
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
+    }
+
+    /**
      * Formats validation error messages.
      */
     private String prettyMessage(FieldError fe) {
         return fe.getDefaultMessage() != null
                 ? fe.getDefaultMessage()
                 : "Invalid value";
+    }
+
+
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public String handleMaxUploadSizeExceeded(
+            MaxUploadSizeExceededException ex,
+            RedirectAttributes redirectAttributes
+    ) {
+        redirectAttributes.addFlashAttribute("errorMessage", "Avatar image must be smaller than 5MB.");
+        redirectAttributes.addFlashAttribute("openCreateChannelModal", true);
+        return "redirect:/you";
     }
 }

@@ -1,0 +1,115 @@
+.settings-page {
+    background: #0f0f0f;
+    min-height: calc(100vh - 56px);
+}
+
+.settings-layout {
+    min-height: calc(100vh - 56px);
+}
+
+.settings-sidebar-column {
+    background: linear-gradient(to bottom, #181818, #1d1f23);
+    min-height: calc(100vh - 56px);
+}
+
+.settings-content-column {
+    background: #f5f7fa;
+    min-height: calc(100vh - 56px);
+}
+
+.settings-sidebar {
+    min-height: calc(100vh - 56px);
+}
+
+.settings-sidebar .form-control {
+    background-color: #000;
+    color: #fff;
+    border: 1px solid #2f2f2f;
+}
+
+.settings-sidebar .form-control:focus {
+    background-color: #000;
+    color: #fff;
+    border-color: #3b82f6;
+    box-shadow: none;
+}
+
+.settings-nav-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 14px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.settings-item-btn:hover {
+    background: #f9fafb;
+}
+
+.settings-item-btn:last-child {
+    border-bottom: none;
+}
+
+.settings-nav-link.active {
+    background: #1f6feb;
+    color: #fff;
+}
+
+.settings-card-list {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.settings-item-btn {
+    width: 100%;
+    background: #ffffff;
+    color: #111827;
+    border: none;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 20px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    text-align: left;
+    transition: background-color 0.2s ease;
+}
+
+.settings-item-btn:hover {
+    background: #ffffff;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+    transform: translateY(-1px);
+}
+
+.settings-item-btn .bi-chevron-right {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.settings-item-btn .text-start {
+    min-width: 0;
+}
+
+.settings-item-btn .fw-semibold {
+    font-size: 1.1rem;
+    margin-bottom: 2px;
+}
+
+.settings-item-btn .text-secondary {
+    color: #6b7280 !important;
+    line-height: 1.45;
+}
+
+.settings-content-column .card {
+    background: #ffffff;
+}
+
+.settings-content-column .form-control[readonly] {
+    background-color: #f8f9fa;
+    color: #6c757d;
+}

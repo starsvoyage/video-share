@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout('VideoShare | ' + ${video.title}, ~{::content}, true, true)}">
+
+<th:block th:fragment="content">
+    <div class="container py-4">
+        <div class="row g-4">
+            <!-- Main Video Area -->
+            <div class="col-lg-8">
+                <div class="bg-dark rounded-4 shadow-sm overflow-hidden d-flex align-items-center justify-content-center"
+                     style="aspect-ratio: 16 / 9; width: 100%; max-height: 480px;">
+                    <video id="videoPlayer"
+                           th:if="${video.mediaUrl != null and !#strings.isEmpty(video.mediaUrl)}"
+                           class="w-100 h-100"
+                           controls
+                           preload="metadata"
+                           style="object-fit: contain; background-color: #000;"
+                           th:src="@{${video.mediaUrl}}">
+                        Your browser does not support the video tag.
+                    </video>
+                    <div th:if="${video.mediaUrl == null or #strings.isEmpty(video.mediaUrl)}"
+                         class="text-white text-center">
+                        <i class="bi bi-play-btn-fill" style="font-size: 4rem;"></i>
+                        <div class="mt-3 fs-5 fw-semibold">No playable video found</div>
+                        <div class="text-white-50 small">Upload a video file to enable playback.</div>
+                    </div>
+                </div>
+
+                <!-- Video Details -->
+                <div class="mt-4">
+                    <h1 class="h3 fw-bold mb-3" th:text="${video.title}">Video Title</h1>
+
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 border-bottom pb-3 mb-4">
+                        <div>
+                            <div class="fw-semibold">
+                                <a th:href="@{/{username}/channel/{channelName}(username=${video.channel.user.username}, channelName=${video.channel.name})}"
+                                   class="text-decoration-none text-dark"
+                                   th:text="${video.channel.name}">
+                                    Channel Name
+                                </a>
+                            </div>
+
+                            <div class="text-muted small">
+                                by <span th:text="${video.owner != null ? video.owner.displayName : video.channel.user.displayName}">Creator Name</span>
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center gap-2">
+                            <div th:if="${loggedInUserId != null}" class="btn-group" role="group">
+                                <button type="button" class="btn btn-outline-dark rounded-pill rounded-end px-3" id="likeBtn" onclick="react('LIKE')">
+                                    <i class="bi bi-hand-thumbs-up me-1"></i><span id="likeCount">0</span>
+                                </button>
+                                <button type="button" class="btn btn-outline-dark rounded-pill rounded-start px-3" id="dislikeBtn" onclick="react('DISLIKE')">
+                                    <i class="bi bi-hand-thumbs-down me-1"></i><span id="dislikeCount">0</span>
+                                </button>
+                            </div>
+
+                            <div th:if="${loggedInUserId == null}" class="text-muted small">
+                                <i class="bi bi-hand-thumbs-up me-1"></i><span id="likeCountAnon">0</span>
+                                <i class="bi bi-hand-thumbs-down ms-2 me-1"></i><span id="dislikeCountAnon">0</span>
+                            </div>
+
+                            <div class="text-muted small ms-2">
+                                <span th:if="${video.createdAt != null}"
+                                      th:text="'Uploaded ' + ${#temporals.format(video.createdAt, 'MMM d, yyyy')}">
+                                    Uploaded date
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                                <!-- Add to Playlist -->
+                <div class="mb-4" th:if="${loggedInUserId != null}">
+                    <button type="button"
+                            class="btn btn-outline-dark rounded-pill px-4"
+                            data-bs-toggle="modal"
+                            data-bs-target="#addToPlaylistModal">
+                        <i class="bi bi-collection-play me-2"></i>Add to Playlist
+                    </button>
+
+                    <div id="playlistAddMessage" class="small mt-2"></div>
+                </div>
+
+                <div class="mb-4 text-muted small" th:if="${loggedInUserId == null}">
+                    Please log in to save this video to a playlist.
+                </div>
+
+                <!-- Comments Section -->
+                <div class="mt-4">
+                    <h5 class="mb-3" id="commentHeader">Comments</h5>
+
+                    <div th:if="${loggedInUserId != null}">
+                        <textarea
+                                id="commentInput"
+                                class="form-control"
+                                rows="3"
+                                placeholder="Add a comment..."></textarea>
+
+                        <button
+                                id="submitComment"
+                                class="btn btn-dark mt-2">
+                            Post Comment
+                        </button>
+
+                        <div id="commentMessage" class="mt-2 small"></div>
+                    </div>
+
+                    <div th:if="${loggedInUserId == null}" class="text-muted">
+                        Please log in to comment.
+                    </div>
+
+                    <div id="commentsList" class="mt-4"></div>
+                </div>
+            </div>
+
+            <!-- Side Panel -->
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm rounded-4">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">Video Details</h5>
+
+                        <div class="mb-3">
+                            <div class="text-muted small">Title</div>
+                            <div class="fw-semibold" th:text="${video.title}">Video Title</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="text-muted small">Channel</div>
+                            <div>
+                                <a th:href="@{/{username}/channel/{channelName}(username=${video.channel.user.username}, channelName=${video.channel.name})}"
+                                   class="text-decoration-none"
+                                   th:text="${video.channel.name}">
+                                    Channel Name
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="text-muted small">Creator</div>
+                            <div th:text="${video.owner != null ? video.owner.displayName : video.channel.user.displayName}">
+                                Creator Name
+                            </div>
+                        </div>
+                        <div class="mb-3">
+    <div class="text-muted small">Playback Status</div>
+
+    <div th:if="${video.mediaUrl != null and !#strings.isEmpty(video.mediaUrl)}"
+         class="text-success small fw-semibold">
+        This video is ready to play.
+    </div>
+
+    <div th:if="${video.mediaUrl == null or #strings.isEmpty(video.mediaUrl)}"
+         class="text-muted small">
+        This video does not have an uploaded media file yet.
+    </div>
+</div>
+
+                        <div>
+                            <div class="text-muted small">Created</div>
+                            <div th:if="${video.createdAt != null}"
+                                 th:text="${#temporals.format(video.createdAt, 'MMM d, yyyy h:mm a')}">
+                                Date
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+        <!-- Add to Playlist Modal -->
+    <div class="modal fade" id="addToPlaylistModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 rounded-4 shadow-lg">
+
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-semibold">Add to Playlist</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body pt-2">
+                    <div th:if="${playlists == null or #lists.isEmpty(playlists)}" class="text-muted small">
+                        You do not have any playlists yet. Create one first.
+                    </div>
+
+                    <div th:if="${playlists != null and !#lists.isEmpty(playlists)}" class="list-group">
+                        <button type="button"
+                                class="list-group-item list-group-item-action rounded-3 mb-2 add-to-playlist-btn"
+                                th:each="playlist : ${playlists}"
+                                th:attr="data-playlist-id=${playlist.id}"
+                                th:text="${playlist.name}">
+                            Playlist Name
+                        </button>
+                    </div>
+                </div>
+
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button"
+                            class="btn btn-outline-secondary rounded-pill px-4"
+                            data-bs-dismiss="modal">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        document.addEventListener("DOMContentLoaded", function () {
+            const videoId = /*[[${video.id}]]*/ 0;
+            const userId  = /*[[${loggedInUserId}]]*/ null;
+
+            const commentsList = document.getElementById("commentsList");
+            const commentHeader = document.getElementById("commentHeader");
+            const playlistAddMessage = document.getElementById("playlistAddMessage");
+
+           loadComments();
+
+const videoPlayer = document.getElementById("videoPlayer");
+let viewEventId = null;
+let maxSecondsWatched = 0;
+
+if (userId && videoPlayer) {
+    // create view event
+    fetch('/api/views', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: userId, videoId: videoId })
+    })
+    .then(res => {
+        if (!res.ok) throw new Error();
+        return res.json();
+    })
+    .then(data => {
+        viewEventId = data.id;
+    })
+    .catch(() => {});
+
+    // track watch time
+    videoPlayer.addEventListener("timeupdate", function () {
+        const seconds = Math.floor(videoPlayer.currentTime);
+        if (seconds > maxSecondsWatched) {
+            maxSecondsWatched = seconds;
+        }
+    });
+
+    // send to backend
+    function sendWatchDuration() {
+        if (!viewEventId) return;
+
+        fetch(`/api/views/${viewEventId}/duration`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ watchDuration: maxSecondsWatched })
+        }).catch(() => {});
+    }
+
+    videoPlayer.addEventListener("pause", sendWatchDuration);
+    videoPlayer.addEventListener("ended", sendWatchDuration);
+    window.addEventListener("beforeunload", sendWatchDuration);
+}
+
+            // Reactions
+            loadReactions();
+
+            async function loadReactions() {
+                try {
+                    const res = await fetch(`/api/videos/${videoId}/reactions/count`);
+                    if (!res.ok) return;
+                    const data = await res.json();
+                    const likeEl = document.getElementById('likeCount') || document.getElementById('likeCountAnon');
+                    const dislikeEl = document.getElementById('dislikeCount') || document.getElementById('dislikeCountAnon');
+                    if (likeEl) likeEl.textContent = data.likes;
+                    if (dislikeEl) dislikeEl.textContent = data.dislikes;
+                } catch (e) {}
+            }
+
+            window.react = async function(type) {
+                if (!userId) return;
+                try {
+                    const res = await fetch(`/api/videos/${videoId}/reactions`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userId: userId, type: type })
+                    });
+                    if (!res.ok) throw new Error();
+                    loadReactions();
+                } catch (e) {}
+            };
+
+            const submitBtn = document.getElementById("submitComment");
+            if (submitBtn) {
+                submitBtn.addEventListener("click", async function () {
+                    const input = document.getElementById("commentInput");
+                    const msgBox = document.getElementById("commentMessage");
+                    const content = input.value.trim();
+
+                    msgBox.textContent = "";
+                    msgBox.className = "mt-2 small";
+
+                    if (!content) {
+                        msgBox.classList.add("text-danger");
+                        msgBox.textContent = "Comment cannot be empty.";
+                        return;
+                    }
+
+                    try {
+                        const res = await fetch(`/api/videos/${videoId}/comments`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ userId: userId, content: content, parentId: null })
+                        });
+                        if (!res.ok) throw new Error("Failed to post comment");
+                        input.value = "";
+                        msgBox.classList.add("text-success");
+                        msgBox.textContent = "Comment posted!";
+                        loadComments();
+                    } catch (e) {
+                        msgBox.classList.add("text-danger");
+                        msgBox.textContent = "Could not post comment.";
+                    }
+                });
+            }
+
+            async function loadComments() {
+    try {
+        const res = await fetch(`/api/videos/${videoId}/comments`);
+        if (!res.ok) throw new Error();
+
+        const comments = await res.json();
+
+        for (const c of comments) {
+            try {
+                const countRes = await fetch(`/api/comments/${c.id}/reactions/count`);
+                if (countRes.ok) {
+                    const counts = await countRes.json();
+                    c.likes = counts.likes;
+                    c.dislikes = counts.dislikes;
+                } else {
+                    c.likes = 0;
+                    c.dislikes = 0;
+                }
+            } catch {
+                c.likes = 0;
+                c.dislikes = 0;
+            }
+        }
+
+        commentHeader.textContent = `Comments (${comments.length})`;
+        renderComments(comments);
+
+    } catch (e) {
+        commentsList.innerHTML = '<p class="text-muted">Could not load comments.</p>';
+    }
+}
+
+            function renderComments(comments) {
+                if (comments.length === 0) {
+                    commentsList.innerHTML = '<p class="text-muted mt-3">No comments yet. Be the first!</p>';
+                    return;
+                }
+
+                commentsList.innerHTML = comments.map(c => `
+                    <div class="border rounded-3 p-3 mb-3" id="comment-${c.id}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <span class="fw-semibold">${escHtml(c.displayName || c.username)}</span>
+                                <span class="text-muted small ms-2">${formatDate(c.createdAt)}</span>
+                            </div>
+                        </div>
+                        <div class="mt-2">${c.status === 'REMOVED' ? '<span class="text-muted fst-italic">[Removed]</span>' : escHtml(c.content)}</div>
+
+                        <div class="mt-2 d-flex align-items-center gap-3">
+                       ${userId && c.status !== 'REMOVED'
+    ? `<button class="btn btn-sm btn-link text-decoration-none p-0 react-comment-btn"
+               data-comment-id="${c.id}"
+               data-type="LIKE">
+           <i class="bi bi-hand-thumbs-up me-1"></i>Like (${c.likes ?? 0})
+       </button>
+       <button class="btn btn-sm btn-link text-decoration-none p-0 react-comment-btn"
+               data-comment-id="${c.id}"
+               data-type="DISLIKE">
+           <i class="bi bi-hand-thumbs-down me-1"></i>Dislike (${c.dislikes ?? 0})
+       </button>`
+    : ''}
+                            ${c.replyCount > 0
+                                ? `<button class="btn btn-sm btn-link text-decoration-none p-0 toggle-replies-btn"
+                                           data-comment-id="${c.id}"
+                                           data-loaded="false">
+                                       <i class="bi bi-chat-dots me-1"></i>${c.replyCount} ${c.replyCount === 1 ? 'reply' : 'replies'}
+                                   </button>`
+                                : ''}
+                            ${userId && c.status !== 'REMOVED'
+                                ? `<button class="btn btn-sm btn-link text-decoration-none p-0 show-reply-form-btn"
+                                           data-comment-id="${c.id}">
+                                       <i class="bi bi-reply me-1"></i>Reply
+                                   </button>`
+                                : ''}
+                            ${userId && c.userId === userId && c.status !== 'REMOVED'
+                                ? `<button class="btn btn-sm btn-link text-decoration-none p-0 edit-comment-btn"
+                                            data-comment-id="${c.id}"
+                                            data-content="${escHtml(c.content)}">
+                                        <i class="bi bi-pencil me-1"></i>Edit
+                                    </button>
+                                    <button class="btn btn-sm btn-link text-decoration-none text-danger p-0 delete-comment-btn"
+                                            data-comment-id="${c.id}">
+                                        <i class="bi bi-trash me-1"></i>Delete
+                                    </button>`
+                                    : ''}
+                        </div>
+
+                        <!-- reply form placeholder -->
+                        <div id="reply-form-${c.id}" class="mt-2 d-none">
+                            <textarea class="form-control form-control-sm" rows="2"
+                                      placeholder="Write a reply..." id="reply-input-${c.id}"></textarea>
+                            <div class="mt-1">
+                                <button class="btn btn-sm btn-dark post-reply-btn" data-comment-id="${c.id}">Post Reply</button>
+                                <button class="btn btn-sm btn-outline-secondary ms-1 cancel-reply-btn" data-comment-id="${c.id}">Cancel</button>
+                            </div>
+                            <div id="reply-msg-${c.id}" class="mt-1 small"></div>
+                        </div>
+
+                        <!-- replies container -->
+                        <div id="replies-${c.id}" class="ms-4 mt-2"></div>
+                    </div>
+                `).join('');
+
+                attachCommentEventListeners();
+            }
+
+            function attachCommentEventListeners() {
+                document.querySelectorAll(".react-comment-btn").forEach(btn => {
+    btn.addEventListener("click", async function () {
+        const cid = this.dataset.commentId;
+        const type = this.dataset.type;
+
+        try {
+            const res = await fetch(`/api/comments/${cid}/reactions`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    userId: userId,
+                    type: type
+                })
+            });
+
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                throw new Error(err.message || "Could not react to comment.");
+            }
+
+            loadComments();
+        } catch (e) {
+            alert(e.message || "Could not react to comment.");
+        }
+    });
+});
+                document.querySelectorAll(".toggle-replies-btn").forEach(btn => {
+                    btn.addEventListener("click", async function () {
+                        const cid = this.dataset.commentId;
+                        const container = document.getElementById(`replies-${cid}`);
+
+                        if (container.classList.contains("d-none") && this.dataset.loaded === "true") {
+                            container.classList.remove("d-none");
+                            return;
+                        }
+                        if (!container.classList.contains("d-none") && this.dataset.loaded === "true") {
+                            container.classList.add("d-none");
+                            return;
+                        }
+
+                        try {
+                            const res = await fetch(`/api/videos/${videoId}/comments/${cid}/replies`);
+                            if (!res.ok) throw new Error();
+                            const replies = await res.json();
+                            container.innerHTML = replies.map(r => `
+                                <div class="border-start ps-3 py-2 mb-1">
+                                    <span class="fw-semibold small">${escHtml(r.displayName || r.username)}</span>
+                                    <span class="text-muted small ms-2">${formatDate(r.createdAt)}</span>
+                                    <div class="small mt-1">${escHtml(r.content)}</div>
+                                </div>
+                            `).join('');
+                            container.classList.remove("d-none");
+                            this.dataset.loaded = "true";
+                        } catch (e) {
+                            container.innerHTML = '<p class="text-danger small">Could not load replies.</p>';
+                            container.classList.remove("d-none");
+                        }
+                    });
+                });
+
+                document.querySelectorAll(".show-reply-form-btn").forEach(btn => {
+                    btn.addEventListener("click", function () {
+                        const cid = this.dataset.commentId;
+                        document.getElementById(`reply-form-${cid}`).classList.remove("d-none");
+                    });
+                });
+
+                document.querySelectorAll(".cancel-reply-btn").forEach(btn => {
+                    btn.addEventListener("click", function () {
+                        const cid = this.dataset.commentId;
+                        document.getElementById(`reply-form-${cid}`).classList.add("d-none");
+                        document.getElementById(`reply-input-${cid}`).value = "";
+                    });
+                });
+
+                document.querySelectorAll(".post-reply-btn").forEach(btn => {
+                    btn.addEventListener("click", async function () {
+                        const cid = this.dataset.commentId;
+                        const input = document.getElementById(`reply-input-${cid}`);
+                        const msgBox = document.getElementById(`reply-msg-${cid}`);
+                        const content = input.value.trim();
+
+                        msgBox.textContent = "";
+                        msgBox.className = "mt-1 small";
+
+                        if (!content) {
+                            msgBox.classList.add("text-danger");
+                            msgBox.textContent = "Reply cannot be empty.";
+                            return;
+                        }
+
+                        try {
+                            const res = await fetch(`/api/videos/${videoId}/comments`, {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ userId: userId, content: content, parentId: parseInt(cid) })
+                            });
+                            if (!res.ok) {
+                                const err = await res.json();
+                                throw new Error(err.message || "Failed");
+                            }
+                            input.value = "";
+                            document.getElementById(`reply-form-${cid}`).classList.add("d-none");
+                            loadComments();
+                        } catch (e) {
+                            msgBox.classList.add("text-danger");
+                            msgBox.textContent = e.message || "Could not post reply.";
+                        }
+                    });
+                });
+
+                document.querySelectorAll(".edit-comment-btn").forEach(btn => {
+                    btn.addEventListener("click", function () {
+                        const commentDiv = document.getElementById(`comment-${this.dataset.commentId}`);
+                        const contentDiv = commentDiv.querySelector(".mt-2");
+                        const originalContent = this.dataset.content;
+                        const cid = this.dataset.commentId;
+
+                        contentDiv.innerHTML = `
+                            <textarea class="form-control form-control-sm" rows="2" id="edit-input-${cid}">${originalContent}</textarea>
+                            <div class="mt-2">
+                                <button class="btn btn-sm btn-dark save-edit-btn" data-comment-id="${cid}">Save</button>
+                                <button class="btn btn-sm btn-outline-secondary ms-1 cancel-edit-btn" data-comment-id="${cid}">Cancel</button>
+                            </div>
+                            <div id="edit-msg-${cid}" class="mt-1 small"></div>
+                        `;
+
+                        document.querySelector(`.save-edit-btn[data-comment-id="${cid}"]`).addEventListener("click", async function () {
+                            const newContent = document.getElementById(`edit-input-${cid}`).value.trim();
+                            const msgBox = document.getElementById(`edit-msg-${cid}`);
+
+                            if (!newContent) {
+                                msgBox.classList.add("text-danger");
+                                msgBox.textContent = "Comment cannot be empty.";
+                                return;
+                            }
+
+                            try {
+                                const res = await fetch(`/api/videos/${videoId}/comments/${cid}?userId=${userId}`, {
+                                    method: "PATCH",
+                                    headers: { "Content-Type": "text/plain" },
+                                    body: newContent
+                                });
+                                if (res.ok) {
+                                    loadComments();
+                                } else {
+                                    msgBox.classList.add("text-danger");
+                                    msgBox.textContent = "Failed to edit comment";
+                                }
+                            } catch (e) {
+                                msgBox.classList.add("text-danger");
+                                msgBox.textContent = "Error editing comment";
+                            }
+                        });
+
+                        document.querySelector(`.cancel-edit-btn[data-comment-id="${cid}"]`).addEventListener("click", function () {
+                            loadComments();
+                        });
+                    });
+                });
+
+                document.querySelectorAll(".delete-comment-btn").forEach(btn => {
+                    btn.addEventListener("click", async function () {
+                        if (!confirm("Delete this comment?")) return;
+                        const cid = this.dataset.commentId;
+                        try {
+                            const res = await fetch(`/api/videos/${videoId}/comments/${cid}?userId=${userId}&isModerator=false`, {
+                                method: 'DELETE'
+                            });
+                            if (!res.ok) throw new Error();
+                            loadComments();
+                        } catch (e) {}
+                    });
+                });
+            }
+
+                        document.querySelectorAll(".add-to-playlist-btn").forEach(btn => {
+                btn.addEventListener("click", async function () {
+                    const playlistId = this.dataset.playlistId;
+
+                    if (playlistAddMessage) {
+                        playlistAddMessage.textContent = "";
+                        playlistAddMessage.className = "small mt-2";
+                    }
+
+                    try {
+                        const res = await fetch(`/api/playlists/${playlistId}/videos`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ videoId: videoId })
+                        });
+
+                        if (!res.ok) {
+                            const err = await res.json().catch(() => null);
+                            throw new Error(err?.message || "Could not add video to playlist.");
+                        }
+
+                        if (playlistAddMessage) {
+                            playlistAddMessage.classList.add("text-success");
+                            playlistAddMessage.textContent = "Video added to playlist.";
+                        }
+
+                        const modalEl = document.getElementById("addToPlaylistModal");
+                        const modal = bootstrap.Modal.getInstance(modalEl);
+                        if (modal) modal.hide();
+
+                    } catch (e) {
+                        if (playlistAddMessage) {
+                            playlistAddMessage.classList.add("text-danger");
+                            playlistAddMessage.textContent = e.message || "Could not add video to playlist.";
+                        }
+                    }
+                });
+            });
+            
+            function escHtml(str) {
+                const d = document.createElement("div");
+                d.textContent = str || "";
+                return d.innerHTML;
+            }
+
+            function formatDate(iso) {
+                if (!iso) return "";
+                const d = new Date(iso);
+                return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+            }
+        });
+    </script>
+</th:block>
+</html>

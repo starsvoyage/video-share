@@ -1,0 +1,27 @@
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+.login-page {
+    min-height: 100vh;
+    background-color: #212529;
+    padding: 5rem 1rem 2rem;
+}
+
+.login-input {
+    background-color: transparent;
+    color: #fff;
+    border-color: rgba(255,255,255,0.2);
+}
+
+.login-input::placeholder {
+    color: rgba(255,255,255,0.45);
+}
+
+.login-input:focus {
+    background-color: transparent;
+    color: #fff;
+    border-color: rgba(255,255,255,0.35);
+    box-shadow: none;
+}

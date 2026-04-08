@@ -1,0 +1,138 @@
+<!--
+    verify-account.html (View Layer - Thymeleaf Template)
+
+    Displays the account verification page after registration.
+    Shows the email address and allows the user to enter the
+    6-digit verification code immediately.
+-->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout('VideoShare | Verify Account', ~{::content}, false, false)}">
+
+<th:block th:fragment="content">
+    <div class="login-page d-flex align-items-start justify-content-center">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-11 col-sm-9 col-md-7 col-lg-5 col-xl-4">
+
+                    <!-- Page title / branding -->
+                    <div class="text-center mb-4">
+                        <img th:src="@{/images/vs-logo.svg}"
+                             alt="VideoShare"
+                             height="64"
+                             style="margin-bottom:16px;">
+                        <h1 class="h2 fw-bold text-white">Verify your VideoShare account</h1>
+                        <p class="text-white-50 mb-1">We sent a 6-digit verification code to:</p>
+                        <p class="text-white fw-semibold mb-0" th:text="${email}">user@example.com</p>
+                        <p class="text-white-50 mb-1">Please check your inbox and enter the verification code below to verify your email address. The code will expire in 24 hours.</p>
+                    </div>
+
+                    <!-- Verification form -->
+                    <form th:action="@{/verify/account}" th:object="${verifyCodeForm}" method="post" novalidate id="verification-form">
+
+                        <!-- Hidden real field bound to form -->
+                        <input type="hidden" th:field="*{code}" id="full_code">
+
+                        <!-- Success message -->
+                        <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+
+                        <!-- Global errors -->
+                        <div th:if="${#fields.hasGlobalErrors()}" class="alert alert-danger">
+                            <div th:each="err : ${#fields.globalErrors()}" th:text="${err}"></div>
+                        </div>
+
+                        <!-- 6-digit code boxes -->
+                        <div class="mb-3">
+                            <label class="form-label text-white fw-semibold">Verification code</label>
+
+                            <div class="d-flex justify-content-between gap-2">
+                                <input type="text" maxlength="1" class="form-control form-control-lg login-input text-center code-input" inputmode="numeric" autocomplete="one-time-code">
+                                <input type="text" maxlength="1" class="form-control form-control-lg login-input text-center code-input" inputmode="numeric">
+                                <input type="text" maxlength="1" class="form-control form-control-lg login-input text-center code-input" inputmode="numeric">
+                                <input type="text" maxlength="1" class="form-control form-control-lg login-input text-center code-input" inputmode="numeric">
+                                <input type="text" maxlength="1" class="form-control form-control-lg login-input text-center code-input" inputmode="numeric">
+                                <input type="text" maxlength="1" class="form-control form-control-lg login-input text-center code-input" inputmode="numeric">
+                            </div>
+
+                            <!-- Field validation errors -->
+                            <div class="text-danger small mt-2"
+                                 th:if="${#fields.hasErrors('code')}"
+                                 th:errors="*{code}"></div>
+                        </div>
+
+                        <!-- Submit button -->
+                        <button type="submit" class="btn btn-success btn-lg w-100 fw-semibold">
+                            Verify account
+                        </button>
+                    </form>
+
+                    <!-- Resend / login links -->
+                    <div class="text-center mt-4">
+                        <form th:action="@{/verify/resend}" method="post" class="d-inline">
+                            <input type="hidden" name="email" th:value="${email}">
+                            <button type="submit" class="btn btn-link text-decoration-none p-0 align-baseline">
+                                Resend code
+                            </button>
+                        </form>
+                        <span class="text-white-50 mx-2">•</span>
+                        <a th:href="@{/login}" class="text-decoration-none">Back to sign in</a>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const inputs = document.querySelectorAll(".code-input");
+            const hiddenInput = document.getElementById("full_code");
+            const form = document.getElementById("verification-form");
+
+            function updateHiddenCode() {
+                let code = "";
+                inputs.forEach(input => code += input.value);
+                hiddenInput.value = code;
+            }
+
+            inputs.forEach((input, index) => {
+                input.addEventListener("input", (e) => {
+                    e.target.value = e.target.value.replace(/[^0-9]/g, "").slice(0, 1);
+                    updateHiddenCode();
+
+                    if (e.target.value.length === 1 && index < inputs.length - 1) {
+                        inputs[index + 1].focus();
+                    }
+                });
+
+                input.addEventListener("keydown", (e) => {
+                    if (e.key === "Backspace" && !input.value && index > 0) {
+                        inputs[index - 1].focus();
+                    }
+                });
+
+                input.addEventListener("paste", (e) => {
+                    const pasted = (e.clipboardData || window.clipboardData).getData("text");
+                    const digits = pasted.replace(/[^0-9]/g, "").slice(0, 6);
+
+                    if (digits.length > 0) {
+                        e.preventDefault();
+                        inputs.forEach((box, i) => {
+                            box.value = digits[i] || "";
+                        });
+                        updateHiddenCode();
+
+                        const nextIndex = Math.min(digits.length, 5);
+                        inputs[nextIndex].focus();
+                    }
+                });
+            });
+
+            form.addEventListener("submit", function () {
+                updateHiddenCode();
+            });
+        });
+    </script>
+</th:block>
+
+</html>

@@ -1,0 +1,130 @@
+/* Layout wrapper */
+.app-shell {
+    display: flex;
+    min-height: calc(100vh - 56px);
+}
+
+/* Sidebar */
+.sidebar {
+    width: 240px;
+    min-width: 240px;
+    transition: width 0.25s ease;
+    overflow-x: hidden;
+    min-height: calc(100vh - 56px);
+    padding-left: 12px;
+    padding-right: 12px;
+}
+
+/* Collapsed sidebar */
+.sidebar.collapsed {
+    width: 72px;
+    min-width: 72px;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.sidebar-link,
+.sidebar-channel {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 44px;
+    padding-left: 8px;
+    padding-right: 8px;
+}
+
+/* Icons */
+.sidebar-icon {
+    width: 36px;
+    min-width: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+/* Channel avatar */
+.sidebar-avatar {
+    width: 36px;
+    height: 36px;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+/* Sidebar labels */
+.sidebar-text {
+    white-space: nowrap;
+    opacity: 1;
+    transition: opacity 0.15s ease;
+}
+
+/* Hide text when collapsed */
+.sidebar.collapsed .sidebar-text {
+    opacity: 0;
+    display: none;
+}
+
+/* Center items when collapsed */
+.sidebar.collapsed .sidebar-link,
+.sidebar.collapsed .sidebar-channel {
+    justify-content: center;
+    gap: 0;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.sidebar.collapsed hr {
+    margin-left: 8px;
+    margin-right: 8px;
+}
+
+/* Page content area */
+.page-content {
+    flex-grow: 1;
+    min-width: 0;
+}
+
+/* Hover effect */
+.sidebar .nav-link:hover {
+    background-color: rgba(255,255,255,0.08);
+    border-radius: 10px;
+}
+
+/* top navbar toggle button */
+.sidebar-toggle-btn {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: white;
+    border-radius: 10px;
+    line-height: 1;
+}
+
+.sidebar-toggle-btn:hover,
+.sidebar-toggle-btn:focus,
+.sidebar-toggle-btn.active {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: white;
+}
+
+#sidebarToggleIcon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    font-size: 22px;
+    line-height: 1;
+}
+
+.navbar-brand {
+    margin-left: 0;
+}
