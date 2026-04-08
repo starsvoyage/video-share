@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import edu.arizona.videoshare.model.entity.ViewEvent;
 import edu.arizona.videoshare.repository.ViewEventRepository;
 import lombok.RequiredArgsConstructor;
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -26,17 +27,23 @@ public class ViewEventService {
 
     @Transactional
     public CreateViewEventResponse createViewEvent(CreateViewEventRequest request) {
-        User user = userRepository.findById(request.getUserId()).orElseThrow(() ->
-                new NotFoundException("User not found: " + request.getUserId()));
+        User user = userRepository.findById(request.getUserId())
+                .orElseThrow(() -> new NotFoundException("User not found: " + request.getUserId()));
 
-        Video video = videoRepository.findById(request.getVideoId()).orElseThrow(() ->
-                new NotFoundException("Video not found: " + request.getVideoId()));
+        Video video = videoRepository.findById(request.getVideoId())
+                .orElseThrow(() -> new NotFoundException("Video not found: " + request.getVideoId()));
 
-        ViewEvent viewEvent = new ViewEvent();
-        viewEvent.setUser(user);
-        viewEvent.setVideo(video);
-        viewEvent.setWatchDuration(0);
-        viewEvent.setCompleted(false);
+        ViewEvent viewEvent = viewEventRepository.findByUserIdAndVideoId(user.getId(), video.getId())
+                .orElseGet(() -> {
+                    ViewEvent newViewEvent = new ViewEvent();
+                    newViewEvent.setUser(user);
+                    newViewEvent.setVideo(video);
+                    newViewEvent.setWatchDuration(0);
+                    newViewEvent.setCompleted(false);
+                    return newViewEvent;
+                });
+
+        viewEvent.setWatchedAt(LocalDateTime.now());
 
         ViewEvent saved = viewEventRepository.save(viewEvent);
 
@@ -45,8 +52,8 @@ public class ViewEventService {
 
     @Transactional
     public ViewEventResponse updateWatchDuration(Long viewEventId, int watchDuration) {
-        ViewEvent viewEvent = viewEventRepository.findById(viewEventId).orElseThrow(() ->
-                new NotFoundException("ViewEvent not found: " + viewEventId));
+        ViewEvent viewEvent = viewEventRepository.findById(viewEventId)
+                .orElseThrow(() -> new NotFoundException("ViewEvent not found: " + viewEventId));
 
         viewEvent.setWatchDuration(watchDuration);
 
@@ -62,7 +69,7 @@ public class ViewEventService {
 
     @Transactional(readOnly = true)
     public List<ViewEvent> getUserHistory(Long userId) {
-        return viewEventRepository.findByUserId(userId);
+        return viewEventRepository.findByUserIdOrderByWatchedAtDesc(userId);
     }
 
     @Transactional(readOnly = true)

@@ -71,8 +71,7 @@ public class AuthController {
 
             redirectAttributes.addFlashAttribute(
                     "successMessage",
-                    "Account created successfully."
-            );
+                    "Account created successfully.");
             return "redirect:/login";
 
         } catch (ConflictException ex) {
@@ -146,8 +145,7 @@ public class AuthController {
      * Returns the application home page.
      */
     @GetMapping("/")
-    public String home(Model model) {
-        model.addAttribute("videos", videoService.getAllPublic());
+    public String home() {
         return "home";
     }
 

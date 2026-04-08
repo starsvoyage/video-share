@@ -4,43 +4,99 @@
 
 <th:block th:fragment="content">
     <div class="container py-5">
-
         <section>
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2 class="h4 mb-0">Recent Videos</h2>
             </div>
 
-            <div th:if="${videos == null or #lists.isEmpty(videos)}" class="text-muted">
+            <!-- Loading indicator -->
+            <div id="videosLoading" class="text-center py-5">
+                <div class="spinner-border text-dark" role="status"></div>
+                <div class="mt-3 text-muted">Loading videos...</div>
+            </div>
+
+            <!-- Error message -->
+            <div id="videosError" class="text-danger d-none">
+                Could not load videos.
+            </div>
+
+            <!-- Empty state -->
+            <div id="videosEmpty" class="text-muted d-none">
                 No videos available yet.
             </div>
 
-            <div th:if="${videos != null and !#lists.isEmpty(videos)}" class="row g-4">
-                <div class="col-12 col-md-6 col-lg-4" th:each="video : ${videos}">
-                    <a th:href="@{'/videos/' + ${video.id}}"
-                       class="text-decoration-none text-dark">
-                        <div class="card h-100 border-0 shadow-sm rounded-4">
-                            <div class="bg-dark text-white d-flex align-items-center justify-content-center rounded-top-4"
-                                 style="height: 180px;">
-                                <i class="bi bi-play-btn fs-1"></i>
-                            </div>
-
-                            <div class="card-body">
-                                <h5 class="card-title mb-2" th:text="${video.title}">Video Title</h5>
-
-                                <div class="text-muted small mb-1">
-                                    <span th:text="${video.channel != null ? video.channel.name : 'Unknown Channel'}">Channel Name</span>
-                                </div>
-
-                                <div class="text-muted small" th:if="${video.createdAt != null}"
-                                     th:text="'Uploaded ' + ${#temporals.format(video.createdAt, 'MMM d, yyyy')}">
-                                    Uploaded date
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-            </div>
+            <!-- Video grid -->
+            <div id="videosGrid" class="row g-4 d-none"></div>
         </section>
     </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", async function () {
+            const videosLoading = document.getElementById("videosLoading");
+            const videosError = document.getElementById("videosError");
+            const videosEmpty = document.getElementById("videosEmpty");
+            const videosGrid = document.getElementById("videosGrid");
+
+            try {
+                const res = await fetch("/api/videos");
+                if (!res.ok) throw new Error("Failed to load videos");
+
+                const videos = await res.json();
+
+                videosLoading.classList.add("d-none");
+
+                if (!videos || videos.length === 0) {
+                    videosEmpty.classList.remove("d-none");
+                    return;
+                }
+
+                videosGrid.innerHTML = videos.map(video => `
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <a href="/videos/${video.id}" class="text-decoration-none text-dark">
+                            <div class="card h-100 border-0 shadow-sm rounded-4">
+                                <div class="bg-dark text-white d-flex align-items-center justify-content-center rounded-top-4"
+                                     style="height: 180px;">
+                                    <i class="bi bi-play-btn fs-1"></i>
+                                </div>
+
+                                <div class="card-body">
+                                    <h5 class="card-title mb-2">${escapeHtml(video.title || "Untitled Video")}</h5>
+
+                                    <div class="text-muted small mb-1">
+                                        ${escapeHtml(video.channel?.name || "Unknown Channel")}
+                                    </div>
+
+                                    <div class="text-muted small">
+                                        ${formatUploadedDate(video.createdAt)}
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                `).join("");
+
+                videosGrid.classList.remove("d-none");
+            } catch (e) {
+                videosLoading.classList.add("d-none");
+                videosError.classList.remove("d-none");
+            }
+
+            function escapeHtml(str) {
+                const div = document.createElement("div");
+                div.textContent = str || "";
+                return div.innerHTML;
+            }
+
+            function formatUploadedDate(iso) {
+                if (!iso) return "";
+                const d = new Date(iso);
+                return `Uploaded ${d.toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric"
+                })}`;
+            }
+        });
+    </script>
 </th:block>
 </html>
