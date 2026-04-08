@@ -366,11 +366,16 @@
                                    </button>`
                                 : ''}
                             ${userId && c.userId === userId && c.status !== 'REMOVED'
-                                ? `<button class="btn btn-sm btn-link text-decoration-none text-danger p-0 delete-comment-btn"
-                                           data-comment-id="${c.id}">
-                                       <i class="bi bi-trash me-1"></i>Delete
-                                   </button>`
-                                : ''}
+                                ? `<button class="btn btn-sm btn-link text-decoration-none p-0 edit-comment-btn"
+                                            data-comment-id="${c.id}"
+                                            data-content="${escHtml(c.content)}">
+                                        <i class="bi bi-pencil me-1"></i>Edit
+                                    </button>
+                                    <button class="btn btn-sm btn-link text-decoration-none text-danger p-0 delete-comment-btn"
+                                            data-comment-id="${c.id}">
+                                        <i class="bi bi-trash me-1"></i>Delete
+                                    </button>`
+                                    : ''}
                         </div>
 
                         <!-- reply form placeholder -->
@@ -504,12 +509,62 @@
                     });
                 });
 
+                document.querySelectorAll(".edit-comment-btn").forEach(btn => {
+                    btn.addEventListener("click", function () {
+                        const commentDiv = document.getElementById(`comment-${this.dataset.commentId}`);
+                        const contentDiv = commentDiv.querySelector(".mt-2");
+                        const originalContent = this.dataset.content;
+                        const cid = this.dataset.commentId;
+
+                        contentDiv.innerHTML = `
+                            <textarea class="form-control form-control-sm" rows="2" id="edit-input-${cid}">${originalContent}</textarea>
+                            <div class="mt-2">
+                                <button class="btn btn-sm btn-dark save-edit-btn" data-comment-id="${cid}">Save</button>
+                                <button class="btn btn-sm btn-outline-secondary ms-1 cancel-edit-btn" data-comment-id="${cid}">Cancel</button>
+                            </div>
+                            <div id="edit-msg-${cid}" class="mt-1 small"></div>
+                        `;
+
+                        document.querySelector(`.save-edit-btn[data-comment-id="${cid}"]`).addEventListener("click", async function () {
+                            const newContent = document.getElementById(`edit-input-${cid}`).value.trim();
+                            const msgBox = document.getElementById(`edit-msg-${cid}`);
+
+                            if (!newContent) {
+                                msgBox.classList.add("text-danger");
+                                msgBox.textContent = "Comment cannot be empty.";
+                                return;
+                            }
+
+                            try {
+                                const res = await fetch(`/api/videos/${videoId}/comments/${cid}?userId=${userId}`, {
+                                    method: "PATCH",
+                                    headers: { "Content-Type": "text/plain" },
+                                    body: newContent
+                                });
+                                if (res.ok) {
+                                    loadComments();
+                                } else {
+                                    msgBox.classList.add("text-danger");
+                                    msgBox.textContent = "Failed to edit comment";
+                                }
+                            } catch (e) {
+                                msgBox.classList.add("text-danger");
+                                msgBox.textContent = "Error editing comment";
+                            }
+                        });
+
+                        document.querySelector(`.cancel-edit-btn[data-comment-id="${cid}"]`).addEventListener("click", function () {
+                            loadComments();
+                        });
+                    });
+                });
+
                 document.querySelectorAll(".delete-comment-btn").forEach(btn => {
                     btn.addEventListener("click", async function () {
                         if (!confirm("Delete this comment?")) return;
                         const cid = this.dataset.commentId;
                         try {
-                            const res = await fetch(`/api/videos/${videoId}/comments/${cid}`, {
+                            const res = await fetch(`/api/videos/${videoId}/comments/${cid}?userId=${userId}&isModerator=false`, {
                                 method: 'DELETE'
                             });
                             if (!res.ok) throw new Error();

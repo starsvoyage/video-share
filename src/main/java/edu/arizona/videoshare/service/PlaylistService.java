@@ -149,4 +149,44 @@ public class PlaylistService {
         }
         playlistVideos.saveAll(remaining);
     }
+
+
+    /**
+     * REORDER a playlist item.
+     */
+    @Transactional
+    public Playlist reorderItem(Long playlistId, Long playlistVideoId, int newPosition) {
+        Playlist playList = playlists.findById(playlistId)
+                .orElseThrow(() -> new NotFoundException("Playlist not found: " + playlistId));
+
+        PlaylistVideo playlistVideo = playlistVideos.findById(playlistVideoId)
+                .orElseThrow(() -> new NotFoundException("PlaylistVideo not found: " + playlistVideoId));
+
+        // Safety check: make sure the item belongs to that playlist
+        if (!playlistVideo.getPlaylist().getId().equals(playlistId)) {
+            throw new ConflictException("That playlist item does not belong to this playlist");
+        }
+
+        int currentPos = playlistVideo.getPosition();
+        newPosition = Math.max(0, Math.min(newPosition, playList.getItems().size() - 1));
+
+        if (currentPos == newPosition) {
+            return playList;
+        }
+
+        // Shift positions of existing items
+        for (PlaylistVideo existing : playList.getItems()) {
+            if (existing.getPosition() >= Math.min(currentPos, newPosition) && existing.getPosition() <= Math.max(currentPos, newPosition)) {
+                if (existing.getPosition() == currentPos) {
+                    existing.setPosition(newPosition);
+                } else {
+                    existing.setPosition(existing.getPosition() + (currentPos < newPosition ? -1 : 1));
+                }
+            }
+        }
+
+        Playlist saved = playlists.save(playList);
+        return playlists.findWithItemsById(saved.getId()).orElse(saved);
+    }
+
 }

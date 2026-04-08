@@ -3,6 +3,7 @@ package edu.arizona.videoshare.service;
 import edu.arizona.videoshare.dto.comment.CommentResponse;
 import edu.arizona.videoshare.dto.comment.CreateCommentResponse;
 import edu.arizona.videoshare.exception.ConflictException;
+import edu.arizona.videoshare.exception.ForbiddenException;
 import edu.arizona.videoshare.exception.NotFoundException;
 import edu.arizona.videoshare.model.entity.*;
 import edu.arizona.videoshare.model.enums.CommentStatus;
@@ -28,11 +29,9 @@ public class CommentService {
         @Transactional
         public CreateCommentResponse addComment(Long videoId, Long userId, String content, Long parentId) {
                 User user = userRepository.findById(userId)
-                                .orElseThrow(() -> new NotFoundException("User not found: " + userId));
-
-                if (!videoRepository.existsById(videoId)) {
-                        throw new NotFoundException("Video not found: " + videoId);
-                }
+                        .orElseThrow(() -> new NotFoundException("User not found: " + userId));
+                Video video = videoRepository.findById(videoId)
+                        .orElseThrow(() -> new NotFoundException("Video not found: " + videoId));
 
                 Comment parent = null;
                 if (parentId != null) {
@@ -73,7 +72,7 @@ public class CommentService {
                 }
 
                 else {
-                        Video video = videoRepository.findById(videoId).orElse(null);
+                        
                         if (video != null && video.getOwner() != null) {
                                 notificationService.notify(video.getOwner(), user, NotificationType.COMMENT,
                                         SourceType.COMMENT,user.getDisplayName() +
@@ -93,12 +92,17 @@ public class CommentService {
         }
 
         @Transactional
-        public void removeComment(Long commentId) {
+        public void removeComment(Long commentId, Long userId, boolean isModerator) {
                 Comment c = commentRepository.findById(commentId)
-                                .orElseThrow(() -> new NotFoundException("Comment not found: " + commentId));
+                        .orElseThrow(() -> new NotFoundException("Comment not found: " + commentId));
 
-                c.setStatus(CommentStatus.REMOVED);
-                commentRepository.save(c);
+                
+                if (c.getUser().getId().equals(userId) || isModerator) {
+                        c.setStatus(CommentStatus.REMOVED);
+                        commentRepository.save(c);
+                } else {
+                        throw new ForbiddenException("You cannot remove someone else's comment");
+                }
         }
 
         @Transactional
@@ -147,6 +151,23 @@ public class CommentService {
                         .toList();
         }
 
+
+        @Transactional
+        public CreateCommentResponse editComment(Long commentId, Long userId, String newContent) {
+                Comment c = commentRepository.findById(commentId)
+                        .orElseThrow(() -> new NotFoundException("Comment not found"));
+
+                //Only the author can edit their comment
+                if (!c.getUser().getId().equals(userId)) {
+                        throw new ForbiddenException("You cannot edit someone else's comment");
+                }
+
+                c.setContent(newContent);
+                Comment saved = commentRepository.save(c);
+                
+                return toCreateResponse(saved);
+        }
+
         private CommentResponse toResponse(Comment c) {
                 return CommentResponse.builder()
                         .id(c.getId())
@@ -168,4 +189,16 @@ public class CommentService {
                         .updatedAt(c.getUpdatedAt())
                         .build();
         }
+
+        private CreateCommentResponse toCreateResponse(Comment c) {
+                return CreateCommentResponse.builder()
+                        .id(c.getId())
+                        .userId(c.getUser().getId())
+                        .videoId(c.getVideoId())
+                        .parentId(c.getParent() != null ? c.getParent().getId() : null)
+                        .content(c.getContent())
+                        .createdAt(c.getCreatedAt())
+                        .updatedAt(c.getUpdatedAt())
+                        .build();
+                }
 }

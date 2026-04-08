@@ -28,8 +28,8 @@ public class CommentController {
 
         @DeleteMapping("/{commentId}")
         @ResponseStatus(HttpStatus.NO_CONTENT)
-        public void delete(@PathVariable Long videoId, @PathVariable Long commentId) {
-                commentService.removeComment(commentId);
+        public void delete(@PathVariable Long videoId, @PathVariable Long commentId, @RequestParam Long userId, @RequestParam boolean isModerator) {
+                commentService.removeComment(commentId, userId, isModerator);
         }
 
         @PatchMapping("/{commentId}/status")
@@ -50,5 +50,14 @@ public class CommentController {
                 @PathVariable Long videoId,
                 @PathVariable Long commentId) {
                 return commentService.getReplies(videoId, commentId);
+        }
+
+        @PatchMapping("/{commentId}")
+        public CreateCommentResponse update(@PathVariable Long videoId,
+                                                @PathVariable Long commentId,
+                                                @RequestParam Long userId,
+                                                @RequestBody String newContent) {
+
+                return commentService.editComment(commentId, userId, newContent);
         }
 }

@@ -3,11 +3,16 @@ package edu.arizona.videoshare.controller;
 import edu.arizona.videoshare.dto.playlist.PlaylistAddVideoRequest;
 import edu.arizona.videoshare.dto.playlist.PlaylistCreateRequest;
 import edu.arizona.videoshare.dto.playlist.PlaylistResponse;
+import edu.arizona.videoshare.exception.ForbiddenException;
 import edu.arizona.videoshare.service.PlaylistService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+
+import edu.arizona.videoshare.model.entity.Playlist;
+import edu.arizona.videoshare.model.enums.Visibility;
+import edu.arizona.videoshare.repository.PlaylistRepository;
 
 import java.util.List;
 
@@ -24,6 +29,7 @@ import java.util.List;
 public class PlaylistController {
 
     private final PlaylistService service;
+    private final PlaylistRepository playlist;
 
     /**
      * POST /api/playlists
@@ -40,8 +46,16 @@ public class PlaylistController {
      * Fetch a playlist by id.
      */
     @GetMapping("/{id}")
-    public PlaylistResponse getById(@PathVariable Long id) {
-        return PlaylistResponse.of(service.getById(id));
+    public PlaylistResponse getById(@PathVariable Long id, @RequestHeader(value = "X-User-Id", required = false) Long currentUserId) {
+        Playlist play = service.getById(id);
+
+        if (play.getVisibility() == Visibility.PRIVATE) {
+            if (currentUserId == null || !play.getUser().getId().equals(currentUserId)) {
+                throw new ForbiddenException("This playlist is private.");
+            }
+        }
+
+        return PlaylistResponse.of(play);
     }
 
     /**
@@ -50,7 +64,16 @@ public class PlaylistController {
      */
     @GetMapping("/user/{userId}")
     public List<PlaylistResponse> getByUser(@PathVariable Long userId) {
-        return service.getByUser(userId).stream().map(PlaylistResponse::of).toList();
+        List<Playlist> allPlayLists = playlist.findByUserId(userId);
+        List<PlaylistResponse> filtered = new java.util.ArrayList<>();
+
+        for (Playlist p : allPlayLists) {
+            if (p.getVisibility() == Visibility.PUBLIC) {
+                filtered.add(PlaylistResponse.of(p));
+            }
+        }
+
+        return filtered;
     }
 
     /**
@@ -76,4 +99,18 @@ public class PlaylistController {
         service.removeItem(playlistId, playlistVideoId);
     }
 
+
+    /**
+     * PATCH /api/playlists/{playlistId}/videos/{playlistVideoId}/reorder
+     * Change the position of a video in the playlist.
+     */
+    @PatchMapping("/{playlistId}/videos/{playlistVideoId}/reorder")
+    public PlaylistResponse reorderVideo(
+            @PathVariable Long playlistId,
+            @PathVariable Long playlistVideoId,
+            @RequestParam int newPosition
+    ) {
+        return PlaylistResponse.of(service.reorderItem(playlistId, playlistVideoId, newPosition));
+
+    }
 }
