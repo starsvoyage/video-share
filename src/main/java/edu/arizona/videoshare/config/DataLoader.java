@@ -65,6 +65,7 @@ public class DataLoader implements CommandLineRunner {
         seed("bob", "bob@arizona.edu", "Password@123", "Bob Viani");
         seed("charlie", "charlie@arizona.edu", "Password@123", "Charlie Miller");
 
+
         User ian = userRepository.findByUsername("starsvoyage").orElse(null);
         User user1 = userRepository.findByUsername("user1").orElse(null);
         User alice = userRepository.findByUsername("alice").orElse(null);
@@ -157,7 +158,9 @@ public class DataLoader implements CommandLineRunner {
         video.setOwner(owner);
         video.setChannel(channel);
         video.setVisibility(VideoVisibility.PUBLIC);
-        video.setDuration(0);
+        //DURATION SET TO 10 SINCE DUMMY VIDEO LINKED BELOW IS 10 SECONDS LONG
+        video.setDuration(10);
+        video.setMediaUrl("https://www.w3schools.com/html/mov_bbb.mp4");
         return videoRepository.save(video);
     }
 
