@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout('Search | VideoShare', ~{::content}, true, true)}">
+
+<th:block th:fragment="content">
+    <div class="container py-5">
+
+        <h2 class="h4 mb-4">
+            Search results for "<span th:text="${query}"></span>"
+        </h2>
+
+        <!-- Channel section -->
+        <div th:if="${!#lists.isEmpty(searchChannels)}" class="mb-5">
+            <h3 class="h5 mb-3">Channels</h3>
+            <div class="row g-3">
+                <div class="col-12 col-md-6 col-lg-4" th:each="channel : ${searchChannels}">
+                    <a th:href="@{'/' + ${channel.user.username} + '/channel/' + ${channel.name}}"
+                       class="text-decoration-none text-dark">
+                        <div class="card border-0 shadow-sm rounded-4 h-100">
+                            <div class="card-body d-flex align-items-center gap-3">
+                                <!-- Channel avatar -->
+                                <img th:if="${channel.avatarUrl != null and !#strings.isEmpty(channel.avatarUrl)}"
+                                     th:src="${channel.avatarUrl}"
+                                     alt="Avatar"
+                                     class="rounded-circle"
+                                     style="width:48px; height:48px; object-fit:cover;">
+                                <div th:if="${channel.avatarUrl == null or #strings.isEmpty(channel.avatarUrl)}"
+                                     class="rounded-circle bg-dark text-white d-flex align-items-center justify-content-center fw-bold"
+                                     style="width:48px; height:48px;"
+                                     th:text="${#strings.substring(channel.name,0,1).toUpperCase()}">
+                                </div>
+                                <div>
+                                    <div class="fw-semibold" th:text="${channel.name}">Channel</div>
+                                    <div class="text-muted small">
+                                        <span th:text="${channel.subscriberCount}">0</span> subscribers
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Video section -->
+        <div th:if="${!#lists.isEmpty(searchVideos)}">
+            <h3 class="h5 mb-3">Videos</h3>
+            <div class="row g-4">
+                <div class="col-12 col-md-6 col-lg-4" th:each="video : ${searchVideos}">
+                    <a th:href="@{'/videos/' + ${video.id}}" class="text-decoration-none text-dark">
+                        <div class="card h-100 border-0 shadow-sm rounded-4">
+                            <div class="bg-dark text-white d-flex align-items-center justify-content-center rounded-top-4"
+                                 style="height: 180px;">
+                                <i class="bi bi-play-btn fs-1"></i>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title mb-2" th:text="${video.title}">Untitled</h5>
+                                <div class="text-muted small mb-1" th:text="${video.channel?.name}">Channel</div>
+                                <div class="text-muted small"
+                                     th:text="${#temporals.format(video.createdAt, 'MMM d, yyyy')}">Date</div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty for no results found -->
+        <div th:if="${#lists.isEmpty(searchVideos) and #lists.isEmpty(searchChannels)}"
+             class="text-muted text-center py-5">
+            No results found for "<span th:text="${query}"></span>".
+        </div>
+    </div>
+</th:block>
+</html>
