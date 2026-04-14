@@ -1,0 +1,254 @@
+{
+  "info": {
+    "_postman_id": "d1059d77-250a-46e4-b7a7-31b5f13e5df9",
+    "name": "Jay Issues (155,156)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "51796033",
+    "_collection_link": "https://go.postman.co/collection/51796033-d1059d77-250a-46e4-b7a7-31b5f13e5df9?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Issue #155 - Search videos by keyword 'minecraft'",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/videos/search?q=minecraft",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "videos",
+            "search"
+          ],
+          "query": [
+            {
+              "key": "q",
+              "value": "minecraft"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Issue #155 - Search videos case-insensitive 'MINECRAFT''",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/videos/search?q=MINECRAFT",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "videos",
+            "search"
+          ],
+          "query": [
+            {
+              "key": "q",
+              "value": "MINECRAFT"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Issue #155 - Search videos 'pasta'",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/videos/search?q=pasta",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "videos",
+            "search"
+          ],
+          "query": [
+            {
+              "key": "q",
+              "value": "pasta"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Issue #155 - Search videos no results",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/videos/search?q=xyznonexistent",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "videos",
+            "search"
+          ],
+          "query": [
+            {
+              "key": "q",
+              "value": "xyznonexistent"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Issue #155 - Search videos empty query (expect all public videos)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/videos/search?q=",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "videos",
+            "search"
+          ],
+          "query": [
+            {
+              "key": "q",
+              "value": ""
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Issue #155 - Search videos keyword 'tutorial'",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/api/videos/search?q=tutorial",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "api",
+            "videos",
+            "search"
+          ],
+          "query": [
+            {
+              "key": "q",
+              "value": "tutorial"
+            }
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Issue #156 - Get channel by ID 1",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/channels/1",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "channels",
+            "1"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Issue #156 - Get channel by ID 2",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/channels/2",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "channels",
+            "2"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Issue #156 - Get videos for channel 1",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/channels/1/videos",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "channels",
+            "1",
+            "videos"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Issue #156 - Get nonexistent channel",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/channels/999",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "channels",
+            "999"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
