@@ -213,14 +213,14 @@
     </script>
 
     <!-- Display Server Flash Messages as Toast Notifications -->
-    <script th:if="${successMessage}">
+    <div th:if="${successMessage}" id="flashSuccess" th:data-message="${successMessage}" class="d-none"></div>
+    <div th:if="${errorMessage}" id="flashError" th:data-message="${errorMessage}" class="d-none"></div>
+    <script>
         document.addEventListener("DOMContentLoaded", function () {
-            showToast(/*[[${successMessage}]]*/ '', 'success');
-        });
-    </script>
-    <script th:if="${errorMessage}">
-        document.addEventListener("DOMContentLoaded", function () {
-            showToast(/*[[${errorMessage}]]*/ '', 'error');
+            var s = document.getElementById('flashSuccess');
+            if (s) showToast(s.dataset.message, 'success');
+            var e = document.getElementById('flashError');
+            if (e) showToast(e.dataset.message, 'error');
         });
     </script>
 
