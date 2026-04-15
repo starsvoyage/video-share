@@ -258,9 +258,19 @@ if (userId && videoPlayer) {
         }).catch(() => {});
     }
 
+    function sendWatchDurationBeacon() {
+        if (!viewEventId || maxSecondsWatched === 0) return;
+
+        const data = JSON.stringify({ watchDuration: maxSecondsWatched });
+        navigator.sendBeacon(
+            `/api/views/${viewEventId}/duration`,
+            new Blob([data], { type: 'application/json' })
+        );
+    }
+
     videoPlayer.addEventListener("pause", sendWatchDuration);
     videoPlayer.addEventListener("ended", sendWatchDuration);
-    window.addEventListener("beforeunload", sendWatchDuration);
+    window.addEventListener("beforeunload", sendWatchDurationBeacon);
 }
 
             // Reactions
@@ -287,7 +297,16 @@ if (userId && videoPlayer) {
                         body: JSON.stringify({ userId: userId, type: type })
                     });
                     if (!res.ok) throw new Error();
+                    const data = await res.json();
                     loadReactions();
+                    const label = type === 'LIKE' ? 'like' : 'dislike';
+                    if (data.action === 'REMOVED') {
+                        showToast('Removed ' + label + '.', 'info', 2000);
+                    } else if (data.action === 'TOGGLED') {
+                        showToast('Switched to ' + label + '.', 'success', 2000);
+                    } else {
+                        showToast(type === 'LIKE' ? 'Liked!' : 'Disliked!', 'success', 2000);
+                    }
                 } catch (e) {}
             };
 
@@ -315,8 +334,8 @@ if (userId && videoPlayer) {
                         });
                         if (!res.ok) throw new Error("Failed to post comment");
                         input.value = "";
-                        msgBox.classList.add("text-success");
-                        msgBox.textContent = "Comment posted!";
+                        msgBox.textContent = "";
+                        showToast("Comment posted!", "success");
                         loadComments();
                     } catch (e) {
                         msgBox.classList.add("text-danger");
@@ -332,7 +351,7 @@ if (userId && videoPlayer) {
 
         const comments = await res.json();
 
-        for (const c of comments) {
+        await Promise.all(comments.map(async (c) => {
             try {
                 const countRes = await fetch(`/api/comments/${c.id}/reactions/count`);
                 if (countRes.ok) {
@@ -347,7 +366,7 @@ if (userId && videoPlayer) {
                 c.likes = 0;
                 c.dislikes = 0;
             }
-        }
+        }));
 
         commentHeader.textContent = `Comments (${comments.length})`;
         renderComments(comments);
@@ -356,6 +375,29 @@ if (userId && videoPlayer) {
         commentsList.innerHTML = '<p class="text-muted">Could not load comments.</p>';
     }
 }
+
+            async function updateCommentCounts(commentId) {
+                try {
+                    const res = await fetch(`/api/comments/${commentId}/reactions/count`);
+                    if (!res.ok) return;
+                    const counts = await res.json();
+
+                    const likeBtn = document.querySelector(`.react-comment-btn[data-comment-id="${commentId}"][data-type="LIKE"]`);
+                    const dislikeBtn = document.querySelector(`.react-comment-btn[data-comment-id="${commentId}"][data-type="DISLIKE"]`);
+
+                    if (likeBtn) {
+                        likeBtn.innerHTML = `<i class="bi bi-hand-thumbs-up me-1"></i>Like (${counts.likes})`;
+                    }
+                    if (dislikeBtn) {
+                        dislikeBtn.innerHTML = `<i class="bi bi-hand-thumbs-down me-1"></i>Dislike (${counts.dislikes})`;
+                    }
+
+                    const guestLike = document.getElementById(`comment-likes-anon-${commentId}`);
+                    const guestDislike = document.getElementById(`comment-dislikes-anon-${commentId}`);
+                    if (guestLike) guestLike.textContent = counts.likes;
+                    if (guestDislike) guestDislike.textContent = counts.dislikes;
+                } catch (e) {}
+            }
 
             function renderComments(comments) {
                 if (comments.length === 0) {
@@ -385,6 +427,13 @@ if (userId && videoPlayer) {
                data-type="DISLIKE">
            <i class="bi bi-hand-thumbs-down me-1"></i>Dislike (${c.dislikes ?? 0})
        </button>`
+    : ''}
+                            ${
+                            !userId && c.status !== 'REMOVED'
+    ? `<span class="text-muted small">
+           <i class="bi bi-hand-thumbs-up me-1"></i><span id="comment-likes-anon-${c.id}">${c.likes ?? 0}</span>
+           <i class="bi bi-hand-thumbs-down ms-2 me-1"></i><span id="comment-dislikes-anon-${c.id}">${c.dislikes ?? 0}</span>
+       </span>`
     : ''}
                             ${c.replyCount > 0
                                 ? `<button class="btn btn-sm btn-link text-decoration-none p-0 toggle-replies-btn"
@@ -452,9 +501,18 @@ if (userId && videoPlayer) {
                 throw new Error(err.message || "Could not react to comment.");
             }
 
-            loadComments();
+            const data = await res.json();
+            updateCommentCounts(cid);
+            const label = type === 'LIKE' ? 'like' : 'dislike';
+            if (data.action === 'REMOVED') {
+                showToast('Removed comment ' + label + '.', 'info', 2000);
+            } else if (data.action === 'TOGGLED') {
+                showToast('Switched comment to ' + label + '.', 'success', 2000);
+            } else {
+                showToast('Comment ' + (type === 'LIKE' ? 'liked!' : 'disliked!'), 'success', 2000);
+            }
         } catch (e) {
-            alert(e.message || "Could not react to comment.");
+            showToast(e.message || "Could not react to comment.", "error");
         }
     });
 });
@@ -476,15 +534,59 @@ if (userId && videoPlayer) {
                             const res = await fetch(`/api/videos/${videoId}/comments/${cid}/replies`);
                             if (!res.ok) throw new Error();
                             const replies = await res.json();
+                            await Promise.all(replies.map(async (r) => {
+                                try {
+                                    const countRes = await fetch(`/api/comments/${r.id}/reactions/count`);
+                                    if (countRes.ok) {
+                                        const counts = await countRes.json();
+                                        r.likes = counts.likes;
+                                        r.dislikes = counts.dislikes;
+                                    } else { r.likes = 0; r.dislikes = 0; }
+                                } catch { r.likes = 0; r.dislikes = 0; }
+                            }));
+
                             container.innerHTML = replies.map(r => `
-                                <div class="border-start ps-3 py-2 mb-1">
+                                <div class="border-start ps-3 py-2 mb-2" id="reply-${r.id}">
                                     <span class="fw-semibold small">${escHtml(r.displayName || r.username)}</span>
                                     <span class="text-muted small ms-2">${formatDate(r.createdAt)}</span>
-                                    <div class="small mt-1">${escHtml(r.content)}</div>
+                                    <div class="small mt-1 reply-content-${r.id}">${r.status === 'REMOVED' ? '<span class="text-muted fst-italic">[Removed]</span>' : escHtml(r.content)}</div>
+
+                                    <div class="mt-1 d-flex align-items-center gap-3">
+                                        ${userId && r.status !== 'REMOVED'
+                                            ? `<button class="btn btn-sm btn-link text-decoration-none p-0 react-reply-btn"
+                                                       data-reply-id="${r.id}" data-type="LIKE" style="font-size:0.8rem;">
+                                                   <i class="bi bi-hand-thumbs-up me-1"></i>Like (${r.likes ?? 0})
+                                               </button>
+                                               <button class="btn btn-sm btn-link text-decoration-none p-0 react-reply-btn"
+                                                       data-reply-id="${r.id}" data-type="DISLIKE" style="font-size:0.8rem;">
+                                                   <i class="bi bi-hand-thumbs-down me-1"></i>Dislike (${r.dislikes ?? 0})
+                                               </button>`
+                                            : ''}
+                                        ${!userId && r.status !== 'REMOVED'
+                                            ? `<span class="text-muted" style="font-size:0.8rem;">
+                                                   <i class="bi bi-hand-thumbs-up me-1"></i>${r.likes ?? 0}
+                                                   <i class="bi bi-hand-thumbs-down ms-2 me-1"></i>${r.dislikes ?? 0}
+                                               </span>`
+                                            : ''}
+                                        ${userId && r.userId === userId && r.status !== 'REMOVED'
+                                            ? `<button class="btn btn-sm btn-link text-decoration-none p-0 edit-reply-btn"
+                                                       data-reply-id="${r.id}" data-parent-id="${cid}"
+                                                       data-content="${escHtml(r.content)}" style="font-size:0.8rem;">
+                                                   <i class="bi bi-pencil me-1"></i>Edit
+                                               </button>
+                                               <button class="btn btn-sm btn-link text-decoration-none text-danger p-0 delete-reply-btn"
+                                                       data-reply-id="${r.id}" data-parent-id="${cid}" style="font-size:0.8rem;">
+                                                   <i class="bi bi-trash me-1"></i>Delete
+                                               </button>`
+                                            : ''}
+                                    </div>
                                 </div>
                             `).join('');
                             container.classList.remove("d-none");
                             this.dataset.loaded = "true";
+
+                            // ADDED: attach event listeners for reply actions
+                            attachReplyEventListeners(cid);
                         } catch (e) {
                             container.innerHTML = '<p class="text-danger small">Could not load replies.</p>';
                             container.classList.remove("d-none");
@@ -535,6 +637,7 @@ if (userId && videoPlayer) {
                             }
                             input.value = "";
                             document.getElementById(`reply-form-${cid}`).classList.add("d-none");
+                            showToast("Reply posted!", "success");
                             loadComments();
                         } catch (e) {
                             msgBox.classList.add("text-danger");
@@ -576,6 +679,7 @@ if (userId && videoPlayer) {
                                     body: newContent
                                 });
                                 if (res.ok) {
+                                    showToast("Comment updated!", "success");
                                     loadComments();
                                 } else {
                                     msgBox.classList.add("text-danger");
@@ -602,6 +706,7 @@ if (userId && videoPlayer) {
                                 method: 'DELETE'
                             });
                             if (!res.ok) throw new Error();
+                            showToast("Comment deleted.", "info");
                             loadComments();
                         } catch (e) {}
                     });
@@ -629,24 +734,126 @@ if (userId && videoPlayer) {
                             throw new Error(err?.message || "Could not add video to playlist.");
                         }
 
-                        if (playlistAddMessage) {
-                            playlistAddMessage.classList.add("text-success");
-                            playlistAddMessage.textContent = "Video added to playlist.";
-                        }
+                        showToast("Video added to playlist!", "success");
 
                         const modalEl = document.getElementById("addToPlaylistModal");
                         const modal = bootstrap.Modal.getInstance(modalEl);
                         if (modal) modal.hide();
 
                     } catch (e) {
-                        if (playlistAddMessage) {
-                            playlistAddMessage.classList.add("text-danger");
-                            playlistAddMessage.textContent = e.message || "Could not add video to playlist.";
-                        }
+                        showToast(e.message || "Could not add video to playlist.", "error");
                     }
                 });
             });
-            
+
+            function attachReplyEventListeners(parentId) {
+                const container = document.getElementById(`replies-${parentId}`);
+                if (!container) return;
+
+                container.querySelectorAll(".react-reply-btn").forEach(btn => {
+                    btn.addEventListener("click", async function () {
+                        const rid = this.dataset.replyId;
+                        const type = this.dataset.type;
+                        try {
+                            const res = await fetch(`/api/comments/${rid}/reactions`, {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ userId: userId, type: type })
+                            });
+                            if (!res.ok) throw new Error();
+                            const data = await res.json();
+                            const countRes = await fetch(`/api/comments/${rid}/reactions/count`);
+                            if (countRes.ok) {
+                                const counts = await countRes.json();
+                                const likeBtn = container.querySelector(`.react-reply-btn[data-reply-id="${rid}"][data-type="LIKE"]`);
+                                const dislikeBtn = container.querySelector(`.react-reply-btn[data-reply-id="${rid}"][data-type="DISLIKE"]`);
+                                if (likeBtn) likeBtn.innerHTML = `<i class="bi bi-hand-thumbs-up me-1"></i>Like (${counts.likes})`;
+                                if (dislikeBtn) dislikeBtn.innerHTML = `<i class="bi bi-hand-thumbs-down me-1"></i>Dislike (${counts.dislikes})`;
+                            }
+                            const label = type === 'LIKE' ? 'like' : 'dislike';
+                            if (data.action === 'REMOVED') {
+                                showToast('Removed reply ' + label + '.', 'info', 2000);
+                            } else if (data.action === 'TOGGLED') {
+                                showToast('Switched reply to ' + label + '.', 'success', 2000);
+                            } else {
+                                showToast('Reply ' + (type === 'LIKE' ? 'liked!' : 'disliked!'), 'success', 2000);
+                            }
+                        } catch (e) {
+                            showToast("Could not react to reply.", "error");
+                        }
+                    });
+                });
+
+                container.querySelectorAll(".edit-reply-btn").forEach(btn => {
+                    btn.addEventListener("click", function () {
+                        const rid = this.dataset.replyId;
+                        const pid = this.dataset.parentId;
+                        const originalContent = this.dataset.content;
+                        const contentDiv = document.querySelector(`.reply-content-${rid}`);
+                        if (!contentDiv) return;
+
+                        contentDiv.innerHTML = `
+                            <textarea class="form-control form-control-sm" rows="2" id="edit-reply-input-${rid}">${originalContent}</textarea>
+                            <div class="mt-1">
+                                <button class="btn btn-sm btn-dark save-reply-edit-btn" data-reply-id="${rid}" data-parent-id="${pid}">Save</button>
+                                <button class="btn btn-sm btn-outline-secondary ms-1 cancel-reply-edit-btn" data-reply-id="${rid}" data-parent-id="${pid}">Cancel</button>
+                            </div>
+                            <div id="edit-reply-msg-${rid}" class="mt-1 small"></div>
+                        `;
+
+                        contentDiv.querySelector(".save-reply-edit-btn").addEventListener("click", async function () {
+                            const newContent = document.getElementById(`edit-reply-input-${rid}`).value.trim();
+                            const msgBox = document.getElementById(`edit-reply-msg-${rid}`);
+                            if (!newContent) {
+                                msgBox.className = "mt-1 small text-danger";
+                                msgBox.textContent = "Reply cannot be empty.";
+                                return;
+                            }
+                            try {
+                                const res = await fetch(`/api/videos/${videoId}/comments/${rid}?userId=${userId}`, {
+                                    method: "PATCH",
+                                    headers: { "Content-Type": "text/plain" },
+                                    body: newContent
+                                });
+                                if (res.ok) {
+                                    showToast("Reply updated!", "success");
+                                    const toggleBtn = document.querySelector(`.toggle-replies-btn[data-comment-id="${pid}"]`);
+                                    if (toggleBtn) { toggleBtn.dataset.loaded = "false"; toggleBtn.click(); }
+                                } else {
+                                    msgBox.className = "mt-1 small text-danger";
+                                    msgBox.textContent = "Failed to edit reply.";
+                                }
+                            } catch (e) {
+                                msgBox.className = "mt-1 small text-danger";
+                                msgBox.textContent = "Error editing reply.";
+                            }
+                        });
+
+                        contentDiv.querySelector(".cancel-reply-edit-btn").addEventListener("click", function () {
+                            const toggleBtn = document.querySelector(`.toggle-replies-btn[data-comment-id="${pid}"]`);
+                            if (toggleBtn) { toggleBtn.dataset.loaded = "false"; toggleBtn.click(); }
+                        });
+                    });
+                });
+
+                container.querySelectorAll(".delete-reply-btn").forEach(btn => {
+                    btn.addEventListener("click", async function () {
+                        if (!confirm("Delete this reply?")) return;
+                        const rid = this.dataset.replyId;
+                        try {
+                            const res = await fetch(`/api/videos/${videoId}/comments/${rid}?userId=${userId}&isModerator=false`, {
+                                method: 'DELETE'
+                            });
+                            if (!res.ok) throw new Error();
+                            showToast("Reply deleted.", "info");
+                            loadComments();
+                        } catch (e) {
+                            showToast("Could not delete reply.", "error");
+                        }
+                    });
+                });
+            }
+
             function escHtml(str) {
                 const d = document.createElement("div");
                 d.textContent = str || "";
