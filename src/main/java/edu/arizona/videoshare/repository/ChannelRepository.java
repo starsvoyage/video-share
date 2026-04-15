@@ -13,6 +13,10 @@ public interface ChannelRepository extends JpaRepository<Channel, Long>{
 
     List<Channel> findByUserId(Long userId);
 
+    List<Channel> findAllByOrderByNameAsc();
+
+    List<Channel> findByNameContainingIgnoreCaseOrderByNameAsc(String keyword);
+
     Optional<Channel> findByUserIdAndNameIgnoreCase(Long userId, String name);
 
     Optional<Channel> findByUserUsernameIgnoreCaseAndNameIgnoreCase(String username, String name);

@@ -48,6 +48,11 @@ public class VideoController {
         return videoService.getAllPublic();
     }
 
+    @GetMapping("/search")
+    public List<Video> search(@RequestParam(name = "q", defaultValue = "") String query) {
+        return videoService.searchPublicByTitle(query);
+    }
+
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) {
         videoService.delete(id);

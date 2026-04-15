@@ -29,4 +29,6 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
                 ORDER BY v.createdAt DESC
             """)
     List<Video> findSubscribedVideosBySubscriberIdAndVisibility(Long subscriberId, VideoVisibility visibility);
+
+    List<Video> findByTitleContainingIgnoreCaseAndVisibilityOrderByCreatedAtDesc(String keyword, VideoVisibility visibility);
 }

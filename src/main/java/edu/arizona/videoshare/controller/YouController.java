@@ -44,7 +44,11 @@ public class YouController {
         model.addAttribute("channels", channels);
         model.addAttribute("history", viewEventService.getUserHistory(user.getId()));
         model.addAttribute("isVerified", user.getStatus() == UserStatus.ACTIVE);
-        model.addAttribute("canCreateChannel", user.getStatus() == UserStatus.ACTIVE);
+
+        //FIXME: Changed to true for demo purposes, previous line commented below this lines
+        model.addAttribute("canCreateChannel", true);
+        //model.addAttribute("canCreateChannel", user.getStatus() == UserStatus.ACTIVE);
+
         model.addAttribute("isCreator", user.getRole() == UserRole.CREATOR);
         model.addAttribute("playlists", playlistService.getByUser(user.getId()));
         model.addAttribute("subscribedVideos", videoService.getSubscribedVideos(user.getId()));
