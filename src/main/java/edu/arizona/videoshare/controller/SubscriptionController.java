@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
@@ -54,7 +55,7 @@ public class SubscriptionController {
     }
 
     @PostMapping("/channels/{channelId}")
-    public String toggleSubscription(@PathVariable Long channelId, HttpSession session) {
+    public String toggleSubscription(@PathVariable Long channelId, HttpSession session, RedirectAttributes redirectAttributes) {
 
         Long loggedInUserId = (Long) session.getAttribute("loggedInUserId");
 
@@ -83,6 +84,9 @@ public class SubscriptionController {
             subscriptionRepository.delete(existing.get());
 
             channel.setSubscriberCount(Math.max(0, channel.getSubscriberCount() - 1));
+
+            redirectAttributes.addFlashAttribute("successMessage","Unsubscribed from \"" +
+                    channel.getName() + "\".");
         } else {
             Subscription sub = new Subscription();
             sub.setSubscriber(user);
@@ -91,6 +95,8 @@ public class SubscriptionController {
 
             subscriptionRepository.save(sub);
             channel.setSubscriberCount(channel.getSubscriberCount() + 1);
+
+            redirectAttributes.addFlashAttribute("successMessage","Subscribed to \"" + channel.getName() + "\"!");
         }
 
         channelRepository.save(channel);

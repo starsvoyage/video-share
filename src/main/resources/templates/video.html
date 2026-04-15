@@ -288,6 +288,7 @@ if (userId && videoPlayer) {
                     });
                     if (!res.ok) throw new Error();
                     loadReactions();
+                    showToast(type === 'LIKE' ? 'Liked!' : 'Disliked!', 'success', 2000);
                 } catch (e) {}
             };
 
@@ -315,8 +316,8 @@ if (userId && videoPlayer) {
                         });
                         if (!res.ok) throw new Error("Failed to post comment");
                         input.value = "";
-                        msgBox.classList.add("text-success");
-                        msgBox.textContent = "Comment posted!";
+                        msgBox.textContent = "";
+                        showToast("Comment posted!", "Success");
                         loadComments();
                     } catch (e) {
                         msgBox.classList.add("text-danger");
@@ -332,7 +333,7 @@ if (userId && videoPlayer) {
 
         const comments = await res.json();
 
-        for (const c of comments) {
+        await Promise.all(comments.map(async (c) => {
             try {
                 const countRes = await fetch(`/api/comments/${c.id}/reactions/count`);
                 if (countRes.ok) {
@@ -347,7 +348,7 @@ if (userId && videoPlayer) {
                 c.likes = 0;
                 c.dislikes = 0;
             }
-        }
+        }));
 
         commentHeader.textContent = `Comments (${comments.length})`;
         renderComments(comments);
@@ -356,6 +357,29 @@ if (userId && videoPlayer) {
         commentsList.innerHTML = '<p class="text-muted">Could not load comments.</p>';
     }
 }
+
+            async function updateCommentCounts(commentId) {
+                try {
+                    const res = await fetch(`/api/comments/${commentId}/reactions/count`);
+                    if (!res.ok) return;
+                    const counts = await res.json();
+
+                    const likeBtn = document.querySelector(`.react-comment-btn[data-comment-id="${commentId}"][data-type="LIKE"]`);
+                    const dislikeBtn = document.querySelector(`.react-comment-btn[data-comment-id="${commentId}"][data-type="DISLIKE"]`);
+
+                    if (likeBtn) {
+                        likeBtn.innerHTML = `<i class="bi bi-hand-thumbs-up me-1"></i>Like (${counts.likes})`;
+                    }
+                    if (dislikeBtn) {
+                        dislikeBtn.innerHTML = `<i class="bi bi-hand-thumbs-down me-1"></i>Dislike (${counts.dislikes})`;
+                    }
+
+                    const guestLike = document.getElementById(`comment-likes-anon-${commentId}`);
+                    const guestDislike = document.getElementById(`comment-dislikes-anon-${commentId}`);
+                    if (guestLike) guestLike.textContent = counts.likes;
+                    if (guestDislike) guestDislike.textContent = counts.dislikes;
+                } catch (e) {}
+            }
 
             function renderComments(comments) {
                 if (comments.length === 0) {
@@ -385,6 +409,13 @@ if (userId && videoPlayer) {
                data-type="DISLIKE">
            <i class="bi bi-hand-thumbs-down me-1"></i>Dislike (${c.dislikes ?? 0})
        </button>`
+    : ''}
+                            ${
+                            !userId && c.status !== 'REMOVED'
+    ? `<span class="text-muted small">
+           <i class="bi bi-hand-thumbs-up me-1"></i><span id="comment-likes-anon-${c.id}">${c.likes ?? 0}</span>
+           <i class="bi bi-hand-thumbs-down ms-2 me-1"></i><span id="comment-dislikes-anon-${c.id}">${c.dislikes ?? 0}</span>
+       </span>`
     : ''}
                             ${c.replyCount > 0
                                 ? `<button class="btn btn-sm btn-link text-decoration-none p-0 toggle-replies-btn"
@@ -452,9 +483,9 @@ if (userId && videoPlayer) {
                 throw new Error(err.message || "Could not react to comment.");
             }
 
-            loadComments();
+            updateCommentCounts(cid);
         } catch (e) {
-            alert(e.message || "Could not react to comment.");
+            showToast(e.message || "Could not react to comment.", "Error");
         }
     });
 });
@@ -535,6 +566,7 @@ if (userId && videoPlayer) {
                             }
                             input.value = "";
                             document.getElementById(`reply-form-${cid}`).classList.add("d-none");
+                            showToast("Reply posted!", "Success");
                             loadComments();
                         } catch (e) {
                             msgBox.classList.add("text-danger");
@@ -576,6 +608,7 @@ if (userId && videoPlayer) {
                                     body: newContent
                                 });
                                 if (res.ok) {
+                                    showToast("Comment updated!", "success");
                                     loadComments();
                                 } else {
                                     msgBox.classList.add("text-danger");
@@ -602,6 +635,7 @@ if (userId && videoPlayer) {
                                 method: 'DELETE'
                             });
                             if (!res.ok) throw new Error();
+                            showToast("Comment deleted.", "info");
                             loadComments();
                         } catch (e) {}
                     });
@@ -629,20 +663,14 @@ if (userId && videoPlayer) {
                             throw new Error(err?.message || "Could not add video to playlist.");
                         }
 
-                        if (playlistAddMessage) {
-                            playlistAddMessage.classList.add("text-success");
-                            playlistAddMessage.textContent = "Video added to playlist.";
-                        }
+                        showToast("Video added to playlist!", "success");
 
                         const modalEl = document.getElementById("addToPlaylistModal");
                         const modal = bootstrap.Modal.getInstance(modalEl);
                         if (modal) modal.hide();
 
                     } catch (e) {
-                        if (playlistAddMessage) {
-                            playlistAddMessage.classList.add("text-danger");
-                            playlistAddMessage.textContent = e.message || "Could not add video to playlist.";
-                        }
+                        showToast(e.message || "Could not add video to playlist.", "Error");
                     }
                 });
             });
