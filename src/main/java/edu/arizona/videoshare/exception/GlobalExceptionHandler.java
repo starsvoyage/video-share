@@ -39,8 +39,7 @@ public class GlobalExceptionHandler {
                 HttpStatus.BAD_REQUEST.value(),
                 "Bad Request",
                 "Validation failed",
-                violations
-        );
+                violations);
         return ResponseEntity.badRequest().body(body);
     }
 
@@ -54,8 +53,7 @@ public class GlobalExceptionHandler {
                 HttpStatus.CONFLICT.value(),
                 "Conflict",
                 ex.getMessage(),
-                List.of()
-        );
+                List.of());
         return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
     }
 
@@ -69,8 +67,7 @@ public class GlobalExceptionHandler {
                 HttpStatus.NOT_FOUND.value(),
                 "Not Found",
                 ex.getMessage(),
-                List.of()
-        );
+                List.of());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
     }
 
@@ -78,15 +75,15 @@ public class GlobalExceptionHandler {
      * Handles database integrity violations.
      * Ensures consistent 409 Conflict responses.
      */
-    // If a race condition slips past existsBy* checks, DB uniqueness still enforces it.
+    // If a race condition slips past existsBy* checks, DB uniqueness still enforces
+    // it.
     @ExceptionHandler(DataIntegrityViolationException.class)
     ResponseEntity<ApiError> handleDataIntegrity(DataIntegrityViolationException ex) {
         ApiError body = new ApiError(
                 HttpStatus.CONFLICT.value(),
                 "Conflict",
                 "Unique constraint violation",
-                List.of()
-        );
+                List.of());
         return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
     }
 
@@ -100,8 +97,7 @@ public class GlobalExceptionHandler {
                 HttpStatus.FORBIDDEN.value(),
                 "Forbidden",
                 ex.getMessage(),
-                List.of()
-            );
+                List.of());
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
     }
 
@@ -114,15 +110,22 @@ public class GlobalExceptionHandler {
                 : "Invalid value";
     }
 
-
-
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public String handleMaxUploadSizeExceeded(
             MaxUploadSizeExceededException ex,
-            RedirectAttributes redirectAttributes
-    ) {
+            RedirectAttributes redirectAttributes) {
         redirectAttributes.addFlashAttribute("errorMessage", "Avatar image must be smaller than 5MB.");
         redirectAttributes.addFlashAttribute("openCreateChannelModal", true);
         return "redirect:/you";
+    }
+
+    @ExceptionHandler(Exception.class)
+    ResponseEntity<ApiError> handleGeneric(Exception ex) {
+        ApiError body = new ApiError(
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                "Internal Server Error",
+                "Something went wrong. Please try again.",
+                List.of());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
     }
 }

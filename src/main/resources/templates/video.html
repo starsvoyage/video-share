@@ -278,18 +278,40 @@ if (userId && videoPlayer) {
                 } catch (e) {}
             }
 
-            window.react = async function(type) {
-                if (!userId) return;
-                try {
-                    const res = await fetch(`/api/videos/${videoId}/reactions`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ userId: userId, type: type })
-                    });
-                    if (!res.ok) throw new Error();
-                    loadReactions();
-                } catch (e) {}
-            };
+           window.react = async function(type) {
+    if (!userId) return;
+
+    const msgBox = document.getElementById("commentMessage");
+    if (msgBox) {
+        msgBox.textContent = "";
+        msgBox.className = "mt-2 small";
+    }
+
+    try {
+        const res = await fetch(`/api/videos/${videoId}/reactions`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: userId, type: type })
+        });
+
+        if (!res.ok) {
+            const message = await readErrorMessage(res, "Could not update video reaction.");
+            throw new Error(message);
+        }
+
+        loadReactions();
+
+        if (msgBox) {
+            msgBox.classList.add("text-success");
+            msgBox.textContent = "Reaction updated.";
+        }
+    } catch (e) {
+        if (msgBox) {
+            msgBox.classList.add("text-danger");
+            msgBox.textContent = e.message || "Could not update video reaction.";
+        }
+    }
+};
 
             const submitBtn = document.getElementById("submitComment");
             if (submitBtn) {
@@ -313,7 +335,10 @@ if (userId && videoPlayer) {
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({ userId: userId, content: content, parentId: null })
                         });
-                        if (!res.ok) throw new Error("Failed to post comment");
+                       if (!res.ok) {
+    const message = await readErrorMessage(res, "Could not post comment.");
+    throw new Error(message);
+}
                         input.value = "";
                         msgBox.classList.add("text-success");
                         msgBox.textContent = "Comment posted!";
@@ -447,15 +472,19 @@ if (userId && videoPlayer) {
                 })
             });
 
-            if (!res.ok) {
-                const err = await res.json().catch(() => ({}));
-                throw new Error(err.message || "Could not react to comment.");
-            }
+           if (!res.ok) {
+    const message = await readErrorMessage(res, "Could not react to comment.");
+    throw new Error(message);
+}
 
-            loadComments();
-        } catch (e) {
-            alert(e.message || "Could not react to comment.");
-        }
+loadComments();
+} catch (e) {
+    const msgBox = document.getElementById("commentMessage");
+    if (msgBox) {
+        msgBox.className = "mt-2 small text-danger";
+        msgBox.textContent = e.message || "Could not react to comment.";
+    }
+}
     });
 });
                 document.querySelectorAll(".toggle-replies-btn").forEach(btn => {
@@ -576,15 +605,16 @@ if (userId && videoPlayer) {
                                     body: newContent
                                 });
                                 if (res.ok) {
-                                    loadComments();
-                                } else {
-                                    msgBox.classList.add("text-danger");
-                                    msgBox.textContent = "Failed to edit comment";
-                                }
-                            } catch (e) {
-                                msgBox.classList.add("text-danger");
-                                msgBox.textContent = "Error editing comment";
-                            }
+    loadComments();
+} else {
+    const message = await readErrorMessage(res, "Failed to edit comment.");
+    msgBox.classList.add("text-danger");
+    msgBox.textContent = message;
+}
+                          } catch (e) {
+    msgBox.classList.add("text-danger");
+    msgBox.textContent = e.message || "Error editing comment.";
+}
                         });
 
                         document.querySelector(`.cancel-edit-btn[data-comment-id="${cid}"]`).addEventListener("click", function () {
@@ -593,19 +623,36 @@ if (userId && videoPlayer) {
                     });
                 });
 
-                document.querySelectorAll(".delete-comment-btn").forEach(btn => {
-                    btn.addEventListener("click", async function () {
-                        if (!confirm("Delete this comment?")) return;
-                        const cid = this.dataset.commentId;
-                        try {
-                            const res = await fetch(`/api/videos/${videoId}/comments/${cid}?userId=${userId}&isModerator=false`, {
-                                method: 'DELETE'
-                            });
-                            if (!res.ok) throw new Error();
-                            loadComments();
-                        } catch (e) {}
-                    });
-                });
+               document.querySelectorAll(".delete-comment-btn").forEach(btn => {
+    btn.addEventListener("click", async function () {
+        if (!confirm("Delete this comment?")) return;
+        const cid = this.dataset.commentId;
+        const msgBox = document.getElementById("commentMessage");
+
+        if (msgBox) {
+            msgBox.textContent = "";
+            msgBox.className = "mt-2 small";
+        }
+
+        try {
+            const res = await fetch(`/api/videos/${videoId}/comments/${cid}?userId=${userId}&isModerator=false`, {
+                method: 'DELETE'
+            });
+
+            if (!res.ok) {
+                const message = await readErrorMessage(res, "Could not delete comment.");
+                throw new Error(message);
+            }
+
+            loadComments();
+        } catch (e) {
+            if (msgBox) {
+                msgBox.classList.add("text-danger");
+                msgBox.textContent = e.message || "Could not delete comment.";
+            }
+        }
+    });
+});
             }
 
                         document.querySelectorAll(".add-to-playlist-btn").forEach(btn => {
@@ -646,6 +693,15 @@ if (userId && videoPlayer) {
                     }
                 });
             });
+
+            async function readErrorMessage(res, fallbackMessage) {
+    try {
+        const err = await res.json();
+        return err.message || fallbackMessage;
+    } catch {
+        return fallbackMessage;
+    }
+}
             
             function escHtml(str) {
                 const d = document.createElement("div");
