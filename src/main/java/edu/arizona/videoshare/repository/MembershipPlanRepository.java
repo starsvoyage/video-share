@@ -10,7 +10,12 @@ import java.util.Optional;
 
 @Repository
 public interface MembershipPlanRepository extends JpaRepository<MembershipPlan, Long> {
+
     Optional<MembershipPlan> findByCode(String code);
+
     List<MembershipPlan> findByActiveTrue();
+
     boolean existsByCode(String code);
+
+    Optional<MembershipPlan> findByIdAndActiveTrue(Long id);
 }

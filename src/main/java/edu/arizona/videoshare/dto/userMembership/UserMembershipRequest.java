@@ -9,14 +9,8 @@ import java.time.LocalDateTime;
 public class UserMembershipRequest {
 
     @NotNull
-    public Long userId;
+    private Long membershipPlanId;
 
     @NotNull
-    public Long membershipPlanId;
-
-    public LocalDateTime startAt;
-    public LocalDateTime endAt;
-
-    @NotNull
-    public Boolean autoRenew;
+    private Boolean autoRenew;
 }
