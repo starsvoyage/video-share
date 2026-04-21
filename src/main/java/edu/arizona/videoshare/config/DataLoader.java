@@ -3,14 +3,19 @@ package edu.arizona.videoshare.config;
 import edu.arizona.videoshare.dto.user.UserRequest;
 import edu.arizona.videoshare.model.entity.*;
 import edu.arizona.videoshare.model.entity.Subscription.SubscriptionStatus;
+import edu.arizona.videoshare.model.enums.AdPlacement;
 import edu.arizona.videoshare.model.enums.UserRole;
 import edu.arizona.videoshare.model.enums.UserStatus;
 import edu.arizona.videoshare.model.enums.VideoVisibility;
+import edu.arizona.videoshare.repository.AdRepository;
 import edu.arizona.videoshare.repository.ChannelRepository;
 import edu.arizona.videoshare.repository.SubscriptionRepository;
 import edu.arizona.videoshare.repository.UserRepository;
 import edu.arizona.videoshare.repository.VideoRepository;
 import edu.arizona.videoshare.service.UserService;
+
+import java.time.LocalDateTime;
+
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 import org.springframework.context.annotation.Profile;
@@ -29,6 +34,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 @Component
 public class DataLoader implements CommandLineRunner {
 
+    private final AdRepository adRepository;
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
     private final SubscriptionRepository subscriptionRepository;
@@ -40,13 +46,14 @@ public class DataLoader implements CommandLineRunner {
                       ChannelRepository channelRepository,
                       SubscriptionRepository subscriptionRepository,
                       VideoRepository videoRepository,
-                      BCryptPasswordEncoder encoder) {
+                      BCryptPasswordEncoder encoder, AdRepository adRepository) {
 
         this.userRepository = userRepository;
         this.channelRepository = channelRepository;
         this.subscriptionRepository = subscriptionRepository;
         this.videoRepository = videoRepository;
         this.encoder = encoder;
+        this.adRepository = adRepository;
     }
 
     /**
@@ -112,6 +119,47 @@ public class DataLoader implements CommandLineRunner {
             subscriptionRepository.save(sub2);
             channel2.setSubscriberCount(10L);
             channelRepository.save(channel2);
+
+            // Adding ads
+            Ad ad1 = new Ad();
+            ad1.setTitle("Buy Premium Now!");
+            ad1.setMediaUrl("https://www.w3schools.com/html/movie.mp4");
+            ad1.setDuration(15);
+            ad1.setActive(true);
+            ad1.setPlacement(AdPlacement.Pre_roll);
+            ad1.setStartAt(LocalDateTime.now().minusDays(1));
+            ad1.setEndAt(LocalDateTime.now().plusDays(30));
+            adRepository.save(ad1);
+
+            Ad ad2 = new Ad();
+            ad2.setTitle("Check out our store!");
+            ad2.setMediaUrl("https://www.w3schools.com/html/movie.mp4");
+            ad2.setDuration(30);
+            ad2.setActive(true);
+            ad2.setPlacement(AdPlacement.Mid_roll);
+            ad2.setStartAt(LocalDateTime.now().minusDays(1));
+            ad2.setEndAt(LocalDateTime.now().plusDays(30));
+            adRepository.save(ad2);
+
+            Ad ad4 = new Ad();
+            ad4.setTitle("Thanks for watching!");
+            ad4.setMediaUrl("https://www.w3schools.com/html/movie.mp4");
+            ad4.setDuration(15);
+            ad4.setActive(true);
+            ad4.setPlacement(AdPlacement.Post_roll);
+            ad4.setStartAt(LocalDateTime.now().minusDays(1));
+            ad4.setEndAt(LocalDateTime.now().plusDays(30));
+            adRepository.save(ad4);
+
+            Ad ad3 = new Ad();
+            ad3.setTitle("Shop Now!");
+            ad3.setMediaUrl("https://via.placeholder.com/728x90.png?text=Advertisement");
+            ad3.setDuration(0);
+            ad3.setActive(true);
+            ad3.setPlacement(AdPlacement.banner);
+            ad3.setStartAt(LocalDateTime.now().minusDays(1));
+            ad3.setEndAt(LocalDateTime.now().plusDays(30));
+            adRepository.save(ad3);
         }
     }
 
