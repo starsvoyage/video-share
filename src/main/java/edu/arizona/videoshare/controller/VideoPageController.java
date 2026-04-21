@@ -47,17 +47,20 @@ public class VideoPageController {
         model.addAttribute("video", video);
         model.addAttribute("loggedInUserId", loggedInUserId);
 
+        boolean isAdFree = false;
+
         if (loggedInUserId != null) {
             model.addAttribute("playlists", playlistService.getByUser(loggedInUserId));
 
-            boolean isAdFree = false;
             try {
                 isAdFree = userMembershipService.getCurrentMembership(loggedInUserId) != null;
             } catch (NotFoundException e) {
                 
             }
 
-            if (!isAdFree) {
+        }
+
+        if (!isAdFree) {
                 Ad preRollAd = adService.selectActiveAd(AdPlacement.Pre_roll);
                 Ad midRollAd = adService.selectActiveAd(AdPlacement.Mid_roll);
                 Ad bannerAd = adService.selectActiveAd(AdPlacement.banner);
@@ -67,7 +70,6 @@ public class VideoPageController {
                 model.addAttribute("ad", preRollAd);
                 model.addAttribute("midRollAd", midRollAd);
             }
-        }
 
         return "video";
     }

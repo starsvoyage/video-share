@@ -229,58 +229,6 @@
 
     <script th:inline="javascript">
 
-        const adContainer = document.getElementById("adContainer");
-        const adPlayer = document.getElementById("adPlayer");
-        const videoPlayer = document.getElementById("videoPlayer");
-
-        if (adContainer && adPlayer && videoPlayer) {
-            videoPlayer.style.display = "none";
-
-            adPlayer.addEventListener("ended", function () {
-                adContainer.style.display = "none"; 
-                videoPlayer.style.display = "block"; 
-                videoPlayer.play();
-            });
-        }
-
-        const midRollUrl = /*[[${midRollAd != null ? midRollAd.mediaUrl : ''}]]*/ '';
-        if (midRollUrl && videoPlayer) {
-            let midRollPlayed = false;
-
-            videoPlayer.addEventListener("timeupdate", function () {
-                const half = videoPlayer.duration / 2;
-                if (!midRollPlayed && videoPlayer.currentTime >= half) {
-                    midRollPlayed = true;
-                    videoPlayer.pause();
-
-                    adPlayer.src = midRollUrl;
-                    adContainer.style.display = "block";
-                    videoPlayer.style.display = "none";
-                    adPlayer.play();
-
-                    adPlayer.onended = function () {
-                        adContainer.style.display = "none";
-                        videoPlayer.style.display = "block";
-                        videoPlayer.play();
-                    };
-                }
-            });
-        }
-
-        const postRollUrl = /*[[${postRollAd != null ? postRollAd.mediaUrl : ''}]]*/ '';
-        if (postRollUrl && videoPlayer) {
-            videoPlayer.addEventListener("ended", function () {
-                adPlayer.src = postRollUrl;
-                adContainer.style.display = "block";
-                videoPlayer.style.display = "none";
-                adPlayer.play();
-
-                adPlayer.onended = function () {
-                    adContainer.style.display = "none";
-                };
-            });
-        }
-
         document.addEventListener("DOMContentLoaded", function () {
             const videoId = /*[[${video.id}]]*/ 0;
             const userId  = /*[[${loggedInUserId}]]*/ null;
@@ -289,9 +237,62 @@
             const commentHeader = document.getElementById("commentHeader");
             const playlistAddMessage = document.getElementById("playlistAddMessage");
 
+
+            const adContainer = document.getElementById("adContainer");
+            const adPlayer = document.getElementById("adPlayer");
+            const videoPlayer = document.getElementById("videoPlayer");
+
+            if (adContainer && adPlayer && videoPlayer) {
+                videoPlayer.style.display = "none";
+
+                adPlayer.addEventListener("ended", function () {
+                    adContainer.style.display = "none"; 
+                    videoPlayer.style.display = "block"; 
+                    videoPlayer.play();
+                });
+            }
+
+            const midRollUrl = /*[[${midRollAd != null ? midRollAd.mediaUrl : ''}]]*/ '';
+            if (midRollUrl && videoPlayer) {
+                let midRollPlayed = false;
+
+                videoPlayer.addEventListener("timeupdate", function () {
+                    const half = videoPlayer.duration / 2;
+                    if (!midRollPlayed && videoPlayer.currentTime >= half) {
+                        midRollPlayed = true;
+                        videoPlayer.pause();
+
+                        adPlayer.src = midRollUrl;
+                        adContainer.style.display = "block";
+                        videoPlayer.style.display = "none";
+                        adPlayer.play();
+
+                        adPlayer.onended = function () {
+                            adContainer.style.display = "none";
+                            videoPlayer.style.display = "block";
+                            videoPlayer.play();
+                        };
+                    }
+                });
+            }
+
+            const postRollUrl = /*[[${postRollAd != null ? postRollAd.mediaUrl : ''}]]*/ '';
+            if (postRollUrl && videoPlayer) {
+                videoPlayer.addEventListener("ended", function () {
+                    adPlayer.src = postRollUrl;
+                    adContainer.style.display = "block";
+                    videoPlayer.style.display = "none";
+                    adPlayer.play();
+
+                    adPlayer.onended = function () {
+                        adContainer.style.display = "none";
+                    };
+                });
+            }
+
            loadComments();
 
-const videoPlayer = document.getElementById("videoPlayer");
+
 let viewEventId = null;
 let maxSecondsWatched = 0;
 
