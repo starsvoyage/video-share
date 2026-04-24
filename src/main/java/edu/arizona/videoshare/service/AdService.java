@@ -33,4 +33,19 @@ public class AdService {
     public void delete(Long id) {
         adRepository.deleteById(id);
     }
+    
+    // get all active ads for a video (if user is non-premium)
+    public List<Ad> getAdsForVideo(Long videoId, boolean isPremium) {
+
+        // Premium users → no ads
+        if (isPremium) {
+            return List.of();
+        }
+
+        // Non-premium → return only active ads for that video
+        return adRepository.findByVideoId(videoId)
+                .stream()
+                .filter(Ad::isActive)
+                .toList();
+    }
 }
