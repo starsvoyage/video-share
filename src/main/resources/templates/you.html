@@ -6,16 +6,6 @@
 <th:block th:fragment="content">
     <div class="px-4 py-4">
 
-        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
-            <span th:text="${successMessage}"></span>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-
-        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
-            <span th:text="${errorMessage}"></span>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-
         <!-- Profile Header -->
         <div class="py-4 border-bottom">
             <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center gap-4">
