@@ -18,6 +18,10 @@ public class Ad {
 
     private LocalDateTime createdAt;
 
+    @ManyToOne
+    @JoinColumn(name = "video_id")
+    private Video video;
+
     @PrePersist
     public void onCreate() {
         this.createdAt = LocalDateTime.now();
@@ -34,4 +38,6 @@ public class Ad {
     public boolean isActive() { return active; }
     public void setActive(boolean active) { this.active = active; }
     public LocalDateTime getCreatedAt() { return createdAt; }
+    public Video getVideo() { return video; }
+    public void setVideo(Video video) { this.video = video; }
 }
