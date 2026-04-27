@@ -28,6 +28,9 @@ public class Ad {
 
     //End time of the ad campaign
     private LocalDateTime endAt;
+    @ManyToOne
+    @JoinColumn(name = "video_id")
+    private Video video;
 
     @PrePersist
     public void onCreate() {
@@ -51,4 +54,6 @@ public class Ad {
     public void setEndAt(LocalDateTime endAt) { this.endAt = endAt; }
     public AdPlacement getPlacement() { return placement; }
     public void setPlacement(AdPlacement placement) { this.placement = placement; }
+    public Video getVideo() { return video; }
+    public void setVideo(Video video) { this.video = video; }
 }

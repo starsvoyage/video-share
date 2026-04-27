@@ -29,9 +29,67 @@
     <link rel="stylesheet" th:href="@{/css/navbar.css}">
     <link rel="stylesheet" th:href="@{/css/you.css}">
     <link rel="stylesheet" th:href="@{/css/settings.css}">
+
+    <!-- Toast Notifications -->
+    <style>
+        .vs-toast-container {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+        }
+
+        .vs-toast {
+            pointer-events: auto;
+            padding: 14px 22px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+            animation: vsToastIn 0.3s ease-out;
+            max-width: 400px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .vs-toast-success { background: #198754; }
+        .vs-toast-error   { background: #dc3545; }
+        .vs-toast-info    { background: #0d6efd; }
+
+        .vs-toast-close {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.7);
+            font-size: 1.1rem;
+            cursor: pointer;
+            padding: 0;
+            margin-left: auto;
+        }
+
+        .vs-toast-close:hover { color: #fff; }
+
+        @keyframes vsToastIn {
+            from { opacity: 0; transform: translateX(40px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes vsToastOut {
+            from { opacity: 1; }
+            to   { opacity: 0; transform: translateY(-10px); }
+        }
+    </style>
 </head>
 
 <body style="background-color: #f1f3f5;">
+    <!-- Gloabl Toast Container -->
+    <div id="vsToastContainer" class="vs-toast-container"></div>
+
     <!-- Navbar -->
     <th:block th:if="${showNavbar}">
         <div th:replace="~{fragments/navbar :: navbar}"></div>
@@ -123,6 +181,48 @@
 </div>
     <!-- Bootstrap JavaScript bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Global Toast Helper -->
+    <script>
+        window.showToast = function(message, type, duration) {
+            type = type || 'success';
+            duration = duration || 4000;
+
+            var container = document.getElementById('vsToastContainer');
+            if (!container) return;
+
+            var icons = {
+                success: 'bi-check-circle-fill',
+                error: 'bi-exclamation-triangle-fill',
+                info: 'bi-info-circle-fill'
+            };
+
+            var toast = document.createElement('div');
+            toast.className = 'vs-toast vs-toast-' + type;
+            toast.innerHTML =
+                '<i class="bi ' + (icons[type] || icons.info) + '"></i>' +
+                '<span>' + message + '</span>' +
+                '<button class="vs-toast-close" onclick="this.parentElement.remove()">&times;</button>';
+
+            container.appendChild(toast);
+
+            setTimeout(function() {
+                toast.style.animation = 'vsToastOut 0.3s ease-in forwards';
+                setTimeout(function() { toast.remove(); }, 300);
+            }, duration);
+        };
+    </script>
+
+    <!-- Display Server Flash Messages as Toast Notifications -->
+    <div th:if="${successMessage}" id="flashSuccess" th:data-message="${successMessage}" class="d-none"></div>
+    <div th:if="${errorMessage}" id="flashError" th:data-message="${errorMessage}" class="d-none"></div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var s = document.getElementById('flashSuccess');
+            if (s) showToast(s.dataset.message, 'success');
+            var e = document.getElementById('flashError');
+            if (e) showToast(e.dataset.message, 'error');
+        });
+    </script>
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {

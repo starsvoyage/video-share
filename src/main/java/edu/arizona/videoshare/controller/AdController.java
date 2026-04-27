@@ -36,4 +36,13 @@ public class AdController {
     public void delete(@PathVariable Long id) {
         adService.delete(id);
     }
+    
+    // GET /api/v1/videos/{videoId}/ads?isPremium=true/false
+    @GetMapping("/videos/{videoId}/ads")
+    public List<Ad> getAdsForVideo(
+        @PathVariable Long videoId,
+        @RequestParam boolean isPremium) {
+
+    return adService.getAdsForVideo(videoId, isPremium);
+}
 }
