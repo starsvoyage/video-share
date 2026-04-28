@@ -8,7 +8,7 @@
 .sidebar {
     width: 240px;
     min-width: 240px;
-    transition: width 0.25s ease;
+    transition: width var(--vs-transition-base), transform var(--vs-transition-base);
     overflow-x: hidden;
     min-height: calc(100vh - 56px);
     padding-left: 12px;
@@ -31,6 +31,8 @@
     min-height: 44px;
     padding-left: 8px;
     padding-right: 8px;
+    transition: background var(--vs-transition-fast), color var(--vs-transition-fast);
+    border-radius: 10px;
 }
 
 /* Icons */
@@ -92,6 +94,17 @@
     border-radius: 10px;
 }
 
+.sidebar .nav-link.vs-active {
+    background: rgba(94, 162, 255, 0.22) !important;
+    color: #ffffff !important;
+    border-left: 3px solid var(--vs-blue, #5EA2FF);
+    padding-left: 5px;
+}
+
+.sidebar .nav-link.vs-active .sidebar-icon i {
+    color: #ffffff;
+}
+
 /* top navbar toggle button */
 .sidebar-toggle-btn {
     width: 44px;
@@ -106,6 +119,7 @@
     color: white;
     border-radius: 10px;
     line-height: 1;
+    transition: background var(--vs-transition-fast);
 }
 
 .sidebar-toggle-btn:hover,

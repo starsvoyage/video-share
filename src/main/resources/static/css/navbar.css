@@ -9,10 +9,12 @@
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
     padding: 0.4rem 0;
     overflow: hidden;
+    animation: vsFadeIn 0.18s ease-out both;
 }
 
 .dropdown-item {
     color: white;
+    transition: background var(--vs-transition-fast);
 }
 
 .dropdown-item:hover,
@@ -37,4 +39,22 @@
 
 .dropdown-menu .empty-state {
     color: #b0b0b0;
+}
+
+@media (max-width: 767.98px) {
+    .navbar .flex-grow-1 form {
+        max-width: 100% !important;
+    }
+
+    .navbar .btn span.d-none-mobile {
+        display: none !important;
+    }
+}
+
+.navbar .btn-outline-light {
+    transition: background var(--vs-transition-fast), color var(--vs-transition-fast), border-color var(--vs-transition-fast);
+}
+
+.navbar .btn-light {
+    transition: background var(--vs-transition-fast), color var(--vs-transition-fast);
 }
