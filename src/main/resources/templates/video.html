@@ -361,27 +361,40 @@ if (userId && videoPlayer) {
                 } catch (e) {}
             }
 
-            window.react = async function(type) {
-                if (!userId) return;
-                try {
-                    const res = await fetch(`/api/videos/${videoId}/reactions`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ userId: userId, type: type })
-                    });
-                    if (!res.ok) throw new Error();
-                    const data = await res.json();
-                    loadReactions();
-                    const label = type === 'LIKE' ? 'like' : 'dislike';
-                    if (data.action === 'REMOVED') {
-                        showToast('Removed ' + label + '.', 'info', 2000);
-                    } else if (data.action === 'TOGGLED') {
-                        showToast('Switched to ' + label + '.', 'success', 2000);
-                    } else {
-                        showToast(type === 'LIKE' ? 'Liked!' : 'Disliked!', 'success', 2000);
-                    }
-                } catch (e) {}
-            };
+           window.react = async function(type) {
+    if (!userId) return;
+
+    const msgBox = document.getElementById("commentMessage");
+    if (msgBox) {
+        msgBox.textContent = "";
+        msgBox.className = "mt-2 small";
+    }
+
+    try {
+        const res = await fetch(`/api/videos/${videoId}/reactions`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: userId, type: type })
+        });
+
+        if (!res.ok) {
+            const message = await readErrorMessage(res, "Could not update video reaction.");
+            throw new Error(message);
+        }
+
+        loadReactions();
+
+        if (msgBox) {
+            msgBox.classList.add("text-success");
+            msgBox.textContent = "Reaction updated.";
+        }
+    } catch (e) {
+        if (msgBox) {
+            msgBox.classList.add("text-danger");
+            msgBox.textContent = e.message || "Could not update video reaction.";
+        }
+    }
+};
 
             const submitBtn = document.getElementById("submitComment");
             if (submitBtn) {
@@ -405,7 +418,10 @@ if (userId && videoPlayer) {
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({ userId: userId, content: content, parentId: null })
                         });
-                        if (!res.ok) throw new Error("Failed to post comment");
+                       if (!res.ok) {
+    const message = await readErrorMessage(res, "Could not post comment.");
+    throw new Error(message);
+}
                         input.value = "";
                         msgBox.textContent = "";
                         showToast("Comment posted!", "success");
@@ -569,24 +585,19 @@ if (userId && videoPlayer) {
                 })
             });
 
-            if (!res.ok) {
-                const err = await res.json().catch(() => ({}));
-                throw new Error(err.message || "Could not react to comment.");
-            }
+           if (!res.ok) {
+    const message = await readErrorMessage(res, "Could not react to comment.");
+    throw new Error(message);
+}
 
-            const data = await res.json();
-            updateCommentCounts(cid);
-            const label = type === 'LIKE' ? 'like' : 'dislike';
-            if (data.action === 'REMOVED') {
-                showToast('Removed comment ' + label + '.', 'info', 2000);
-            } else if (data.action === 'TOGGLED') {
-                showToast('Switched comment to ' + label + '.', 'success', 2000);
-            } else {
-                showToast('Comment ' + (type === 'LIKE' ? 'liked!' : 'disliked!'), 'success', 2000);
-            }
-        } catch (e) {
-            showToast(e.message || "Could not react to comment.", "error");
-        }
+loadComments();
+} catch (e) {
+    const msgBox = document.getElementById("commentMessage");
+    if (msgBox) {
+        msgBox.className = "mt-2 small text-danger";
+        msgBox.textContent = e.message || "Could not react to comment.";
+    }
+}
     });
 });
                 document.querySelectorAll(".toggle-replies-btn").forEach(btn => {
@@ -752,16 +763,16 @@ if (userId && videoPlayer) {
                                     body: newContent
                                 });
                                 if (res.ok) {
-                                    showToast("Comment updated!", "success");
-                                    loadComments();
-                                } else {
-                                    msgBox.classList.add("text-danger");
-                                    msgBox.textContent = "Failed to edit comment";
-                                }
-                            } catch (e) {
-                                msgBox.classList.add("text-danger");
-                                msgBox.textContent = "Error editing comment";
-                            }
+    loadComments();
+} else {
+    const message = await readErrorMessage(res, "Failed to edit comment.");
+    msgBox.classList.add("text-danger");
+    msgBox.textContent = message;
+}
+                          } catch (e) {
+    msgBox.classList.add("text-danger");
+    msgBox.textContent = e.message || "Error editing comment.";
+}
                         });
 
                         document.querySelector(`.cancel-edit-btn[data-comment-id="${cid}"]`).addEventListener("click", function () {
@@ -770,20 +781,36 @@ if (userId && videoPlayer) {
                     });
                 });
 
-                document.querySelectorAll(".delete-comment-btn").forEach(btn => {
-                    btn.addEventListener("click", async function () {
-                        if (!confirm("Delete this comment?")) return;
-                        const cid = this.dataset.commentId;
-                        try {
-                            const res = await fetch(`/api/videos/${videoId}/comments/${cid}?userId=${userId}&isModerator=false`, {
-                                method: 'DELETE'
-                            });
-                            if (!res.ok) throw new Error();
-                            showToast("Comment deleted.", "info");
-                            loadComments();
-                        } catch (e) {}
-                    });
-                });
+               document.querySelectorAll(".delete-comment-btn").forEach(btn => {
+    btn.addEventListener("click", async function () {
+        if (!confirm("Delete this comment?")) return;
+        const cid = this.dataset.commentId;
+        const msgBox = document.getElementById("commentMessage");
+
+        if (msgBox) {
+            msgBox.textContent = "";
+            msgBox.className = "mt-2 small";
+        }
+
+        try {
+            const res = await fetch(`/api/videos/${videoId}/comments/${cid}?userId=${userId}&isModerator=false`, {
+                method: 'DELETE'
+            });
+
+            if (!res.ok) {
+                const message = await readErrorMessage(res, "Could not delete comment.");
+                throw new Error(message);
+            }
+
+            loadComments();
+        } catch (e) {
+            if (msgBox) {
+                msgBox.classList.add("text-danger");
+                msgBox.textContent = e.message || "Could not delete comment.";
+            }
+        }
+    });
+});
             }
 
                         document.querySelectorAll(".add-to-playlist-btn").forEach(btn => {
@@ -819,114 +846,15 @@ if (userId && videoPlayer) {
                 });
             });
 
-            function attachReplyEventListeners(parentId) {
-                const container = document.getElementById(`replies-${parentId}`);
-                if (!container) return;
-
-                container.querySelectorAll(".react-reply-btn").forEach(btn => {
-                    btn.addEventListener("click", async function () {
-                        const rid = this.dataset.replyId;
-                        const type = this.dataset.type;
-                        try {
-                            const res = await fetch(`/api/comments/${rid}/reactions`, {
-                                method: "POST",
-                                headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify({ userId: userId, type: type })
-                            });
-                            if (!res.ok) throw new Error();
-                            const data = await res.json();
-                            const countRes = await fetch(`/api/comments/${rid}/reactions/count`);
-                            if (countRes.ok) {
-                                const counts = await countRes.json();
-                                const likeBtn = container.querySelector(`.react-reply-btn[data-reply-id="${rid}"][data-type="LIKE"]`);
-                                const dislikeBtn = container.querySelector(`.react-reply-btn[data-reply-id="${rid}"][data-type="DISLIKE"]`);
-                                if (likeBtn) likeBtn.innerHTML = `<i class="bi bi-hand-thumbs-up me-1"></i>Like (${counts.likes})`;
-                                if (dislikeBtn) dislikeBtn.innerHTML = `<i class="bi bi-hand-thumbs-down me-1"></i>Dislike (${counts.dislikes})`;
-                            }
-                            const label = type === 'LIKE' ? 'like' : 'dislike';
-                            if (data.action === 'REMOVED') {
-                                showToast('Removed reply ' + label + '.', 'info', 2000);
-                            } else if (data.action === 'TOGGLED') {
-                                showToast('Switched reply to ' + label + '.', 'success', 2000);
-                            } else {
-                                showToast('Reply ' + (type === 'LIKE' ? 'liked!' : 'disliked!'), 'success', 2000);
-                            }
-                        } catch (e) {
-                            showToast("Could not react to reply.", "error");
-                        }
-                    });
-                });
-
-                container.querySelectorAll(".edit-reply-btn").forEach(btn => {
-                    btn.addEventListener("click", function () {
-                        const rid = this.dataset.replyId;
-                        const pid = this.dataset.parentId;
-                        const originalContent = this.dataset.content;
-                        const contentDiv = document.querySelector(`.reply-content-${rid}`);
-                        if (!contentDiv) return;
-
-                        contentDiv.innerHTML = `
-                            <textarea class="form-control form-control-sm" rows="2" id="edit-reply-input-${rid}">${originalContent}</textarea>
-                            <div class="mt-1">
-                                <button class="btn btn-sm btn-dark save-reply-edit-btn" data-reply-id="${rid}" data-parent-id="${pid}">Save</button>
-                                <button class="btn btn-sm btn-outline-secondary ms-1 cancel-reply-edit-btn" data-reply-id="${rid}" data-parent-id="${pid}">Cancel</button>
-                            </div>
-                            <div id="edit-reply-msg-${rid}" class="mt-1 small"></div>
-                        `;
-
-                        contentDiv.querySelector(".save-reply-edit-btn").addEventListener("click", async function () {
-                            const newContent = document.getElementById(`edit-reply-input-${rid}`).value.trim();
-                            const msgBox = document.getElementById(`edit-reply-msg-${rid}`);
-                            if (!newContent) {
-                                msgBox.className = "mt-1 small text-danger";
-                                msgBox.textContent = "Reply cannot be empty.";
-                                return;
-                            }
-                            try {
-                                const res = await fetch(`/api/videos/${videoId}/comments/${rid}?userId=${userId}`, {
-                                    method: "PATCH",
-                                    headers: { "Content-Type": "text/plain" },
-                                    body: newContent
-                                });
-                                if (res.ok) {
-                                    showToast("Reply updated!", "success");
-                                    const toggleBtn = document.querySelector(`.toggle-replies-btn[data-comment-id="${pid}"]`);
-                                    if (toggleBtn) { toggleBtn.dataset.loaded = "false"; toggleBtn.click(); }
-                                } else {
-                                    msgBox.className = "mt-1 small text-danger";
-                                    msgBox.textContent = "Failed to edit reply.";
-                                }
-                            } catch (e) {
-                                msgBox.className = "mt-1 small text-danger";
-                                msgBox.textContent = "Error editing reply.";
-                            }
-                        });
-
-                        contentDiv.querySelector(".cancel-reply-edit-btn").addEventListener("click", function () {
-                            const toggleBtn = document.querySelector(`.toggle-replies-btn[data-comment-id="${pid}"]`);
-                            if (toggleBtn) { toggleBtn.dataset.loaded = "false"; toggleBtn.click(); }
-                        });
-                    });
-                });
-
-                container.querySelectorAll(".delete-reply-btn").forEach(btn => {
-                    btn.addEventListener("click", async function () {
-                        if (!confirm("Delete this reply?")) return;
-                        const rid = this.dataset.replyId;
-                        try {
-                            const res = await fetch(`/api/videos/${videoId}/comments/${rid}?userId=${userId}&isModerator=false`, {
-                                method: 'DELETE'
-                            });
-                            if (!res.ok) throw new Error();
-                            showToast("Reply deleted.", "info");
-                            loadComments();
-                        } catch (e) {
-                            showToast("Could not delete reply.", "error");
-                        }
-                    });
-                });
-            }
-
+            async function readErrorMessage(res, fallbackMessage) {
+    try {
+        const err = await res.json();
+        return err.message || fallbackMessage;
+    } catch {
+        return fallbackMessage;
+    }
+}
+            
             function escHtml(str) {
                 const d = document.createElement("div");
                 d.textContent = str || "";
