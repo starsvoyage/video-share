@@ -1,10 +1,15 @@
 package edu.arizona.videoshare.controller;
 
-import org.springframework.web.bind.annotation.*;
-import lombok.RequiredArgsConstructor;
-import java.util.List;
-import edu.arizona.videoshare.service.AdService;
+import edu.arizona.videoshare.exception.response.ApiError;
 import edu.arizona.videoshare.model.entity.Ad;
+import edu.arizona.videoshare.service.AdService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/ads")
@@ -51,5 +56,25 @@ public class AdController {
             @PathVariable Long videoId,
             @RequestParam boolean isPremium) {
         return adService.getAdsForVideo(videoId, isPremium);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    ResponseEntity<ApiError> handleUnreadableMessage(HttpMessageNotReadableException ex) {
+        ApiError body = new ApiError(
+                HttpStatus.BAD_REQUEST.value(),
+                "Bad Request",
+                "Request body is invalid. Check field names, formats, and enum values.",
+                List.of());
+        return ResponseEntity.badRequest().body(body);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    ResponseEntity<ApiError> handleIllegalArgument(IllegalArgumentException ex) {
+        ApiError body = new ApiError(
+                HttpStatus.BAD_REQUEST.value(),
+                "Bad Request",
+                ex.getMessage(),
+                List.of());
+        return ResponseEntity.badRequest().body(body);
     }
 }

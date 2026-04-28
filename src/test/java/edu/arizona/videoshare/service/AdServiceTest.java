@@ -1,5 +1,6 @@
 package edu.arizona.videoshare.service;
 
+import edu.arizona.videoshare.exception.NotFoundException;
 import edu.arizona.videoshare.model.entity.Ad;
 import edu.arizona.videoshare.model.entity.Channel;
 import edu.arizona.videoshare.model.entity.User;
@@ -19,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ActiveProfiles("test")
 @SpringBootTest
@@ -47,6 +49,38 @@ class AdServiceTest {
         assertEquals(1, ads.size());
         assertEquals("Target Ad", ads.get(0).getTitle());
         assertEquals(targetVideo.getId(), ads.get(0).getVideo().getId());
+    }
+
+    @Test
+    void createRejectsInvalidFieldsWithClearMessage() {
+        Ad ad = new Ad();
+        ad.setDuration(-1);
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> adService.create(ad));
+
+        assertEquals("Ad title is required. Ad media URL is required. Ad duration must be 0 or greater.", ex.getMessage());
+    }
+
+    @Test
+    void createRejectsScheduleWhenEndTimeIsBeforeStartTime() {
+        Ad ad = new Ad();
+        ad.setTitle("Invalid Schedule");
+        ad.setMediaUrl("https://example.com/invalid-schedule.mp4");
+        ad.setDuration(15);
+        ad.setActive(true);
+        ad.setStartAt(java.time.LocalDateTime.of(2026, 4, 28, 10, 15));
+        ad.setEndAt(java.time.LocalDateTime.of(2026, 4, 28, 10, 0));
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> adService.create(ad));
+
+        assertEquals("Ad end time must be after the start time.", ex.getMessage());
+    }
+
+    @Test
+    void deleteMissingAdThrowsClearNotFoundMessage() {
+        NotFoundException ex = assertThrows(NotFoundException.class, () -> adService.delete(999999L));
+
+        assertEquals("Ad not found: 999999", ex.getMessage());
     }
 
     private Channel saveChannel(String username, String channelName) {

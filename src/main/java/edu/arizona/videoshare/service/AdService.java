@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 import edu.arizona.videoshare.repository.AdRepository;
@@ -21,13 +22,15 @@ public class AdService {
 
     // Create Ad
     public Ad create(Ad ad) {
+        validate(ad);
+        validateSchedule(ad);
         return adRepository.save(ad);
     }
 
     // Get Ad by ID
     public Ad get(Long id) {
         return adRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Ad not found"));
+                .orElseThrow(() -> new NotFoundException("Ad not found: " + id));
     }
 
     // Get All Ads
@@ -42,7 +45,9 @@ public class AdService {
 
     // Delete Ad
     public void delete(Long id) {
-        adRepository.deleteById(id);
+        Ad ad = adRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Ad not found: " + id));
+        adRepository.delete(ad);
     }
 
     //Check if an Ad is active based on current time and its start/end time
@@ -88,5 +93,31 @@ public class AdService {
                 .stream()
                 .filter(Ad::isActive)
                 .toList();
+    }
+
+    private void validateSchedule(Ad ad) {
+        if (ad.getStartAt() != null
+                && ad.getEndAt() != null
+                && !ad.getEndAt().isAfter(ad.getStartAt())) {
+            throw new IllegalArgumentException("Ad end time must be after the start time.");
+        }
+    }
+
+    private void validate(Ad ad) {
+        List<String> errors = new ArrayList<>();
+
+        if (ad.getTitle() == null || ad.getTitle().isBlank()) {
+            errors.add("Ad title is required.");
+        }
+        if (ad.getMediaUrl() == null || ad.getMediaUrl().isBlank()) {
+            errors.add("Ad media URL is required.");
+        }
+        if (ad.getDuration() < 0) {
+            errors.add("Ad duration must be 0 or greater.");
+        }
+
+        if (!errors.isEmpty()) {
+            throw new IllegalArgumentException(String.join(" ", errors));
+        }
     }
 }
