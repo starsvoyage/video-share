@@ -3,6 +3,7 @@ package edu.arizona.videoshare.config;
 import edu.arizona.videoshare.dto.user.UserRequest;
 import edu.arizona.videoshare.model.entity.*;
 import edu.arizona.videoshare.model.entity.Subscription.SubscriptionStatus;
+import edu.arizona.videoshare.model.enums.AdPlacement;
 import edu.arizona.videoshare.model.enums.MembershipStatus;
 import edu.arizona.videoshare.model.enums.UserRole;
 import edu.arizona.videoshare.model.enums.UserStatus;
@@ -44,12 +45,11 @@ public class DataLoader implements CommandLineRunner {
     private final UserMembershipRepository userMembershipRepository;
     private final BCryptPasswordEncoder encoder;
 
-    public DataLoader(UserService userService,
-                      UserRepository userRepository,
+    public DataLoader(UserRepository userRepository,
                       ChannelRepository channelRepository,
                       SubscriptionRepository subscriptionRepository,
                       VideoRepository videoRepository,
-                      BCryptPasswordEncoder encoder, AdRepository adRepository) {
+                      AdRepository adRepository,
                       MembershipPlanRepository membershipPlanRepository,
                       UserMembershipRepository userMembershipRepository,
                       BCryptPasswordEncoder encoder) {
@@ -58,10 +58,10 @@ public class DataLoader implements CommandLineRunner {
         this.channelRepository = channelRepository;
         this.subscriptionRepository = subscriptionRepository;
         this.videoRepository = videoRepository;
+        this.adRepository = adRepository;
         this.membershipPlanRepository = membershipPlanRepository;
         this.userMembershipRepository = userMembershipRepository;
         this.encoder = encoder;
-        this.adRepository = adRepository;
     }
 
     /**
@@ -235,6 +235,18 @@ public class DataLoader implements CommandLineRunner {
             membershipPlanRepository.save(free);
         }
 
+        if (!membershipPlanRepository.existsByCode("PREMIUM")) {
+            MembershipPlan premium = new MembershipPlan();
+            premium.setCode("PREMIUM");
+            premium.setName("Premium");
+            premium.setCost(999);
+            premium.setAdFree(true);
+            premium.setActive(true);
+            premium.setHd4KPlayback(true);
+            membershipPlanRepository.save(premium);
+        }
+    }
+
     //Helper functions to create channels, videos, subscriptions
     private Channel createChannel(String name, String description, User owner) {
         Channel channel = new Channel();
@@ -265,19 +277,6 @@ public class DataLoader implements CommandLineRunner {
         subscriptionRepository.save(sub);
         channel.setSubscriberCount(channel.getSubscriberCount() + 1);
         channelRepository.save(channel);
-    }
-}
-
-        if (!membershipPlanRepository.existsByCode("PREMIUM")) {
-            MembershipPlan premium = new MembershipPlan();
-            premium.setCode("PREMIUM");
-            premium.setName("Premium");
-            premium.setCost(999);
-            premium.setAdFree(true);
-            premium.setActive(true);
-            premium.setHd4KPlayback(true);
-            membershipPlanRepository.save(premium);
-        }
     }
 
     /**
