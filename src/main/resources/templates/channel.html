@@ -37,29 +37,29 @@
 
                     <div class="d-flex flex-wrap gap-2" th:if="${!isOwner}">
 
-    <!-- Not logged in -->
-    <a th:if="${loggedInUserId == null}"
-       th:href="@{/login}"
-       class="btn btn-dark rounded-pill px-4">
-        Sign in to Subscribe
-    </a>
+                        <!-- Not logged in -->
+                        <a th:if="${loggedInUserId == null}"
+                           th:href="@{/login}"
+                           class="btn btn-dark rounded-pill px-4">
+                            Sign in to Subscribe
+                        </a>
 
-    <!-- Logged in and NOT subscribed -->
-    <form th:if="${loggedInUserId != null}"
-      th:action="@{/subscriptions/channels/{channelId}(channelId=${channel.id})}"
-      method="post"
-      class="m-0">
+                        <!-- Logged in and NOT subscribed -->
+                        <form th:if="${loggedInUserId != null}"
+                              th:action="@{/subscriptions/channels/{channelId}(channelId=${channel.id})}"
+                              method="post"
+                              class="m-0">
 
-    <button type="submit"
-            class="btn rounded-pill px-4"
-            th:classappend="${isSubscribed ? 'btn-outline-dark' : 'btn-dark'}"
-            th:text="${isSubscribed ? 'Unsubscribe' : 'Subscribe'}">
-        Subscribe
-    </button>
+                            <button type="submit"
+                                    class="btn rounded-pill px-4"
+                                    th:classappend="${isSubscribed ? 'btn-outline-dark' : 'btn-dark'}"
+                                    th:text="${isSubscribed ? 'Unsubscribe' : 'Subscribe'}">
+                                Subscribe
+                            </button>
 
-</form>
+                        </form>
 
-</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -95,13 +95,20 @@
                 No videos found.
             </div>
 
-            <div th:if="${!#lists.isEmpty(channel.videosOnChannel)}" class="row g-4">
-                <div class="col-md-6 col-lg-4" th:each="video : ${channel.videosOnChannel}">
+            <div th:if="${!#lists.isEmpty(channel.videosOnChannel)}" class="vs-video-grid">
+                <div th:each="video : ${channel.videosOnChannel}">
                     <a th:href="@{'/videos/' + ${video.id}}"
                        class="text-decoration-none text-dark">
-                        <div class="border rounded-4 p-3 h-100 bg-white shadow-sm">
-                            <h5 class="mb-2" th:text="${video.title}">Video Title</h5>
-                            <p class="text-muted mb-0">Click to watch</p>
+                        <div class="card h-100 border-0 shadow-sm rounded-4">
+                            <div class="vs-video-thumb rounded-top-4 bg-dark text-white">
+                                <div>
+                                    <i class="bi bi-play-btn fs-1"></i>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="mb-2" th:text="${video.title}">Video Title</h5>
+                                <p class="text-muted small mb-0">Click to watch</p>
+                            </div>
                         </div>
                     </a>
                 </div>
@@ -145,6 +152,7 @@
         .channel-tab {
             color: #6c757d;
             position: relative;
+            transition: color var(--vs-transition-fast);
         }
 
         .channel-tab.active {
@@ -161,6 +169,10 @@
             background-color: #212529;
             border-radius: 999px;
         }
+
+        .channel-section {
+            animation: vsFadeIn var(--vs-transition-base) ease-out both;
+        }
     </style>
 
     <script>
@@ -176,7 +188,11 @@
                     this.classList.add("active");
 
                     sections.forEach(section => section.classList.add("d-none"));
-                    document.getElementById(targetId).classList.remove("d-none");
+                    const target = document.getElementById(targetId);
+                    target.classList.remove("d-none");
+                    target.style.animation = "none";
+                    target.offsetHeight;
+                    target.style.animation = "";
                 });
             });
         });
