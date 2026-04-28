@@ -16,6 +16,10 @@ public interface PlaylistRepository extends JpaRepository<Playlist, Long> {
     @EntityGraph(attributePaths = {"user", "items", "items.video"})
     List<Playlist> findByUserId(Long userId);
 
+    /** Public playlists owned by one user. */
+    @EntityGraph(attributePaths = {"user", "items", "items.video"})
+    List<Playlist> findByUserIdAndVisibility(Long userId, edu.arizona.videoshare.model.enums.Visibility visibility);
+
     /** Playlist with user + items + item videos loaded (prevents LazyInitialization problems in controllers). */
     @EntityGraph(attributePaths = {"user", "items", "items.video"})
     Optional<Playlist> findWithItemsById(Long id);

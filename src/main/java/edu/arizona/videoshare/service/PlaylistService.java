@@ -66,6 +66,15 @@ public class PlaylistService {
         return playlists.findByUserId(userId);
     }
 
+    /** READ public playlists by user */
+    @Transactional(readOnly = true)
+    public List<Playlist> getPublicByUser(Long userId) {
+        if (!users.existsById(userId)) {
+            throw new NotFoundException("User not found: " + userId);
+        }
+        return playlists.findByUserIdAndVisibility(userId, Visibility.PUBLIC);
+    }
+
     /**
      * ADD video to playlist
      *

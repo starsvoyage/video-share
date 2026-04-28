@@ -111,7 +111,32 @@
         <!-- Playlists Section -->
         <div id="playlistsSection" class="channel-section py-4 d-none border-bottom">
             <h3 class="h5 mb-4">Playlists</h3>
-            <p class="text-muted mb-0">No playlists yet.</p>
+
+            <div th:if="${playlists == null or #lists.isEmpty(playlists)}" class="text-muted">
+                No public playlists yet.
+            </div>
+
+            <div th:if="${playlists != null and !#lists.isEmpty(playlists)}" class="row g-4">
+                <div class="col-md-6 col-lg-4" th:each="playlist : ${playlists}">
+                    <a th:href="@{/playlists/{id}(id=${playlist.id})}"
+                       class="text-decoration-none text-dark">
+                        <div class="border rounded-4 p-3 h-100 bg-white shadow-sm">
+                            <div class="d-flex justify-content-between align-items-start gap-3 mb-2">
+                                <h5 class="mb-0" th:text="${playlist.name}">Playlist Name</h5>
+                                <span class="text-muted small"
+                                      th:text="${playlist.items != null ? #lists.size(playlist.items) + ' videos' : '0 videos'}">
+                                    0 videos
+                                </span>
+                            </div>
+
+                            <p class="text-muted small mb-0"
+                               th:text="${playlist.description != null and !#strings.isEmpty(playlist.description) ? playlist.description : 'Curated videos from this creator.'}">
+                                Playlist description
+                            </p>
+                        </div>
+                    </a>
+                </div>
+            </div>
         </div>
 
         <!-- About Section -->
