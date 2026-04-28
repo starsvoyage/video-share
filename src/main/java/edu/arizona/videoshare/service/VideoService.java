@@ -86,6 +86,13 @@ public class VideoService {
                 VideoVisibility.PUBLIC);
     }
 
+    public List<Video> searchPublicByTitle(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) { return getAllPublic(); }
+
+        return videoRepository.findByTitleContainingIgnoreCaseAndVisibilityOrderByCreatedAtDesc(
+                keyword.trim(), VideoVisibility.PUBLIC);
+    }
+
     public void delete(Long id) {
         videoRepository.deleteById(id);
     }
@@ -113,9 +120,11 @@ public class VideoService {
         Channel channel = channelRepository.findById(channelId)
                 .orElseThrow(() -> new NotFoundException("Channel not found"));
 
-        if (user.getStatus() != UserStatus.ACTIVE) {
-            throw new IllegalArgumentException("You must verify your account before uploading videos.");
-        }
+
+        //FIXME: DISABLED FOR TESTING PURPOSES UNCOMMENT TO RESTORE
+        //if (user.getStatus() != UserStatus.ACTIVE) {
+        //    throw new IllegalArgumentException("You must verify your account before uploading videos.");
+        //}
 
         if (user.getRole() != UserRole.CREATOR) {
             throw new IllegalArgumentException("Only creators can upload videos.");

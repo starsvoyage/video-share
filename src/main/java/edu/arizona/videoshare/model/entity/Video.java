@@ -38,7 +38,7 @@ public class Video {
     private String mediaUrl;
 
     @Setter
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "owner_user_id", foreignKey = @ForeignKey(name = "fk_videos_owner_user"))
 
     @JsonIgnoreProperties({ "credentials" })
@@ -46,7 +46,7 @@ public class Video {
 
     // Added this to make the channel and subscription entities work
     @Setter
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "channel_id", nullable = false)
     @JsonIgnoreProperties({ "videosOnChannel", "subscribers", "user" })
     private Channel channel;
