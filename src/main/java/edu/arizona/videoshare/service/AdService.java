@@ -35,6 +35,11 @@ public class AdService {
         return adRepository.findAll();
     }
 
+    // Get all ads for videos owned by a specific user
+    public List<Ad> getByUserId(Long userId) {
+        return adRepository.findByVideo_Owner_Id(userId);
+    }
+
     // Delete Ad
     public void delete(Long id) {
         adRepository.deleteById(id);
