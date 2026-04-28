@@ -38,9 +38,10 @@ public class ChannelService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        if (user.getStatus() != UserStatus.ACTIVE) {
-            throw new IllegalArgumentException("Your account must be verified before creating a channel.");
-        }
+        //FIXME: DISABLED FOR DEMO PURPOSES, UNCOMMENT TO RESTORE
+        //if (user.getStatus() != UserStatus.ACTIVE) {
+        //    throw new IllegalArgumentException("Your account must be verified before creating a channel.");
+        //}
 
         if (name == null || name.trim().isEmpty()) {
             throw new IllegalArgumentException("Channel name is required.");
@@ -141,5 +142,18 @@ public class ChannelService {
     @Transactional
     public void deleteChannel(Long channelId) {
         channelRepository.deleteById(channelId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Channel> getAllChannels() {
+        return channelRepository.findAllByOrderByNameAsc();
+    }
+
+    @Transactional(readOnly = true)
+    public List<Channel> searchChannelsByName(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return getAllChannels();
+        }
+        return channelRepository.findByNameContainingIgnoreCaseOrderByNameAsc(keyword.trim());
     }
 }

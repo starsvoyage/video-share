@@ -75,6 +75,22 @@
                     </div>
                 `).join("");
 
+                //Add banner ads after every 6 videos
+                const videoCards = videosGrid.querySelectorAll('.col-12.col-md-6.col-lg-4');
+                for (let i = 0; i < videoCards.length; i++) {
+                    if ((i + 1) % 6 === 0 && i + 1 < videoCards.length) {
+                        const adDiv = document.createElement('div');
+                        adDiv.className = 'col-12';
+                        adDiv.innerHTML = `
+                            <div class="text-center my-4">
+                                <div class="text-muted small mb-2">Advertisement</div>
+                                <img src="https://picsum.photos/728/90" alt="Banner Ad" class="img-fluid rounded" style="max-width: 100%; height: auto;" />
+                            </div>
+                        `;
+                        videoCards[i].parentNode.insertBefore(adDiv, videoCards[i].nextSibling);
+                    }
+                }
+
                 videosGrid.classList.remove("d-none");
             } catch (e) {
                 videosLoading.classList.add("d-none");
