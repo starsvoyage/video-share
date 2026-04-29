@@ -27,7 +27,6 @@ public class ReactionService {
         private final CommentRepository commentRepository;
         private final VideoRepository videoRepository;
         private final NotificationService notificationService;
-        private final PlaylistService playlistService;
 
         @Transactional
         public ReactResponse reactToVideo(Long videoId, Long userId, ReactionType type) {
@@ -44,9 +43,6 @@ public class ReactionService {
                         Reaction r = existing.get();
                         if (r.getType() == type) {
                                 reactionRepository.delete(r);
-                                if (type == ReactionType.LIKE) {
-                                        playlistService.syncLikedVideo(userId, videoId, false);
-                                }
                                 return ReactResponse.builder()
                                                 .id(r.getId())
                                                 .userId(userId)
@@ -61,7 +57,6 @@ public class ReactionService {
                         else {
                                 r.setType(type);
                                 Reaction saved = reactionRepository.save(r);
-                                playlistService.syncLikedVideo(userId, videoId, type == ReactionType.LIKE);
                                 return ReactResponse.builder()
                                                 .id(saved.getId())
                                                 .userId(userId)
@@ -82,7 +77,6 @@ public class ReactionService {
                 Reaction saved = reactionRepository.save(reaction);
 
                 if (type == ReactionType.LIKE) {
-                        playlistService.syncLikedVideo(userId, videoId, true);
                         Video video = videoRepository.findById(videoId).orElse(null);
                         if (video != null && video.getOwner() != null) {
                                 notificationService.notify(video.getOwner(), user, NotificationType.LIKE_VIDEO,

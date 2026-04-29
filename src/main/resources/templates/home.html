@@ -26,7 +26,7 @@
             </div>
 
             <!-- Video grid -->
-            <div id="videosGrid" class="vs-video-grid d-none"></div>
+            <div id="videosGrid" class="row g-4 d-none"></div>
         </section>
     </div>
 
@@ -51,35 +51,36 @@
                 }
 
                 videosGrid.innerHTML = videos.map(video => `
-                    <a href="/videos/${video.id}" class="text-decoration-none text-dark">
-                        <div class="card h-100 border-0 shadow-sm rounded-4">
-                            <div class="vs-video-thumb rounded-top-4 bg-dark text-white">
-                                <div>
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <a href="/videos/${video.id}" class="text-decoration-none text-dark">
+                            <div class="card h-100 border-0 shadow-sm rounded-4">
+                                <div class="bg-dark text-white d-flex align-items-center justify-content-center rounded-top-4"
+                                     style="height: 180px;">
                                     <i class="bi bi-play-btn fs-1"></i>
                                 </div>
-                            </div>
 
-                            <div class="card-body">
-                                <h5 class="card-title mb-2">${escapeHtml(video.title || "Untitled Video")}</h5>
+                                <div class="card-body">
+                                    <h5 class="card-title mb-2">${escapeHtml(video.title || "Untitled Video")}</h5>
 
-                                <div class="text-muted small mb-1">
-                                    ${escapeHtml(video.channel?.name || "Unknown Channel")}
+                                    <div class="text-muted small mb-1">
+                                        ${escapeHtml(video.channel?.name || "Unknown Channel")}
+                                    </div>
+
+                                    <div class="text-muted small">
+                                        ${formatUploadedDate(video.createdAt)}
+                                    </div>
                                 </div>
-
-                                <div class="text-muted small">
-                                    ${formatUploadedDate(video.createdAt)}
-                                </div>
                             </div>
-                        </div>
-                    </a>
+                        </a>
+                    </div>
                 `).join("");
 
                 //Add banner ads after every 6 videos
-                const videoCards = videosGrid.querySelectorAll(':scope > a');
+                const videoCards = videosGrid.querySelectorAll('.col-12.col-md-6.col-lg-4');
                 for (let i = 0; i < videoCards.length; i++) {
                     if ((i + 1) % 6 === 0 && i + 1 < videoCards.length) {
                         const adDiv = document.createElement('div');
-                        adDiv.style.gridColumn = '1 / -1';
+                        adDiv.className = 'col-12';
                         adDiv.innerHTML = `
                             <div class="text-center my-4">
                                 <div class="text-muted small mb-2">Advertisement</div>

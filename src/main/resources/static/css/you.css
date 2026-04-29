@@ -1,449 +1,130 @@
-<!DOCTYPE html>
-<html lang="en"
-      xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layout/base :: layout('VideoShare | ' + ${user.username}, ~{::content}, true, true)}">
+.you-section {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid #dee2e6;
+}
 
-<th:block th:fragment="content">
-    <div class="px-4 py-4">
+.you-section-header {
+    margin-bottom: 1.25rem;
+}
 
-        <!-- Profile Header -->
-        <div class="py-4 border-bottom">
-            <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center gap-4">
+.you-card-col {
+    display: flex;
+}
 
-                <div class="flex-shrink-0">
-                    <img th:if="${user.avatarUrl != null and !#strings.isEmpty(user.avatarUrl)}"
-                         th:src="${user.avatarUrl}"
-                         alt="User Avatar"
-                         class="rounded-circle border you-avatar-lg">
+.you-card-col > a,
+.you-card-col > div,
+.you-card-col > button {
+    width: 100%;
+}
 
-                    <div th:if="${user.avatarUrl == null or #strings.isEmpty(user.avatarUrl)}"
-                         class="you-letter-avatar-lg text-dark"
-                         th:text="${#strings.substring(user.username,0,1).toUpperCase()}">
-                    </div>
-                </div>
+.you-item-card,
+.you-create-tile {
+    background: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 1rem;
+    min-height: 180px;
+    width: 100%;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
 
-                <div class="flex-grow-1">
-                    <h1 class="h2 fw-bold mb-2" th:text="${user.displayName}">Display Name</h1>
+.you-item-card:hover,
+.you-create-tile:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 .5rem 1rem rgba(0, 0, 0, 0.08);
+}
 
-                    <div class="text-muted mb-2">
-                        @<span th:text="${user.username}">username</span>
-                        <span class="btn btn-sm btn-outline-success rounded-pill px-3"
-                              th:classappend="${isVerified} ? 'text-bg-success' : 'text-bg-light'"
-                              th:text="${isVerified} ? 'Verified' : 'Not Verified'">
-                            Verified
-                        </span>
-                    </div>
+.you-create-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
 
-                    <div class="mb-0">
-                        <p class="mb-2 text-secondary"
-                           th:if="${user.bio != null and !#strings.isEmpty(user.bio)}"
-                           th:text="${user.bio}">
-                            Bio goes here
-                        </p>
+.you-plus-circle {
+    width: 64px;
+    height: 64px;
+    font-size: 2rem;
+    border-radius: 999px;
+    border: 1px solid #dee2e6;
+    background: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+}
 
-                        <p class="mb-2 text-secondary"
-                           th:if="${user.bio == null or #strings.isEmpty(user.bio)}">
-                            No bio yet.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
+.you-avatar-sm {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+}
 
-        <!-- Channels Section -->
-        <section class="you-section">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h3 class="h5 mb-0">Channels</h3>
-            </div>
+.you-avatar-lg {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+}
 
-            <div class="vs-video-grid">
-                <div th:if="${canCreateChannel}">
-                    <button type="button"
-                            class="card h-100 w-100 border-0 bg-white shadow-sm rounded-4 p-4 text-center"
-                            data-bs-toggle="modal"
-                            data-bs-target="#createChannelModal"
-                            style="min-height: 180px;">
-                        <div class="d-flex flex-column justify-content-center align-items-center h-100">
-                            <div class="rounded-circle border d-flex align-items-center justify-content-center mb-3"
-                                 style="width: 64px; height: 64px; font-size: 2rem;">
-                                +
-                            </div>
-                            <div class="fw-semibold">Create Channel</div>
-                        </div>
-                    </button>
-                </div>
+.you-letter-avatar-sm {
+    width: 64px;
+    height: 64px;
+    font-size: 1.375rem;
+    border-radius: 999px;
+    border: 1px solid #dee2e6;
+    background: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+}
 
-                <div th:if="${!canCreateChannel}">
-                    <div class="card h-100 w-100 border-0 bg-light shadow-sm rounded-4 p-4 text-center text-muted"
-                         style="min-height: 180px;">
-                        <div class="d-flex flex-column justify-content-center align-items-center h-100">
-                            <div class="rounded-circle border bg-white d-flex align-items-center justify-content-center mb-3"
-                                 style="width: 64px; height: 64px; font-size: 2rem;">
-                                +
-                            </div>
-                            <div class="fw-semibold">Verify to Create</div>
-                        </div>
-                    </div>
-                </div>
+.you-letter-avatar-lg {
+    width: 120px;
+    height: 120px;
+    font-size: 3rem;
+    border-radius: 999px;
+    border: 1px solid #dee2e6;
+    background: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+}
 
-                <div th:each="channel : ${channels}">
-                    <a th:href="@{/{username}/channel/{channelName}(username=${channel.user.username}, channelName=${channel.name})}"
-                       class="text-decoration-none text-dark">
-                        <div class="card h-100 border-0 bg-white shadow-sm rounded-4 p-4"
-                             style="min-height: 180px;">
-                            <div class="d-flex align-items-start gap-3">
-                                <div th:if="${channel.avatarUrl != null and !#strings.isEmpty(channel.avatarUrl)}">
-                                    <img th:src="${channel.avatarUrl}"
-                                         alt="Channel Avatar"
-                                         class="rounded-circle border"
-                                         style="width: 56px; height: 56px; object-fit: cover;">
-                                </div>
+.you-view-all-btn {
+    border-radius: 999px;
+}
 
-                                <div th:if="${channel.avatarUrl == null or #strings.isEmpty(channel.avatarUrl)}"
-                                     class="rounded-circle border d-flex align-items-center justify-content-center fw-bold flex-shrink-0"
-                                     style="width: 56px; height: 56px; font-size: 1.5rem;"
-                                     th:text="${#strings.substring(channel.name,0,1).toUpperCase()}">
-                                </div>
+.you-muted-label {
+    color: #6c757d;
+    font-size: 0.95rem;
+}
 
-                                <div class="flex-grow-1">
-                                    <div class="fw-semibold fs-5" th:text="${channel.name}">Channel Name</div>
-                                    <div class="text-muted small mb-3">
-                                        <span th:text="${channel.subscriberCount}">0</span> subscribers
-                                    </div>
-                                    <div class="text-muted"
-                                         th:text="${channel.description != null and !#strings.isEmpty(channel.description) ? channel.description : 'No description.'}">
-                                        No description.
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-            </div>
-        </section>
+.you-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+}
 
-        <div class="mt-5">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3 class="h5 mb-0">My Playlists</h3>
+.you-card {
+    width: 260px;
+    flex-shrink: 0;
+}
 
-        <button type="button"
-                id="showCreatePlaylistFormBtn"
-                class="btn btn-dark rounded-pill px-4">
-            Create Playlist
-        </button>
-    </div>
+.you-item-card,
+.you-create-tile {
+    width: 100%;
+    height: 170px;
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 1rem;
+    padding: 1rem;
+    transition: transform .15s ease, box-shadow .15s ease;
+}
 
-    <!-- Hidden create form -->
-    <div id="createPlaylistFormCard" class="card border-0 shadow-sm rounded-4 mb-4 d-none">
-        <div class="card-body">
-            <h4 class="h6 fw-semibold mb-3">New Playlist</h4>
-
-            <div class="row g-3">
-                <div class="col-12 col-sm-6 col-lg-5">
-                    <input type="text"
-                           id="playlistName"
-                           class="form-control rounded-3"
-                           placeholder="Playlist name">
-                </div>
-
-                <div class="col-12 col-sm-6 col-lg-5">
-                    <input type="text"
-                           id="playlistDescription"
-                           class="form-control rounded-3"
-                           placeholder="Description (optional)">
-                </div>
-
-                <div class="col-12 col-sm-6 col-lg-2">
-                    <select id="playlistVisibility" class="form-select rounded-3">
-                        <option value="PRIVATE">Private</option>
-                        <option value="PUBLIC">Public</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="d-flex gap-2 mt-3">
-                <button id="createPlaylistBtn" class="btn btn-dark rounded-pill px-4">
-                    Save Playlist
-                </button>
-
-                <button type="button"
-                        id="cancelCreatePlaylistBtn"
-                        class="btn btn-outline-secondary rounded-pill px-4">
-                    Cancel
-                </button>
-            </div>
-
-            <div id="playlistCreateMessage" class="small mt-2"></div>
-        </div>
-    </div>
-
-    <div th:if="${playlists == null or #lists.isEmpty(playlists)}" class="text-muted">
-        No playlists yet.
-    </div>
-
-    <div th:if="${playlists != null and !#lists.isEmpty(playlists)}" class="row g-4">
-        <div class="col-12" th:each="playlist : ${playlists}">
-    <a th:href="@{/playlists/{id}(id=${playlist.id})}"
-       class="text-decoration-none text-dark">
-        <div class="card border-0 shadow-sm rounded-4">
-            <div class="card-body">
-                <h4 class="h6 fw-semibold mb-1" th:text="${playlist.name}">Playlist Name</h4>
-                <div class="text-muted small"
-                     th:text="${playlist.description != null and !#strings.isEmpty(playlist.description) ? playlist.description : 'No description'}">
-                    Playlist description
-                </div>
-                <div class="text-muted small mt-1">
-                    <span th:text="${playlist.visibility}">PRIVATE</span>
-                </div>
-            </div>
-        </div>
-    </a>
-</div>
-    </div>
-</div>
-
-<!-- Subscribed Videos Section -->
-<section class="you-section">
-    <div class="d-flex justify-content-between align-items-center you-section-header">
-        <div>
-            <h3 class="h5 mb-1">Subscribed Videos</h3>
-        </div>
-    </div>
-
-    <div class="vs-video-grid">
-        <div th:if="${subscribedVideos == null or #lists.isEmpty(subscribedVideos)}"
-             style="grid-column: 1 / -1;">
-            <p class="text-muted mb-0">No videos from subscribed channels yet.</p>
-        </div>
-
-        <div th:each="video : ${subscribedVideos}">
-            <a th:href="@{/videos/{id}(id=${video.id})}" class="text-decoration-none text-dark">
-                <div class="card h-100 border-0 shadow-sm rounded-4">
-                    <div class="vs-video-thumb rounded-top-4 bg-dark text-white">
-                        <div>
-                            <i class="bi bi-play-circle fs-1"></i>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="fw-semibold text-truncate" th:text="${video.title}">Video Title</div>
-                        <div class="text-muted small"
-                             th:text="${video.channel != null ? video.channel.name : 'Unknown Channel'}">
-                            Channel Name
-                        </div>
-                        <div class="text-muted small" th:if="${video.createdAt != null}"
-                             th:text="'Uploaded ' + ${#temporals.format(video.createdAt, 'MMM d, yyyy')}">
-                            Uploaded date
-                        </div>
-                    </div>
-                </div>
-            </a>
-        </div>
-    </div>
-</section>
-
-        <!-- History Section -->
-        <section class="you-section" id="history">
-            <div class="d-flex justify-content-between align-items-center you-section-header">
-                <div>
-                    <h3 class="h5 mb-1">History</h3>
-                </div>
-            </div>
-
-            <div class="vs-video-grid">
-                <div th:if="${history == null or #lists.isEmpty(history)}"
-                     style="grid-column: 1 / -1;">
-                    <p class="text-muted mb-0">No history yet.</p>
-                </div>
-
-                <div th:each="view : ${history}">
-                    <a th:href="@{/videos/{id}(id=${view.video.id})}" class="text-decoration-none text-dark">
-                        <div class="card h-100 border-0 shadow-sm rounded-4">
-                            <div class="vs-video-thumb rounded-top-4 bg-dark text-white">
-                                <div>
-                                    <i class="bi bi-play-circle fs-1"></i>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <div class="fw-semibold text-truncate" th:text="${view.video.title}">Video Title</div>
-                                <div class="text-muted small" th:text="${view.video.channel != null ? view.video.channel.name : ''}">Channel</div>
-                                <div class="text-muted small">
-    <span th:text="${view.watchDuration}">0</span>s watched
-    <span th:if="${view.completed}" class="badge bg-success-subtle text-success ms-1">Completed</span>
-</div>
-
-<div class="text-muted small" th:if="${view.watchedAt != null}"
-     th:text="|Watched ${#temporals.format(view.watchedAt, 'MMM d, yyyy h:mm a')}|">
-    Watched date
-</div>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-            </div>
-        </section>
-
-
-        <!-- Liked Videos -->
-        <section class="you-section">
-            <div class="d-flex justify-content-between align-items-center you-section-header">
-                <div>
-                    <h3 class="h5 mb-1">Liked Videos</h3>
-                </div>
-            </div>
-            <div class="text-muted">
-                No liked videos yet.
-            </div>
-        </section>
-    </div>
-
-    <!-- Create Channel Modal -->
-    <div class="modal fade" id="createChannelModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 rounded-4 shadow-lg">
-
-                <form th:action="@{/channels/create}" method="post" enctype="multipart/form-data">
-
-                    <div class="modal-header border-0 pb-0">
-                        <h5 class="modal-title fw-semibold">Create Channel</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-
-                    <div class="modal-body pt-2">
-
-                        <div class="mb-3">
-                            <label class="form-label small text-muted">Channel Name</label>
-                            <input type="text"
-                                   name="name"
-                                   maxlength="100"
-                                   required
-                                   class="form-control rounded-pill px-3"
-                                   placeholder="My Channel Name"
-                                   th:value="${channelNameValue}">
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label small text-muted">Description</label>
-                            <textarea name="description"
-                                      maxlength="500"
-                                      rows="3"
-                                      class="form-control rounded-4 px-3"
-                                      placeholder="Tell viewers what your channel is about"
-                                      th:text="${channelDescriptionValue}"></textarea>
-                        </div>
-
-                        <div class="mb-2">
-                            <label class="form-label small text-muted">Channel Avatar</label>
-                            <input type="file"
-                                   name="avatarUrl"
-                                   accept="image/png,image/jpeg,image/jpg,image/webp"
-                                   class="form-control rounded-4 px-3">
-                        </div>
-
-                    </div>
-
-                    <div class="modal-footer border-0 pt-0">
-                        <button type="button"
-                                class="btn btn-outline-secondary rounded-pill px-4"
-                                data-bs-dismiss="modal">
-                            Cancel
-                        </button>
-
-                        <button type="submit"
-                                class="btn btn-dark rounded-pill px-4">
-                            Create Channel
-                        </button>
-                    </div>
-
-                </form>
-
-            </div>
-        </div>
-    </div>
-
-    <script th:if="${openCreateChannelModal}">
-        document.addEventListener("DOMContentLoaded", function () {
-            const modalElement = document.getElementById("createChannelModal");
-            if (modalElement) {
-                const modal = new bootstrap.Modal(modalElement);
-                modal.show();
-            }
-        });
-    </script>
-
-    <script th:inline="javascript">
-    document.addEventListener("DOMContentLoaded", function () {
-        const userId = /*[[${user.id}]]*/ 0;
-
-        const showBtn = document.getElementById("showCreatePlaylistFormBtn");
-        const cancelBtn = document.getElementById("cancelCreatePlaylistBtn");
-        const formCard = document.getElementById("createPlaylistFormCard");
-        const createBtn = document.getElementById("createPlaylistBtn");
-        const msg = document.getElementById("playlistCreateMessage");
-
-        if (showBtn && formCard) {
-            showBtn.addEventListener("click", function () {
-                formCard.classList.remove("d-none");
-                showBtn.classList.add("d-none");
-            });
-        }
-
-        if (cancelBtn && formCard) {
-            cancelBtn.addEventListener("click", function () {
-                formCard.classList.add("d-none");
-                showBtn.classList.remove("d-none");
-
-                document.getElementById("playlistName").value = "";
-                document.getElementById("playlistDescription").value = "";
-                document.getElementById("playlistVisibility").value = "PRIVATE";
-                msg.textContent = "";
-                msg.className = "small mt-2";
-            });
-        }
-
-        if (!createBtn) return;
-
-        createBtn.addEventListener("click", async function () {
-            const name = document.getElementById("playlistName").value.trim();
-            const description = document.getElementById("playlistDescription").value.trim();
-            const visibility = document.getElementById("playlistVisibility").value;
-
-            msg.textContent = "";
-            msg.className = "small mt-2";
-
-            if (!name) {
-                msg.classList.add("text-danger");
-                msg.textContent = "Playlist name is required.";
-                return;
-            }
-
-            try {
-                const res = await fetch("/api/playlists", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        userId: userId,
-                        name: name,
-                        description: description,
-                        visibility: visibility
-                    })
-                });
-
-                if (!res.ok) {
-                    const err = await res.json().catch(() => null);
-                    throw new Error(err?.message || "Could not create playlist.");
-                }
-
-                msg.classList.add("text-success");
-                msg.textContent = "Playlist created successfully.";
-
-                setTimeout(() => window.location.reload(), 600);
-            } catch (e) {
-                msg.classList.add("text-danger");
-                msg.textContent = e.message || "Could not create playlist.";
-            }
-        });
-    });
-</script>
-
-</th:block>
-</html>
+.you-item-card:hover,
+.you-create-tile:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 .5rem 1rem rgba(0,0,0,.1);
+}

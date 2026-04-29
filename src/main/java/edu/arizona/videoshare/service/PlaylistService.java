@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * PlaylistService
@@ -27,9 +26,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Service
 public class PlaylistService {
-
-    public static final String LIKED_VIDEOS_PLAYLIST_NAME = "Liked Videos";
-    private static final String LIKED_VIDEOS_PLAYLIST_DESCRIPTION = "Videos you have liked.";
 
     private final PlaylistRepository playlists;
     private final PlaylistVideoRepository playlistVideos;
@@ -68,59 +64,6 @@ public class PlaylistService {
             throw new NotFoundException("User not found: " + userId);
         }
         return playlists.findByUserId(userId);
-    }
-
-    /** READ public playlists by user */
-    @Transactional(readOnly = true)
-    public List<Playlist> getPublicByUser(Long userId) {
-        if (!users.existsById(userId)) {
-            throw new NotFoundException("User not found: " + userId);
-        }
-        return playlists.findByUserIdAndVisibility(userId, Visibility.PUBLIC);
-    }
-
-    @Transactional(readOnly = true)
-    public Optional<Playlist> findLikedVideosPlaylist(Long userId) {
-        return playlists.findByUserIdAndNameIgnoreCase(userId, LIKED_VIDEOS_PLAYLIST_NAME)
-                .stream()
-                .findFirst();
-    }
-
-    @Transactional
-    public Playlist ensureLikedVideosPlaylist(Long userId) {
-        return findLikedVideosPlaylist(userId)
-                .orElseGet(() -> {
-                    var owner = users.findById(userId)
-                            .orElseThrow(() -> new NotFoundException("User not found: " + userId));
-
-                    Playlist playlist = new Playlist();
-                    playlist.setUser(owner);
-                    playlist.setName(LIKED_VIDEOS_PLAYLIST_NAME);
-                    playlist.setDescription(LIKED_VIDEOS_PLAYLIST_DESCRIPTION);
-                    playlist.setVisibility(Visibility.PRIVATE);
-
-                    Playlist saved = playlists.save(playlist);
-                    return playlists.findWithItemsById(saved.getId()).orElse(saved);
-                });
-    }
-
-    @Transactional
-    public void syncLikedVideo(Long userId, Long videoId, boolean liked) {
-        if (liked) {
-            Playlist likedVideos = ensureLikedVideosPlaylist(userId);
-            if (playlistVideos.findByPlaylistIdAndVideoId(likedVideos.getId(), videoId).isPresent()) {
-                return;
-            }
-
-            PlaylistAddVideoRequest request = new PlaylistAddVideoRequest();
-            request.videoId = videoId;
-            addVideo(likedVideos.getId(), request);
-            return;
-        }
-
-        findLikedVideosPlaylist(userId).ifPresent(playlist -> playlistVideos
-                .findByPlaylistIdAndVideoId(playlist.getId(), videoId)
-                .ifPresent(item -> removeItem(playlist.getId(), item.getId())));
     }
 
     /**
