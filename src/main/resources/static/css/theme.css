@@ -38,6 +38,26 @@ body {
     color: var(--vs-blue);
 }
 
+.settings-sidebar {
+    background: linear-gradient(180deg, #151821, #1d2330) !important;
+    border-right: 2px solid rgba(143, 124, 255, 0.35) !important;
+}
+
+.settings-sidebar .nav-link:hover,
+.settings-sidebar .nav-link.active {
+    background: rgba(94, 162, 255, 0.18) !important;
+    color: #ffffff !important;
+}
+
+.settings-sidebar .settings-arrow {
+    color: var(--vs-blue);
+}
+
+.settings-sidebar .nav-link:hover .settings-arrow,
+.settings-sidebar .nav-link.active .settings-arrow {
+    color: #ffffff;
+}
+
 .btn-dark {
     background: var(--vs-gradient) !important;
     border: none !important;
@@ -197,4 +217,62 @@ a:hover {
     .navbar .flex-grow-1 {
         max-width: 160px !important;
     }
+}
+
+.settings-sidebar {
+    background: linear-gradient(180deg, #151821, #1d2330) !important;
+    border-right: 2px solid rgba(143, 124, 255, 0.35) !important;
+}
+
+.settings-sidebar .nav-link:hover,
+.settings-sidebar .nav-link.active {
+    background: rgba(94, 162, 255, 0.18) !important;
+    color: #ffffff !important;
+}
+
+.settings-sidebar .settings-arrow {
+    color: var(--vs-blue);
+}
+
+.settings-sidebar .nav-link:hover .settings-arrow,
+.settings-sidebar .nav-link.active .settings-arrow {
+    color: #ffffff;
+}
+
+.navbar button.navbar-icon-btn {
+    all: unset !important;
+
+    width: 40px !important;
+    height: 40px !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+
+    color: white !important;
+    cursor: pointer !important;
+    border-radius: 50% !important;
+}
+
+.navbar button.navbar-icon-btn:hover,
+.navbar button.navbar-icon-btn:focus,
+.navbar button.navbar-icon-btn:active {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.navbar button.navbar-icon-btn i {
+    color: white !important;
 }

@@ -4,6 +4,7 @@ import edu.arizona.videoshare.dto.user.UserRequest;
 import edu.arizona.videoshare.model.entity.*;
 import edu.arizona.videoshare.model.entity.Subscription.SubscriptionStatus;
 import edu.arizona.videoshare.model.enums.AdPlacement;
+import edu.arizona.videoshare.model.enums.MembershipStatus;
 import edu.arizona.videoshare.model.enums.UserRole;
 import edu.arizona.videoshare.model.enums.UserStatus;
 import edu.arizona.videoshare.model.enums.VideoVisibility;
@@ -12,7 +13,10 @@ import edu.arizona.videoshare.repository.ChannelRepository;
 import edu.arizona.videoshare.repository.SubscriptionRepository;
 import edu.arizona.videoshare.repository.UserRepository;
 import edu.arizona.videoshare.repository.VideoRepository;
+import edu.arizona.videoshare.repository.*;
 import edu.arizona.videoshare.service.UserService;
+import edu.arizona.videoshare.model.entity.MembershipPlan;
+import edu.arizona.videoshare.repository.MembershipPlanRepository;
 
 import java.time.LocalDateTime;
 
@@ -39,21 +43,28 @@ public class DataLoader implements CommandLineRunner {
     private final ChannelRepository channelRepository;
     private final SubscriptionRepository subscriptionRepository;
     private final VideoRepository videoRepository;
+    private final MembershipPlanRepository membershipPlanRepository;
+    private final UserMembershipRepository userMembershipRepository;
     private final BCryptPasswordEncoder encoder;
 
-    public DataLoader(UserService userService,
-                      UserRepository userRepository,
-                      ChannelRepository channelRepository,
-                      SubscriptionRepository subscriptionRepository,
-                      VideoRepository videoRepository,
-                      BCryptPasswordEncoder encoder, AdRepository adRepository) {
-
+    public DataLoader(
+            UserRepository userRepository,
+            ChannelRepository channelRepository,
+            SubscriptionRepository subscriptionRepository,
+            VideoRepository videoRepository,
+            BCryptPasswordEncoder encoder,
+            AdRepository adRepository,
+            MembershipPlanRepository membershipPlanRepository,
+            UserMembershipRepository userMembershipRepository
+    ) {
         this.userRepository = userRepository;
         this.channelRepository = channelRepository;
         this.subscriptionRepository = subscriptionRepository;
         this.videoRepository = videoRepository;
         this.encoder = encoder;
         this.adRepository = adRepository;
+        this.membershipPlanRepository = membershipPlanRepository;
+        this.userMembershipRepository = userMembershipRepository;
     }
 
     /**
@@ -63,8 +74,10 @@ public class DataLoader implements CommandLineRunner {
     @Override
     public void run(String... args) {
         // Avoid reseeding on restart
-        if (userRepository.count() > 0)
-            return;
+      if (userRepository.count() > 0) {
+    seedMembershipPlans();
+    return;
+}
 
         seed("starsvoyage", "idiazvachier@arizona.edu", "Password@123", "Ian");
         seed("user1", "user1@arizona.edu", "User1@123", "User 1");
@@ -72,6 +85,8 @@ public class DataLoader implements CommandLineRunner {
         seed("bob", "bob@arizona.edu", "Password@123", "Bob Viani");
         seed("charlie", "charlie@arizona.edu", "Password@123", "Charlie Miller");
 
+
+        seedMembershipPlans();
 
         User ian = userRepository.findByUsername("starsvoyage").orElse(null);
         User user1 = userRepository.findByUsername("user1").orElse(null);
@@ -90,6 +105,14 @@ public class DataLoader implements CommandLineRunner {
             //Ian's channel
             createVideo("Welcome Video", ian, channel1);
 
+            // Adding videos
+            Video video1 = new Video();
+            video1.setTitle("Welcome Video");
+            video1.setOwner(ian);
+            video1.setChannel(channel1);
+            video1.setVisibility(VideoVisibility.PUBLIC);
+            video1.setDuration(120);
+            videoRepository.save(video1);
             //User1's channel
             createVideo("Gaming Highlights", user1, channel2);
             createVideo("Minecraft Survival Guide", user1, channel2);
@@ -111,6 +134,9 @@ public class DataLoader implements CommandLineRunner {
             subscriptionRepository.save(sub2);
             channel2.setSubscriberCount(10L);
             channelRepository.save(channel2);
+
+            // Add membership history + current membership for starsvoyage
+            seedPremiumMembershipHistoryForStarsVoyage(ian);
 
             // Adding ads
             Ad ad1 = new Ad();
@@ -172,12 +198,11 @@ public class DataLoader implements CommandLineRunner {
             createSubscription(bob, channel5);
             createSubscription(charlie, channel3);
             createSubscription(charlie, channel4);
-        }
+        } 
+        // Seed membership plans
+seedMembershipPlans();
     }
 
-    /**
-     * Helper method to seed a user via service layer.
-     */
     private void seed(String username, String email, String password, String displayName) {
 
         if (userRepository.existsByUsername(username) || userRepository.existsByEmail(email)) {
@@ -197,6 +222,33 @@ public class DataLoader implements CommandLineRunner {
         user.attachCredentials(credentials);
 
         userRepository.save(user);
+    }
+
+    /**
+     * Seed the two membership plans used by the app.
+     */
+    private void seedMembershipPlans() {
+        if (!membershipPlanRepository.existsByCode("FREE")) {
+            MembershipPlan free = new MembershipPlan();
+            free.setCode("FREE");
+            free.setName("Free");
+            free.setCost(0);
+            free.setAdFree(false);
+            free.setActive(true);
+            free.setHd4KPlayback(false);
+            membershipPlanRepository.save(free);
+        }
+
+        if (!membershipPlanRepository.existsByCode("PREMIUM")) {
+            MembershipPlan premium = new MembershipPlan();
+            premium.setCode("PREMIUM");
+            premium.setName("Premium");
+            premium.setCost(999);
+            premium.setAdFree(true);
+            premium.setActive(true);
+            premium.setHd4KPlayback(true);
+            membershipPlanRepository.save(premium);
+        }
     }
 
     //Helper functions to create channels, videos, subscriptions
@@ -229,5 +281,79 @@ public class DataLoader implements CommandLineRunner {
         subscriptionRepository.save(sub);
         channel.setSubscriberCount(channel.getSubscriberCount() + 1);
         channelRepository.save(channel);
+    }
+
+    /**
+     * Seed one old membership record and one current active membership for starsvoyage.
+     */
+    private void seedPremiumMembershipHistoryForStarsVoyage(User user) {
+        if (!userMembershipRepository.findByUserIdOrderByStartAtDesc(user.getId()).isEmpty()) {
+            return;
+        }
+
+        MembershipPlan premiumPlan = membershipPlanRepository.findByCode("PREMIUM")
+                .orElse(null);
+
+        if (premiumPlan == null) {
+            return;
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+
+        // 5 → 4 months ago (CANCELED)
+        UserMembership canceled = UserMembership.builder()
+                .user(user)
+                .membershipPlan(premiumPlan)
+                .status(MembershipStatus.CANCELED)
+                .startAt(now.minusMonths(5))
+                .endAt(now.minusMonths(4))
+                .autoRenew(false)
+                .build();
+
+        // 4 → 3 months ago (ACTIVE - paid month)
+        UserMembership month1 = UserMembership.builder()
+                .user(user)
+                .membershipPlan(premiumPlan)
+                .status(MembershipStatus.ACTIVE)
+                .startAt(now.minusMonths(4))
+                .endAt(now.minusMonths(3))
+                .autoRenew(true)
+                .build();
+
+        // 3 → 2 months ago (ACTIVE - paid month)
+        UserMembership month2 = UserMembership.builder()
+                .user(user)
+                .membershipPlan(premiumPlan)
+                .status(MembershipStatus.ACTIVE)
+                .startAt(now.minusMonths(3))
+                .endAt(now.minusMonths(2))
+                .autoRenew(true)
+                .build();
+
+        // 2 → 1 month ago (ACTIVE - paid month)
+        UserMembership month3 = UserMembership.builder()
+                .user(user)
+                .membershipPlan(premiumPlan)
+                .status(MembershipStatus.ACTIVE)
+                .startAt(now.minusMonths(2))
+                .endAt(now.minusMonths(1))
+                .autoRenew(true)
+                .build();
+
+        // Current (ACTIVE)
+        UserMembership current = UserMembership.builder()
+                .user(user)
+                .membershipPlan(premiumPlan)
+                .status(MembershipStatus.ACTIVE)
+                .startAt(now.minusMonths(1))
+                .endAt(null)
+                .autoRenew(true)
+                .build();
+
+        userMembershipRepository.save(canceled);
+        userMembershipRepository.save(month1);
+        userMembershipRepository.save(month2);
+        userMembershipRepository.save(month3);
+        userMembershipRepository.save(current);
     }
 }

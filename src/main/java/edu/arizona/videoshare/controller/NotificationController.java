@@ -24,6 +24,11 @@ public class NotificationController {
         return notificationService.createNotification(request);
     }
 
+   @GetMapping("/user/{userId}/playlist-likes")
+public List<NotificationResponse> getPlaylistLikeNotifications(@PathVariable Long userId) {
+    return notificationService.getByType(userId, NotificationType.LIKE_PLAYLIST);
+}
+
     @GetMapping("/user/{userId}")
     public List<NotificationResponse> getFeed(@PathVariable Long userId) {
         return notificationService.getFeed(userId);

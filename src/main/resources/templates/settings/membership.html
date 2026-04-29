@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout('VideoShare | Membership', ~{::content}, true, true)}">
+
+<th:block th:fragment="content">
+    <div class="settings-page">
+        <div class="container-fluid px-0">
+            <div class="row g-0 settings-layout">
+
+                <div class="col-12 col-md-4 col-lg-3 settings-sidebar-column">
+                    <div th:replace="~{fragments/settings-sidebar :: settingsSidebar('membership')}"></div>
+                </div>
+
+                <div class="col-12 col-md-8 col-lg-9 settings-content-column">
+                    <div class="p-4 p-lg-5 text-dark">
+
+                        <!-- Overview -->
+                        <div th:if="${subSection == 'overview'}">
+                            <h2 class="fw-bold mb-3">Membership</h2>
+                            <p class="text-secondary mb-4">
+                                Manage your current membership, view available plans, review your membership history,
+                                or cancel your subscription.
+                            </p>
+
+                            <!-- Current Membership -->
+                            <div class="card border-0 shadow-sm rounded-4 mb-4 membership-current-card"
+                                 th:classappend="${currentMembership != null and currentMembership.status.name() == 'ACTIVE'} ? ' membership-current-card-active' : ''">
+                                <div class="card-body p-4">
+
+                                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-3">
+                                        <div>
+                                            <h4 class="fw-semibold mb-1">VideoShare Premium</h4>
+                                        </div>
+
+                                        <span th:if="${currentMembership != null and currentMembership.status.name() == 'ACTIVE'}"
+                                              class="badge rounded-pill px-3 py-2 fw-semibold"
+                                              style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white;">
+                                            Member
+                                        </span>
+                                    </div>
+
+                                    <div th:if="${currentMembership != null}">
+                                        <div class="row g-3">
+
+                                            <div class="col-md-4">
+                                                <div class="mb-3">
+                                                    <div class="text-secondary small">Member Since</div>
+                                                    <div class="fw-semibold"
+                                                         th:text="${#temporals.format(currentMembership.startAt, 'MMM dd, yyyy')}">
+                                                        Apr 12, 2026
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-4">
+                                                <div class="mb-3">
+                                                    <div class="text-secondary small">Next Payment Date</div>
+                                                    <div class="fw-semibold"
+                                                         th:text="${currentMembership.autoRenew
+                                                                    ? #temporals.format(nextPaymentDate, 'MMM dd, yyyy')
+                                                                    : 'Auto-renew disabled'}">
+                                                        May 12, 2026
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-4">
+                                                <div class="mb-3">
+                                                    <div class="text-secondary small">Auto Renew</div>
+                                                    <div class="fw-semibold"
+                                                         th:text="${currentMembership.autoRenew ? 'Enabled' : 'Disabled'}">
+                                                        Enabled
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+
+                                    <div th:if="${currentMembership == null}">
+                                        <p class="mb-0 text-secondary">
+                                            You do not currently have an active membership.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Settings Card List -->
+                            <div class="settings-card-list">
+                                <a th:href="@{/settings/membership(section='available-plans')}"
+                                   class="settings-item-btn text-decoration-none">
+                                    <div class="d-flex align-items-start justify-content-between w-100 px-3">
+                                        <div class="d-flex align-items-start gap-3">
+                                            <i class="bi bi-stars fs-5 text-secondary mt-1"></i>
+                                            <div class="text-start">
+                                                <div class="fw-semibold fs-5">Available Plans</div>
+                                                <div class="text-secondary">
+                                                    View available plans and change your membership tier.
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <i class="bi bi-chevron-right text-secondary"></i>
+                                    </div>
+                                </a>
+
+                                <a th:href="@{/settings/membership(section='membership-history')}"
+                                   class="settings-item-btn text-decoration-none">
+                                    <div class="d-flex align-items-start justify-content-between w-100 px-3">
+                                        <div class="d-flex align-items-start gap-3">
+                                            <i class="bi bi-clock-history fs-5 text-secondary mt-1"></i>
+                                            <div class="text-start">
+                                                <div class="fw-semibold fs-5">Membership History</div>
+                                                <div class="text-secondary">
+                                                    Review your previous membership periods and completed billing cycles.
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <i class="bi bi-chevron-right text-secondary"></i>
+                                    </div>
+                                </a>
+
+                                <a th:if="${currentMembership != null and currentMembership.status.name() == 'ACTIVE'}"
+                                   th:href="@{/settings/membership(section='cancel-membership')}"
+                                   class="settings-item-btn text-decoration-none">
+                                    <div class="d-flex align-items-start justify-content-between w-100 px-3">
+                                        <div class="d-flex align-items-start gap-3">
+                                            <i class="bi bi-x-circle fs-5 text-secondary mt-1"></i>
+                                            <div class="text-start">
+                                                <div class="fw-semibold fs-5">Cancel Membership</div>
+                                                <div class="text-secondary">
+                                                    Stop your active membership and disable future renewal.
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <i class="bi bi-chevron-right text-secondary"></i>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Available Plans -->
+                        <div th:if="${subSection == 'available-plans'}">
+                            <div class="d-flex align-items-center justify-content-between mb-4">
+                                <div>
+                                    <h2 class="fw-bold mb-1">Available Plans</h2>
+                                    <p class="text-secondary mb-0">
+                                        Choose a plan to subscribe, upgrade, or downgrade your membership.
+                                    </p>
+                                </div>
+
+                                <a th:href="@{/settings/membership}" class="btn btn-outline-dark rounded-pill px-4">
+                                    Back
+                                </a>
+                            </div>
+
+                            <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
+                            <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+                            <div class="row g-4">
+                                <div class="col-12 col-lg-6" th:each="plan : ${plans}">
+                                    <div class="card border-0 shadow-sm rounded-4 h-100">
+                                        <div class="card-body p-4">
+                                            <div class="d-flex align-items-start justify-content-between mb-3">
+                                                <div>
+                                                    <h5 class="fw-bold mb-1" th:text="${plan.name}">Premium</h5>
+                                                    <div class="text-secondary" th:text="${plan.code}">PREMIUM</div>
+                                                </div>
+
+                                                <span class="badge text-bg-dark rounded-pill px-3 py-2"
+                                                      th:text="${'$' + #numbers.formatDecimal(plan.cost / 100.0, 1, 2)} + ' / month'">
+                                                    $9.99 / month
+                                                </span>
+                                            </div>
+
+                                            <ul class="list-unstyled mb-4">
+                                                <li class="mb-2">
+                                                    <i class="bi me-2"
+                                                       th:classappend="${plan.adFree} ? 'bi-check-circle-fill text-success' : 'bi-x-circle-fill text-secondary'"></i>
+                                                    <span th:text="${plan.adFree ? 'Ad-free playback' : 'Ads included'}">Ad-free playback</span>
+                                                </li>
+                                                <li class="mb-2">
+                                                    <i class="bi me-2"
+                                                       th:classappend="${plan.hd4KPlayback} ? 'bi-check-circle-fill text-success' : 'bi-x-circle-fill text-secondary'"></i>
+                                                    <span th:text="${plan.hd4KPlayback ? 'HD / 4K playback included' : 'Standard playback only'}">HD / 4K playback included</span>
+                                                </li>
+                                                <li>
+                                                    <i class="bi me-2"
+                                                       th:classappend="${plan.active} ? 'bi-check-circle-fill text-success' : 'bi-x-circle-fill text-secondary'"></i>
+                                                    <span th:text="${plan.active ? 'Available now' : 'Currently unavailable'}">Available now</span>
+                                                </li>
+                                            </ul>
+
+                                            <form th:action="@{/membership/subscribe}" method="post">
+                                                <input type="hidden" name="membershipPlanId" th:value="${plan.id}">
+                                                <input type="hidden" name="autoRenew" value="true">
+
+                                                <button type="submit"
+                                                        class="btn btn-dark rounded-pill px-4"
+                                                        th:disabled="${!plan.active}">
+                                                    Select Plan
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Membership History -->
+                        <div th:if="${subSection == 'membership-history'}">
+                            <div class="d-flex align-items-center justify-content-between mb-4">
+                                <div>
+                                    <h2 class="fw-bold mb-1">Membership History</h2>
+                                    <p class="text-secondary mb-0">
+                                        Review your previous membership records and completed billing periods.
+                                    </p>
+                                </div>
+
+                                <a th:href="@{/settings/membership}" class="btn btn-outline-dark rounded-pill px-4">
+                                    Back
+                                </a>
+                            </div>
+
+                            <div class="card border-0 shadow-sm rounded-4">
+                                <div class="card-body p-4">
+                                    <div th:if="${history != null and !#lists.isEmpty(history)}" class="table-responsive">
+                                        <table class="table align-middle mb-0">
+                                            <thead>
+                                            <tr>
+                                                <th>Plan</th>
+                                                <th>Status</th>
+                                                <th>Started</th>
+                                                <th>Ended</th>
+                                                <th>Auto Renew</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            <tr th:each="item : ${history}">
+                                                <td>
+                                                    <div class="fw-semibold" th:text="${item.planName}">Gold</div>
+                                                    <div class="small text-secondary" th:text="${item.planCode}">GOLD</div>
+                                                </td>
+                                                <td>
+                                                <span class="badge rounded-pill px-3 py-2 fw-semibold"
+                                                      th:classappend="${item.status.name() == 'ACTIVE'} ? ' text-bg-success' : (${item.status.name() == 'CANCELED'} ? ' text-bg-warning' : ' text-bg-secondary')"
+                                                      th:text="${item.status}">
+                                                    ACTIVE
+                                                </span>
+                                                </td>
+                                                <td th:text="${#temporals.format(item.startAt, 'MMM dd, yyyy hh:mm a')}">
+                                                    Jan 01, 2026 12:00 PM
+                                                </td>
+                                                <td th:text="${item.endAt != null ? #temporals.format(item.endAt, 'MMM dd, yyyy hh:mm a') : '-'}">
+                                                    -
+                                                </td>
+                                                <td th:text="${item.autoRenew ? 'Yes' : 'No'}">Yes</td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <div th:if="${history == null or #lists.isEmpty(history)}">
+                                        <p class="mb-0 text-secondary">
+                                            No membership history found yet.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Cancel Membership -->
+                        <div th:if="${subSection == 'cancel-membership' and currentMembership != null and currentMembership.status.name() == 'ACTIVE'}">
+                            <div class="d-flex align-items-center justify-content-between mb-4">
+                                <div>
+                                    <h2 class="fw-bold mb-1">Cancel Membership</h2>
+                                    <p class="text-secondary mb-0">
+                                        Stop your active membership and disable automatic renewal.
+                                    </p>
+                                </div>
+
+                                <a th:href="@{/settings/membership}" class="btn btn-outline-dark rounded-pill px-4">
+                                    Back
+                                </a>
+                            </div>
+
+                            <div class="card border-0 shadow-sm rounded-4">
+                                <div class="card-body p-4">
+                                    <div class="mb-3">
+                                        <h5 class="fw-semibold text-danger mb-2">Warning</h5>
+                                        <p class="text-secondary mb-0">
+                                            Canceling your membership will end your active premium access and stop future renewal.
+                                        </p>
+                                    </div>
+
+                                    <form th:action="@{/membership/cancel}" method="post"
+                                          onsubmit="return confirm('Cancel your current membership?');">
+                                        <button type="submit" class="btn btn-danger rounded-pill px-4">
+                                            Cancel Membership
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <style>
+                            .membership-current-card {
+                                transition: all 0.25s ease;
+                            }
+
+                            .membership-current-card-active {
+                                background: linear-gradient(
+                                        135deg,
+                                        rgba(99, 102, 241, 0.08),   /* blue */
+                                        rgba(139, 92, 246, 0.08),   /* purple */
+                                        #ffffff
+                                );
+
+                                border: 1.5px solid transparent;
+
+                                /* Gradient border */
+                                background-clip: padding-box;
+                                position: relative;
+                            }
+
+                            .membership-current-card-active::before {
+                                content: "";
+                                position: absolute;
+                                inset: 0;
+                                border-radius: inherit;
+                                padding: 1px; /* border thickness */
+
+                                background: linear-gradient(
+                                        135deg,
+                                        #6366f1,   /* blue */
+                                        #8b5cf6    /* purple */
+                                );
+
+                                -webkit-mask:
+                                        linear-gradient(#fff 0 0) content-box,
+                                        linear-gradient(#fff 0 0);
+                                -webkit-mask-composite: xor;
+                                mask-composite: exclude;
+
+                                pointer-events: none;
+                            }
+
+                            @keyframes membershipShineMove {
+                                0% { left: -45%; }
+                                100% { left: 120%; }
+                            }
+                        </style>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</th:block>
+</html>
