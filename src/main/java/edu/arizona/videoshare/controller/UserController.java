@@ -2,13 +2,16 @@ package edu.arizona.videoshare.controller;
 
 import edu.arizona.videoshare.dto.user.UserRequest;
 import edu.arizona.videoshare.dto.user.UserResponse;
+import edu.arizona.videoshare.exception.ForbiddenException;
 import edu.arizona.videoshare.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
+
 
 /**
  * UserController (Presentation Layer)
@@ -23,9 +26,17 @@ public class UserController {
 
     private final UserService service;
 
-//    public UserController(UserService service) {
-//        this.service = service;
-//    }
+    private void requireAdmin(HttpServletRequest request) {
+        Object roleObj = request.getSession().getAttribute("loggedInRole");
+
+        if (roleObj == null) {
+            throw new ForbiddenException("Authentication required");
+        }
+
+        if (!roleObj.toString().equals("ADMIN")) {
+            throw new ForbiddenException("Admin access required");
+        }
+    }
 
     /**
      * POST /api/users
@@ -34,8 +45,7 @@ public class UserController {
      */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public UserResponse register(
-            @Valid @RequestBody UserRequest req) {
+    public UserResponse register(@Valid @RequestBody UserRequest req) {
         return UserResponse.of(service.register(req));
     }
 
@@ -44,7 +54,9 @@ public class UserController {
      * Returns all users. List of DTOs.
      */
     @GetMapping
-    public List<UserResponse> getAll() {
+    public List<UserResponse> getAll(HttpServletRequest request) {
+        requireAdmin(request);
+
         return service.getAll()
                 .stream()
                 .map(UserResponse::of)
@@ -57,8 +69,7 @@ public class UserController {
      * Mapped globally to HTTP 404
      */
     @GetMapping("/{id}")
-    public UserResponse getById(
-            @PathVariable Long id) {
+    public UserResponse getById(@PathVariable Long id) {
         return UserResponse.of(service.getById(id));
     }
 
@@ -76,14 +87,37 @@ public class UserController {
     }
 
     /**
+     * PUT /api/users/{id}
+     * Updates profile fields for a user.
+     * HTTP 200 OK on success.
+     */
+    @PutMapping("/{id}/suspend")
+    public UserResponse suspendUser(@PathVariable Long id, HttpServletRequest request) {
+        requireAdmin(request);
+        return UserResponse.of(service.suspend(id));
+    }
+
+    /**
+     * PUT /api/users/{id}
+     * Updates profile fields for a user.
+     * HTTP 200 OK on success.
+     */
+    @PutMapping("/{id}/unlock")
+    public UserResponse unlockUser(@PathVariable Long id, HttpServletRequest request) {
+        requireAdmin(request);
+        return UserResponse.of(service.unlock(id));
+    }
+
+    
+    /**
      * DELETE /api/users/{id}
      * Deletes a user and cascades removal of associated credentials.
      * HTTP 204 No Content on success.
      */
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(
-            @PathVariable Long id) {
+    public void delete(@PathVariable Long id, HttpServletRequest request) {
+        requireAdmin(request);
         service.delete(id);
     }
 }

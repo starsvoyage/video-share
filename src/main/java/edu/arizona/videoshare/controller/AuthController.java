@@ -121,6 +121,7 @@ public class AuthController {
             session.setAttribute("loggedInUserId", user.getId());
             session.setAttribute("loggedInUsername", user.getUsername());
             session.setAttribute("loggedInDisplayName", user.getDisplayName());
+            session.setAttribute("loggedInRole", user.getRole());
 
             return "redirect:/";
         } catch (IllegalArgumentException ex) {
