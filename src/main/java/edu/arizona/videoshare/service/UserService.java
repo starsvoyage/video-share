@@ -89,30 +89,6 @@ public class UserService {
     }
 
     /**
-     * UPDATE: Suspends a user by id.
-     */
-    @Transactional
-    public User suspend(Long id) {
-        User user = users.findById(id)
-                .orElseThrow(() -> new NotFoundException("User not found: " + id));
-
-        user.setStatus(UserStatus.SUSPENDED);
-        return users.save(user);
-    }
-
-    /**
-     * UPDATE: Unlocks a user by id.
-     */
-    @Transactional
-    public User unlock(Long id) {
-        User user = users.findById(id)
-                .orElseThrow(() -> new NotFoundException("User not found: " + id));
-
-        user.setStatus(UserStatus.ACTIVE);
-        return users.save(user);
-    }
-
-    /**
      * DELETE: Deletes a user by id.
      */
     @Transactional

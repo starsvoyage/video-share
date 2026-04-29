@@ -21,28 +21,11 @@ public class VideoController {
     private final VideoService videoService;
     private final ChannelRepository channelRepository;
 
-    private void requireAdmin(HttpServletRequest request) {
-        Object roleObj = request.getSession().getAttribute("loggedInRole");
-
-        if (roleObj == null) {
-            throw new ForbiddenException("Authentication required");
-        }
-
-        if (!roleObj.toString().equals("ADMIN")) {
-            throw new ForbiddenException("Admin access required");
-        }
-    }
-
     @PostMapping("/channel/{channelId}/videos")
-    public Video create(
-            @PathVariable Long channelId,
-            @RequestParam("file") MultipartFile file,
-            @RequestParam("title") String title,
-            HttpServletRequest request
-    ) {
-        Channel channel = channelRepository.findById(channelId)
-                .orElseThrow(() -> new RuntimeException("Channel not found"));
+    public edu.arizona.videoshare.model.entity.Video create(@PathVariable Long channelId, @RequestParam("file") MultipartFile file, @RequestParam("title") String title, HttpServletRequest request) {
+        Channel channel = channelRepository.findById(channelId).orElseThrow(() -> new RuntimeException("Channel not found"));
 
+        //Checking if user is logged in and is the owner of the channel
         Long userId = (Long) request.getSession().getAttribute("loggedInUserId");
         if (userId == null) {
             throw new ForbiddenException("Authentication required");
@@ -56,12 +39,12 @@ public class VideoController {
     }
 
     @GetMapping("/{id}")
-    public Video get(@PathVariable Long id) {
+    public edu.arizona.videoshare.model.entity.Video get(@PathVariable Long id) {
         return videoService.getPublic(id);
     }
 
     @GetMapping
-    public List<Video> getAll() {
+    public List<edu.arizona.videoshare.model.entity.Video> getAll() {
         return videoService.getAllPublic();
     }
 
@@ -71,8 +54,7 @@ public class VideoController {
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id, HttpServletRequest request) {
-        requireAdmin(request);
+    public void delete(@PathVariable Long id) {
         videoService.delete(id);
     }
 }
