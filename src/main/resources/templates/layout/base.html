@@ -33,12 +33,20 @@
 
     <style>
         @keyframes vsFadeIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to   { opacity: 1; transform: translateY(0); }
+            from { opacity: 0; }
+            to   { opacity: 1; }
         }
 
         main {
-            animation: vsFadeIn 0.35s ease-out both;
+            animation: vsFadeIn 0.25s ease-out;
+        }
+
+        .modal {
+            z-index: 1065;
+        }
+
+        .modal-backdrop {
+            z-index: 1055;
         }
     </style>
 
@@ -152,10 +160,11 @@
                     <div class="mb-3">
                         <label class="form-label small text-muted">Video File</label>
                         <input type="file"
-                               name="file"
-                               accept="video/mp4,video/webm,video/ogg,.mp4,.webm,.ogg"
-                               required
-                               class="form-control rounded-4 px-3">
+                            id="uploadVideoFile"
+                            name="file"
+                            accept="video/mp4,video/webm,video/ogg,.mp4,.webm,.ogg"
+                            required
+                            class="form-control rounded-4 px-3">
                         <div class="form-text">Upload an MP4, WebM, or OGG file up to 50 MB.</div>
                     </div>
 
@@ -291,6 +300,33 @@
             modal.show();
         }
     });
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const uploadForm = document.querySelector('form[action="/videos/create"]');
+    const uploadFile = document.getElementById("uploadVideoFile");
+    const maxBytes = 50 * 1024 * 1024;
+
+    if (!uploadForm || !uploadFile) return;
+
+    uploadForm.addEventListener("submit", function (e) {
+        const file = uploadFile.files && uploadFile.files[0];
+
+        if (file && file.size > maxBytes) {
+            e.preventDefault();
+
+            const message = "Video file must be 50 MB or smaller.";
+
+            if (window.showToast) {
+                showToast(message, "error");
+            } else {
+                alert(message);
+            }
+
+            uploadFile.value = "";
+        }
+    });
+});
 </script>
 </body>
 </html>

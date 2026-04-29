@@ -74,10 +74,10 @@
                     </a>
                 `).join("");
 
-                //Add banner ads after every 6 videos
+                //Add banner ads after every 8 videos
                 const videoCards = videosGrid.querySelectorAll(':scope > a');
                 for (let i = 0; i < videoCards.length; i++) {
-                    if ((i + 1) % 6 === 0 && i + 1 < videoCards.length) {
+                    if ((i + 1) % 8 === 0 && i + 1 < videoCards.length) {
                         const adDiv = document.createElement('div');
                         adDiv.style.gridColumn = '1 / -1';
                         adDiv.innerHTML = `
@@ -113,5 +113,20 @@
             }
         });
     </script>
+    <div id="fixedBottomAd" class="vs-fixed-bottom-ad">
+        <div class="vs-fixed-bottom-ad-inner">
+            <div class="vs-fixed-bottom-ad-label">Advertisement</div>
+
+            <img src="https://picsum.photos/728/90"
+                alt="Advertisement"
+                class="vs-fixed-bottom-ad-img">
+
+            <button type="button"
+                    class="vs-fixed-bottom-ad-close"
+                    onclick="document.getElementById('fixedBottomAd').style.display='none'">
+                ×
+            </button>
+        </div>
+    </div>
 </th:block>
 </html>

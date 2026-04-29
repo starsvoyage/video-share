@@ -33,13 +33,16 @@ public class VerificationService {
         verification.setUsed(false);
 
         tokens.save(verification);
-
-        emailService.sendVerificationEmail(
-                user.getEmail(),
-                user.getUsername(),
-                verification.getToken(),
-                verification.getCode()
-        );
+        try {
+            emailService.sendVerificationEmail(
+                    user.getEmail(),
+                    user.getUsername(),
+                    verification.getToken(),
+                    verification.getCode()
+            );
+        } catch (Exception e) {
+            System.out.println("Email failed (ignored in dev): " + e.getMessage());
+        }
     }
 
     @Transactional

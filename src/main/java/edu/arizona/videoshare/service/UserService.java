@@ -60,6 +60,12 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundException("User not found: " + id));
     }
 
+    @Transactional(readOnly = true)
+    public User getByUsername(String username) {
+        return users.findByUsernameIgnoreCase(username)
+                .orElseThrow(() -> new NotFoundException("User not found: " + username));
+    }
+
     /**
      * UPDATE: Updates mutable profile fields for a user.
      */
