@@ -5,6 +5,7 @@ import edu.arizona.videoshare.model.enums.MembershipStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,4 +16,6 @@ public interface UserMembershipRepository extends JpaRepository<UserMembership, 
     List<UserMembership> findByUserIdOrderByCreatedAtDesc(Long userId);
 
     boolean existsByUserIdAndStatus(Long userId, MembershipStatus status);
+
+    List<UserMembership> findByStatusAndEndAtBefore(MembershipStatus status, LocalDateTime time);
 }

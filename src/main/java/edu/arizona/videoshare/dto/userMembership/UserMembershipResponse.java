@@ -8,21 +8,21 @@ import java.time.LocalDateTime;
 
 @Data
 public class UserMembershipResponse {
-    public Long id;
-    public Long userId;
-    public Long planId;
-    public String planCode;
-    public String planName;
-    public MembershipStatus status;
-    public LocalDateTime startAt;
-    public LocalDateTime endAt;
-    public boolean autoRenew;
-    public LocalDateTime createdAt;
+    private Long id;
+    private Long userId;
+    private Long planId;
+    private String planCode;
+    private String planName;
+    private MembershipStatus status;
+    private LocalDateTime startAt;
+    private LocalDateTime endAt;
+    private boolean autoRenew;
+    private LocalDateTime createdAt;
 
     public static UserMembershipResponse of(UserMembership m) {
-        var r = new UserMembershipResponse();
+        UserMembershipResponse r = new UserMembershipResponse();
         r.id = m.getId();
-        r.userId = m.getUserId();
+        r.userId = m.getUser().getId();
         r.planId = m.getMembershipPlan().getId();
         r.planCode = m.getMembershipPlan().getCode();
         r.planName = m.getMembershipPlan().getName();
