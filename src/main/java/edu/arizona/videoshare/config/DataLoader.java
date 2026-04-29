@@ -46,23 +46,25 @@ public class DataLoader implements CommandLineRunner {
     private final MembershipPlanRepository membershipPlanRepository;
     private final UserMembershipRepository userMembershipRepository;
     private final BCryptPasswordEncoder encoder;
-    private final MembershipPlanRepository membershipPlanRepository;
 
-    public DataLoader(UserService userService,
-                  UserRepository userRepository,
-                  ChannelRepository channelRepository,
-                  SubscriptionRepository subscriptionRepository,
-                  VideoRepository videoRepository,
-                  BCryptPasswordEncoder encoder,
-                  AdRepository adRepository,
-                  MembershipPlanRepository membershipPlanRepository) {
-
+    public DataLoader(
+            UserRepository userRepository,
+            ChannelRepository channelRepository,
+            SubscriptionRepository subscriptionRepository,
+            VideoRepository videoRepository,
+            BCryptPasswordEncoder encoder,
+            AdRepository adRepository,
+            MembershipPlanRepository membershipPlanRepository,
+            UserMembershipRepository userMembershipRepository
+    ) {
         this.userRepository = userRepository;
         this.channelRepository = channelRepository;
         this.subscriptionRepository = subscriptionRepository;
         this.videoRepository = videoRepository;
+        this.encoder = encoder;
         this.adRepository = adRepository;
         this.membershipPlanRepository = membershipPlanRepository;
+        this.userMembershipRepository = userMembershipRepository;
     }
 
     /**
@@ -200,40 +202,6 @@ public class DataLoader implements CommandLineRunner {
         // Seed membership plans
 seedMembershipPlans();
     }
-
-    private void seedMembershipPlans() {
-    if (membershipPlanRepository.count() > 0) {
-        return;
-    }
-
-    MembershipPlan basic = new MembershipPlan();
-    basic.setName("Basic");
-    basic.setCode("BASIC");
-    basic.setCost(499);
-    basic.setActive(true);
-    basic.setAdFree(false);
-    basic.setHd4KPlayback(false);
-
-    MembershipPlan premium = new MembershipPlan();
-    premium.setName("Premium");
-    premium.setCode("PREMIUM");
-    premium.setCost(999);
-    premium.setActive(true);
-    premium.setAdFree(true);
-    premium.setHd4KPlayback(false);
-
-    MembershipPlan plus = new MembershipPlan();
-    plus.setName("Premium Plus");
-    plus.setCode("PREMIUM_PLUS");
-    plus.setCost(1499);
-    plus.setActive(true);
-    plus.setAdFree(true);
-    plus.setHd4KPlayback(true);
-
-    membershipPlanRepository.save(basic);
-    membershipPlanRepository.save(premium);
-    membershipPlanRepository.save(plus);
-}
 
     private void seed(String username, String email, String password, String displayName) {
 

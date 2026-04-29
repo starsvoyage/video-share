@@ -71,11 +71,6 @@ public class UserMembershipService {
     }
 
     @Transactional(readOnly = true)
-public java.util.List<UserMembership> getMembershipHistory(Long userId) {
-    return memberships.findByUserIdOrderByCreatedAtDesc(userId);
-}
-
-    @Transactional(readOnly = true)
     public UserMembership getCurrentMembership(Long userId) {
         expireMembershipIfNeeded(userId);
 
