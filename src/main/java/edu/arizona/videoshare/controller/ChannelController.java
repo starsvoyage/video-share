@@ -91,8 +91,11 @@ public class ChannelController {
             throw new ForbiddenException("Authentication required");
         }
 
-        if (!channel.getUser().getId().equals(userId)) {
-            throw new ForbiddenException("You are not the owner of this channel");
+        Object roleObj = request.getSession().getAttribute("loggedInRole");
+        boolean isAdmin = roleObj != null && roleObj.toString().equals("ADMIN");
+
+        if (!channel.getUser().getId().equals(userId) && !isAdmin) {
+            throw new ForbiddenException("You are not authorized");
         }
 
         channel.setName(updatedChannel.getName());
@@ -113,8 +116,11 @@ public class ChannelController {
             throw new ForbiddenException("Authentication required");
         }
 
-        if (!channel.getUser().getId().equals(userId)) {
-            throw new ForbiddenException("You are not the owner of this channel");
+        Object roleObj = request.getSession().getAttribute("loggedInRole");
+        boolean isAdmin = roleObj != null && roleObj.toString().equals("ADMIN");
+
+        if (!channel.getUser().getId().equals(userId) && !isAdmin) {
+            throw new ForbiddenException("You are not authorized");
         }
 
         channelRepository.deleteById(channelId);
