@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import java.util.List;
 
 @RequiredArgsConstructor
 @RestController
@@ -19,6 +20,14 @@ public class UserMembershipController {
     public UserMembershipResponse subscribe(@Valid @RequestBody UserMembershipRequest req) {
         return UserMembershipResponse.of(service.subscribe(req));
     }
+
+    @GetMapping("/users/{userId}/history")
+public List<UserMembershipResponse> getHistory(@PathVariable Long userId) {
+    return service.getMembershipHistory(userId)
+            .stream()
+            .map(UserMembershipResponse::of)
+            .toList();
+}
 
     @GetMapping("/users/{userId}/membership")
     public UserMembershipResponse getCurrent(@PathVariable Long userId) {

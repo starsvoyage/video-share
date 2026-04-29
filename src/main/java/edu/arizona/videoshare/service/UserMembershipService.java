@@ -46,6 +46,11 @@ public class UserMembershipService {
     }
 
     @Transactional(readOnly = true)
+public java.util.List<UserMembership> getMembershipHistory(Long userId) {
+    return memberships.findByUserIdOrderByCreatedAtDesc(userId);
+}
+
+    @Transactional(readOnly = true)
     public UserMembership getCurrentMembership(Long userId) {
         return memberships.findByUserIdAndStatus(userId, MembershipStatus.ACTIVE).orElseThrow(() -> new NotFoundException("Exception: no active membership for user: " + userId));
     }
