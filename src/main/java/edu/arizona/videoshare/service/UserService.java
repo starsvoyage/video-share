@@ -88,24 +88,6 @@ public class UserService {
         return users.save(user);
     }
 
-    @Transactional
-    public User suspend(Long id) {
-        User user = users.findById(id)
-                .orElseThrow(() -> new NotFoundException("User not found: " + id));
-
-        user.setStatus(UserStatus.SUSPENDED);
-        return users.save(user);
-    }
-
-    @Transactional
-    public User unlock(Long id) {
-        User user = users.findById(id)
-                .orElseThrow(() -> new NotFoundException("User not found: " + id));
-
-        user.setStatus(UserStatus.ACTIVE);
-        return users.save(user);
-    }
-
     /**
      * DELETE: Deletes a user by id.
      */
