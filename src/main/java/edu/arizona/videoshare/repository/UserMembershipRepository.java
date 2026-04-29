@@ -11,12 +11,9 @@ import java.util.Optional;
 
 @Repository
 public interface UserMembershipRepository extends JpaRepository<UserMembership, Long> {
-
-    List<UserMembership> findByUserIdOrderByStartAtDesc(Long userId);
-
-    Optional<UserMembership> findFirstByUserIdAndStatusOrderByStartAtDesc(Long userId, MembershipStatus status);
-
-    Optional<UserMembership> findFirstByUserIdOrderByStartAtDesc(Long userId);
+    List<UserMembership> findByUserId(Long userId);
+    Optional<UserMembership> findByUserIdAndStatus(Long userId, MembershipStatus status);
+    List<UserMembership> findByUserIdOrderByCreatedAtDesc(Long userId);
 
     boolean existsByUserIdAndStatus(Long userId, MembershipStatus status);
 
