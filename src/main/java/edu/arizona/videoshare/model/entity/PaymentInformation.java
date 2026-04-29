@@ -4,6 +4,7 @@ import edu.arizona.videoshare.model.enums.PaymentType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -27,17 +28,25 @@ public class PaymentInformation {
 
     @NotNull
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, length = 30)
     private PaymentType paymentType;
 
     @NotBlank
     @Column(nullable = false, length = 120)
     private String cardholderName;
 
-    @Column(length = 4)
+    /*
+     * Only store the last 4 digits.
+     * Never store the full card number.
+     */
+    @NotBlank
+    @Pattern(regexp = "\\d{4}", message = "Last four digits must be exactly 4 numbers")
+    @Column(nullable = false, length = 4)
     private String lastFourDigits;
 
-    @Column(length = 7)
+    @NotBlank
+    @Pattern(regexp = "^(0[1-9]|1[0-2])/\\d{2}$", message = "Expiration date must use MM/YY format")
+    @Column(nullable = false, length = 5)
     private String expirationDate;
 
     @Column(nullable = false)
@@ -49,12 +58,16 @@ public class PaymentInformation {
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @Column(nullable = false)
     private LocalDateTime updatedAt;
 
     @PrePersist
     protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now();
+
+        this.createdAt = now;
+        this.updatedAt = now;
+
         this.active = true;
     }
 

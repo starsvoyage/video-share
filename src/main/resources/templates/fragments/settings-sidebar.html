@@ -22,7 +22,7 @@
         </li>
 
         <li class="nav-item mb-2">
-            <a th:href="@{/settings/premium}"
+            <a th:href="@{/settings/membership}"
                class="nav-link text-white d-flex align-items-center justify-content-between gap-3 sidebar-link"
                th:classappend="${activeSection == 'premium'} ? ' active' : ''">
         <span class="d-flex align-items-center gap-3">
@@ -30,6 +30,20 @@
                 <i class="bi bi-star"></i>
             </span>
             <span class="sidebar-text">Premium</span>
+        </span>
+                <i class="bi bi-chevron-right settings-arrow"></i>
+            </a>
+        </li>
+
+        <li class="nav-item mb-2">
+            <a th:href="@{/settings/payment-method}"
+               class="nav-link text-white d-flex align-items-center justify-content-between gap-3 sidebar-link"
+               th:classappend="${activeSection == 'payment-method'} ? ' active' : ''">
+        <span class="d-flex align-items-center gap-3">
+            <span class="sidebar-icon">
+                <i class="bi bi-credit-card"></i>
+            </span>
+            <span class="sidebar-text">Payment Method</span>
         </span>
                 <i class="bi bi-chevron-right settings-arrow"></i>
             </a>

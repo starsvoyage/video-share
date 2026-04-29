@@ -24,24 +24,25 @@ public class PaymentInformationService {
 
     @Transactional
     public PaymentInformation create(PaymentInformationRequest request) {
-        userRepository.findById(request.userId)
-                .orElseThrow(() -> new NotFoundException("User not found: " + request.userId));
+        validateUserExists(request.userId);
 
-        if (request.defaultPaymentMethod) {
-            clearDefaultPaymentMethod(request.userId);
-        }
+        String lastFourDigits = extractLastFourDigits(request.cardNumber);
 
         List<PaymentInformation> existingMethods =
                 paymentInformationRepository.findByUserIdAndActiveTrueOrderByDefaultPaymentMethodDescCreatedAtDesc(request.userId);
 
         boolean shouldBeDefault = request.defaultPaymentMethod || existingMethods.isEmpty();
 
+        if (shouldBeDefault) {
+            clearDefaultPaymentMethod(request.userId);
+        }
+
         PaymentInformation paymentInformation = PaymentInformation.builder()
                 .userId(request.userId)
                 .paymentType(request.paymentType)
-                .cardholderName(request.cardholderName)
-                .lastFourDigits(extractLastFourDigits(request.cardNumber))
-                .expirationDate(request.expirationDate)
+                .cardholderName(request.cardholderName.trim())
+                .lastFourDigits(lastFourDigits)
+                .expirationDate(request.expirationDate.trim())
                 .defaultPaymentMethod(shouldBeDefault)
                 .active(true)
                 .build();
@@ -51,21 +52,55 @@ public class PaymentInformationService {
 
     @Transactional(readOnly = true)
     public List<PaymentInformation> getByUserId(Long userId) {
-        userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("User not found: " + userId));
+        validateUserExists(userId);
 
-        return paymentInformationRepository.findByUserIdAndActiveTrueOrderByDefaultPaymentMethodDescCreatedAtDesc(userId);
+        return paymentInformationRepository
+                .findByUserIdAndActiveTrueOrderByDefaultPaymentMethodDescCreatedAtDesc(userId);
     }
 
     @Transactional(readOnly = true)
     public PaymentInformation getById(Long userId, Long paymentInformationId) {
+        validateUserExists(userId);
+
         return paymentInformationRepository.findByIdAndUserIdAndActiveTrue(paymentInformationId, userId)
                 .orElseThrow(() -> new NotFoundException("Payment information not found: " + paymentInformationId));
     }
 
     @Transactional
+    public PaymentInformation update(Long userId, Long paymentInformationId, PaymentInformationRequest request) {
+        PaymentInformation paymentInformation = getById(userId, paymentInformationId);
+
+        if (request.paymentType != null) {
+            paymentInformation.setPaymentType(request.paymentType);
+        }
+
+        if (request.cardholderName != null && !request.cardholderName.isBlank()) {
+            paymentInformation.setCardholderName(request.cardholderName.trim());
+        }
+
+        if (request.cardNumber != null && !request.cardNumber.isBlank()) {
+            paymentInformation.setLastFourDigits(extractLastFourDigits(request.cardNumber));
+        }
+
+        if (request.expirationDate != null && !request.expirationDate.isBlank()) {
+            paymentInformation.setExpirationDate(request.expirationDate.trim());
+        }
+
+        if (request.defaultPaymentMethod) {
+            clearDefaultPaymentMethod(userId);
+            paymentInformation.setDefaultPaymentMethod(true);
+        }
+
+        return paymentInformationRepository.save(paymentInformation);
+    }
+
+    @Transactional
     public PaymentInformation setDefault(Long userId, Long paymentInformationId) {
         PaymentInformation paymentInformation = getById(userId, paymentInformationId);
+
+        if (paymentInformation.isDefaultPaymentMethod()) {
+            return paymentInformation;
+        }
 
         clearDefaultPaymentMethod(userId);
         paymentInformation.setDefaultPaymentMethod(true);
@@ -84,28 +119,31 @@ public class PaymentInformationService {
         paymentInformationRepository.save(paymentInformation);
 
         if (wasDefault) {
-            List<PaymentInformation> remainingMethods =
-                    paymentInformationRepository.findByUserIdAndActiveTrueOrderByDefaultPaymentMethodDescCreatedAtDesc(userId);
-
-            if (!remainingMethods.isEmpty()) {
-                PaymentInformation nextDefault = remainingMethods.get(0);
-                nextDefault.setDefaultPaymentMethod(true);
-                paymentInformationRepository.save(nextDefault);
-            }
+            assignNextDefaultPaymentMethod(userId);
         }
     }
 
     @Transactional
     public MockPaymentResponse processMockPayment(MockPaymentRequest request) {
-        PaymentInformation paymentInformation = getById(request.userId, request.paymentInformationId);
+        PaymentInformation paymentInformation = getById(
+                request.userId,
+                request.paymentInformationId
+        );
 
         return MockPaymentResponse.builder()
                 .successful(true)
                 .transactionId("mock_" + UUID.randomUUID())
-                .message("Mock payment processed successfully using payment method ending in " + paymentInformation.getLastFourDigits())
+                .message("Mock payment processed successfully using payment method ending in "
+                        + paymentInformation.getLastFourDigits())
                 .amountInCents(request.amountInCents)
                 .processedAt(LocalDateTime.now())
                 .build();
+    }
+
+    private void validateUserExists(Long userId) {
+        if (userId == null || !userRepository.existsById(userId)) {
+            throw new NotFoundException("User not found: " + userId);
+        }
     }
 
     private void clearDefaultPaymentMethod(Long userId) {
@@ -116,8 +154,28 @@ public class PaymentInformationService {
                 });
     }
 
+    private void assignNextDefaultPaymentMethod(Long userId) {
+        List<PaymentInformation> remainingMethods =
+                paymentInformationRepository.findByUserIdAndActiveTrueOrderByDefaultPaymentMethodDescCreatedAtDesc(userId);
+
+        if (!remainingMethods.isEmpty()) {
+            PaymentInformation nextDefault = remainingMethods.get(0);
+            nextDefault.setDefaultPaymentMethod(true);
+            paymentInformationRepository.save(nextDefault);
+        }
+    }
+
     private String extractLastFourDigits(String cardNumber) {
-        String cleaned = cardNumber.replaceAll("\\s+", "");
+        if (cardNumber == null) {
+            throw new IllegalArgumentException("Card number is required.");
+        }
+
+        String cleaned = cardNumber.replaceAll("[^0-9]", "");
+
+        if (cleaned.length() < 4) {
+            throw new IllegalArgumentException("Card number must contain at least 4 digits.");
+        }
+
         return cleaned.substring(cleaned.length() - 4);
     }
 }

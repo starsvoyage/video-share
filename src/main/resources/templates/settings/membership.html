@@ -195,8 +195,34 @@
                                                 <input type="hidden" name="membershipPlanId" th:value="${plan.id}">
                                                 <input type="hidden" name="autoRenew" value="true">
 
+                                                <!-- Premium active -->
+                                                <button type="button"
+                                                        class="btn btn-success rounded-pill px-4"
+                                                        disabled
+                                                        th:if="${currentMembership != null
+                                                                and currentMembership.status.name() == 'ACTIVE'
+                                                                and currentMembership.planCode == plan.code}">
+                                                    Active
+                                                </button>
+
+                                                <!-- Free/default plan -->
+                                                <button type="button"
+                                                        class="btn btn-outline-secondary rounded-pill px-4"
+                                                        disabled
+                                                        th:if="${plan.code == 'FREE'
+                                                                and !(currentMembership != null
+                                                                and currentMembership.status.name() == 'ACTIVE'
+                                                                and currentMembership.planCode == plan.code)}">
+                                                    Default Plan
+                                                </button>
+
+                                                <!-- Paid selectable plans only -->
                                                 <button type="submit"
                                                         class="btn btn-dark rounded-pill px-4"
+                                                        th:if="${plan.code != 'FREE'
+                                                                and !(currentMembership != null
+                                                                and currentMembership.status.name() == 'ACTIVE'
+                                                                and currentMembership.planCode == plan.code)}"
                                                         th:disabled="${!plan.active}">
                                                     Select Plan
                                                 </button>

@@ -221,5 +221,13 @@ public class UserMembershipService {
 
         memberships.saveAll(expiredMemberships);
     }
+
+    @Transactional(readOnly = true)
+    public boolean isAdFreeUser(Long userId) {
+        PlaybackAccessResponse access = checkPlaybackAccess(userId);
+        return access.isAdFree();
+    }
+
+
 }
 
