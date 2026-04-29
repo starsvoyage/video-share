@@ -12,8 +12,8 @@
         <!-- Channel section -->
         <div th:if="${!#lists.isEmpty(searchChannels)}" class="mb-5">
             <h3 class="h5 mb-3">Channels</h3>
-            <div class="vs-video-grid">
-                <div th:each="channel : ${searchChannels}">
+            <div class="row g-3">
+                <div class="col-12 col-md-6 col-lg-4" th:each="channel : ${searchChannels}">
                     <a th:href="@{'/' + ${channel.user.username} + '/channel/' + ${channel.name}}"
                        class="text-decoration-none text-dark">
                         <div class="card border-0 shadow-sm rounded-4 h-100">
@@ -45,14 +45,13 @@
         <!-- Video section -->
         <div th:if="${!#lists.isEmpty(searchVideos)}">
             <h3 class="h5 mb-3">Videos</h3>
-            <div class="vs-video-grid">
-                <div th:each="video : ${searchVideos}">
+            <div class="row g-4">
+                <div class="col-12 col-md-6 col-lg-4" th:each="video : ${searchVideos}">
                     <a th:href="@{'/videos/' + ${video.id}}" class="text-decoration-none text-dark">
                         <div class="card h-100 border-0 shadow-sm rounded-4">
-                            <div class="vs-video-thumb rounded-top-4 bg-dark text-white">
-                                <div>
-                                    <i class="bi bi-play-btn fs-1"></i>
-                                </div>
+                            <div class="bg-dark text-white d-flex align-items-center justify-content-center rounded-top-4"
+                                 style="height: 180px;">
+                                <i class="bi bi-play-btn fs-1"></i>
                             </div>
                             <div class="card-body">
                                 <h5 class="card-title mb-2" th:text="${video.title}">Untitled</h5>

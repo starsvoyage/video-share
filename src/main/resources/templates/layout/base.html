@@ -11,7 +11,7 @@
 <!DOCTYPE html>
 <html lang="en"
       xmlns:th="http://www.thymeleaf.org"
-      th:fragment="layout(pageTitle, content, showNavbar, showSidebar)">
+      th:fragment="layout(pageTitle, content, showNavbar, showSidebar)"
 
 <head>
     <meta charset="UTF-8">
@@ -30,17 +30,6 @@
     <link rel="stylesheet" th:href="@{/css/you.css}">
     <link rel="stylesheet" th:href="@{/css/settings.css}">
     <link rel="stylesheet" th:href="@{/css/theme.css}">
-
-    <style>
-        @keyframes vsFadeIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-
-        main {
-            animation: vsFadeIn 0.35s ease-out both;
-        }
-    </style>
 
     <!-- Toast Notifications -->
     <style>
@@ -99,30 +88,28 @@
 </head>
 
 <body style="background-color: #f1f3f5;">
-<!-- Global Toast Container -->
-<div id="vsToastContainer" class="vs-toast-container"></div>
+    <!-- Gloabl Toast Container -->
+    <div id="vsToastContainer" class="vs-toast-container"></div>
 
-<!-- Navbar -->
-<th:block th:if="${showNavbar}">
-    <div th:replace="~{fragments/navbar :: navbar}"></div>
-</th:block>
-
-<div id="sidebarOverlay" class="sidebar-overlay"></div>
-
-<!-- Page layout -->
-<div class="d-flex">
-
-    <!-- Sidebar -->
-    <th:block th:if="${showSidebar}">
-        <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    <!-- Navbar -->
+    <th:block th:if="${showNavbar}">
+        <div th:replace="~{fragments/navbar :: navbar}"></div>
     </th:block>
 
-    <!-- Page-specific content -->
-    <main class="flex-grow-1">
-        <th:block th:replace="${content}"></th:block>
-    </main>
+    <!-- Page layout -->
+    <div class="d-flex">
 
-</div>
+        <!-- Sidebar -->
+        <th:block th:if="${showSidebar}">
+            <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+        </th:block>
+
+        <!-- Page-specific content -->
+        <main class="flex-grow-1">
+            <th:block th:replace="${content}"></th:block>
+        </main>
+
+    </div>
 
 <!-- Upload Video Modal -->
 <div class="modal fade" id="uploadVideoModal" tabindex="-1" aria-hidden="true">
@@ -150,14 +137,14 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label small text-muted">Video File</label>
-                        <input type="file"
-                               name="file"
-                               accept="video/mp4,video/webm,video/ogg,.mp4,.webm,.ogg"
-                               required
-                               class="form-control rounded-4 px-3">
-                        <div class="form-text">Upload an MP4, WebM, or OGG file up to 50 MB.</div>
-                    </div>
+    <label class="form-label small text-muted">Video File</label>
+    <input type="file"
+           name="file"
+           accept="video/mp4,video/webm,video/ogg,.mp4,.webm,.ogg"
+           required
+           class="form-control rounded-4 px-3">
+    <div class="form-text">Upload an MP4, WebM, or OGG file up to 50 MB.</div>
+</div>
 
                     <div class="mb-2">
                         <label class="form-label small text-muted">Channel</label>
@@ -193,97 +180,68 @@
         </div>
     </div>
 </div>
-<!-- Bootstrap JavaScript bundle -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<!-- Global Toast Helper -->
-<script>
-    window.showToast = function(message, type, duration) {
-        type = type || 'success';
-        duration = duration || 4000;
+    <!-- Bootstrap JavaScript bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Global Toast Helper -->
+    <script>
+        window.showToast = function(message, type, duration) {
+            type = type || 'success';
+            duration = duration || 4000;
 
-        var container = document.getElementById('vsToastContainer');
-        if (!container) return;
+            var container = document.getElementById('vsToastContainer');
+            if (!container) return;
 
-        var icons = {
-            success: 'bi-check-circle-fill',
-            error: 'bi-exclamation-triangle-fill',
-            info: 'bi-info-circle-fill'
+            var icons = {
+                success: 'bi-check-circle-fill',
+                error: 'bi-exclamation-triangle-fill',
+                info: 'bi-info-circle-fill'
+            };
+
+            var toast = document.createElement('div');
+            toast.className = 'vs-toast vs-toast-' + type;
+            toast.innerHTML =
+                '<i class="bi ' + (icons[type] || icons.info) + '"></i>' +
+                '<span>' + message + '</span>' +
+                '<button class="vs-toast-close" onclick="this.parentElement.remove()">&times;</button>';
+
+            container.appendChild(toast);
+
+            setTimeout(function() {
+                toast.style.animation = 'vsToastOut 0.3s ease-in forwards';
+                setTimeout(function() { toast.remove(); }, 300);
+            }, duration);
         };
+    </script>
 
-        var toast = document.createElement('div');
-        toast.className = 'vs-toast vs-toast-' + type;
-        toast.innerHTML =
-            '<i class="bi ' + (icons[type] || icons.info) + '"></i>' +
-            '<span>' + message + '</span>' +
-            '<button class="vs-toast-close" onclick="this.parentElement.remove()">&times;</button>';
+    <!-- Display Server Flash Messages as Toast Notifications -->
+    <div th:if="${successMessage}" id="flashSuccess" th:data-message="${successMessage}" class="d-none"></div>
+    <div th:if="${errorMessage}" id="flashError" th:data-message="${errorMessage}" class="d-none"></div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var s = document.getElementById('flashSuccess');
+            if (s) showToast(s.dataset.message, 'success');
+            var e = document.getElementById('flashError');
+            if (e) showToast(e.dataset.message, 'error');
+        });
+    </script>
 
-        container.appendChild(toast);
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const toggleBtn = document.getElementById("sidebarToggle");
+            const toggleIcon = document.getElementById("sidebarToggleIcon");
+            const sidebar = document.getElementById("sidebar");
 
-        setTimeout(function() {
-            toast.style.animation = 'vsToastOut 0.3s ease-in forwards';
-            setTimeout(function() { toast.remove(); }, 300);
-        }, duration);
-    };
-</script>
-
-<!-- Display Server Flash Messages as Toast Notifications -->
-<div th:if="${successMessage}" id="flashSuccess" th:data-message="${successMessage}" class="d-none"></div>
-<div th:if="${errorMessage}" id="flashError" th:data-message="${errorMessage}" class="d-none"></div>
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        var s = document.getElementById('flashSuccess');
-        if (s) showToast(s.dataset.message, 'success');
-        var e = document.getElementById('flashError');
-        if (e) showToast(e.dataset.message, 'error');
-    });
-</script>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const toggleBtn = document.getElementById("sidebarToggle");
-        const toggleIcon = document.getElementById("sidebarToggleIcon");
-        const sidebar = document.getElementById("sidebar");
-        const overlay = document.getElementById("sidebarOverlay");
-
-        if (toggleBtn && toggleIcon && sidebar) {
-            toggleBtn.addEventListener("click", function () {
-                const isMobile = window.innerWidth < 768;
-
-                if (isMobile) {
-                    const isOpen = sidebar.classList.toggle("mobile-open");
-                    if (overlay) overlay.classList.toggle("active", isOpen);
-                    toggleIcon.textContent = isOpen ? "✕" : "☰";
-                } else {
+            if (toggleBtn && toggleIcon && sidebar) {
+                toggleBtn.addEventListener("click", function () {
                     sidebar.classList.toggle("collapsed");
                     const isCollapsed = sidebar.classList.contains("collapsed");
                     toggleIcon.textContent = isCollapsed ? "☰" : "✕";
                     toggleBtn.classList.toggle("active", !isCollapsed);
-                }
-            });
-        }
-
-        if (overlay) {
-            overlay.addEventListener("click", function () {
-                if (sidebar) sidebar.classList.remove("mobile-open");
-                overlay.classList.remove("active");
-                if (toggleIcon) toggleIcon.textContent = "☰";
-            });
-        }
-
-        const currentPath = window.location.pathname;
-        document.querySelectorAll(".sidebar .nav-link").forEach(function (link) {
-            const linkPath = link.getAttribute("href");
-            if (!linkPath) return;
-            const isActive = linkPath === "/"
-                ? currentPath === "/"
-                : currentPath.startsWith(linkPath);
-            if (isActive) {
-                link.classList.add("vs-active");
+                });
             }
         });
-    });
-</script>
-<script th:if="${openUploadVideoModal}">
+    </script>
+    <script th:if="${openUploadVideoModal}">
     document.addEventListener("DOMContentLoaded", function () {
         const modalElement = document.getElementById("uploadVideoModal");
         if (modalElement) {

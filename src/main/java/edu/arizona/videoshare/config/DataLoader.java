@@ -15,8 +15,6 @@ import edu.arizona.videoshare.repository.UserRepository;
 import edu.arizona.videoshare.repository.VideoRepository;
 import edu.arizona.videoshare.repository.*;
 import edu.arizona.videoshare.service.UserService;
-import edu.arizona.videoshare.model.entity.MembershipPlan;
-import edu.arizona.videoshare.repository.MembershipPlanRepository;
 
 import java.time.LocalDateTime;
 
@@ -46,16 +44,15 @@ public class DataLoader implements CommandLineRunner {
     private final MembershipPlanRepository membershipPlanRepository;
     private final UserMembershipRepository userMembershipRepository;
     private final BCryptPasswordEncoder encoder;
-    private final MembershipPlanRepository membershipPlanRepository;
 
-    public DataLoader(UserService userService,
-                  UserRepository userRepository,
-                  ChannelRepository channelRepository,
-                  SubscriptionRepository subscriptionRepository,
-                  VideoRepository videoRepository,
-                  BCryptPasswordEncoder encoder,
-                  AdRepository adRepository,
-                  MembershipPlanRepository membershipPlanRepository) {
+    public DataLoader(UserRepository userRepository,
+                      ChannelRepository channelRepository,
+                      SubscriptionRepository subscriptionRepository,
+                      VideoRepository videoRepository,
+                      AdRepository adRepository,
+                      MembershipPlanRepository membershipPlanRepository,
+                      UserMembershipRepository userMembershipRepository,
+                      BCryptPasswordEncoder encoder) {
 
         this.userRepository = userRepository;
         this.channelRepository = channelRepository;
@@ -63,6 +60,8 @@ public class DataLoader implements CommandLineRunner {
         this.videoRepository = videoRepository;
         this.adRepository = adRepository;
         this.membershipPlanRepository = membershipPlanRepository;
+        this.userMembershipRepository = userMembershipRepository;
+        this.encoder = encoder;
     }
 
     /**
@@ -72,10 +71,8 @@ public class DataLoader implements CommandLineRunner {
     @Override
     public void run(String... args) {
         // Avoid reseeding on restart
-      if (userRepository.count() > 0) {
-    seedMembershipPlans();
-    return;
-}
+        if (userRepository.count() > 0)
+            return;
 
         seed("starsvoyage", "idiazvachier@arizona.edu", "Password@123", "Ian");
         seed("user1", "user1@arizona.edu", "User1@123", "User 1");
@@ -196,45 +193,12 @@ public class DataLoader implements CommandLineRunner {
             createSubscription(bob, channel5);
             createSubscription(charlie, channel3);
             createSubscription(charlie, channel4);
-        } 
-        // Seed membership plans
-seedMembershipPlans();
+        }
     }
 
-    private void seedMembershipPlans() {
-    if (membershipPlanRepository.count() > 0) {
-        return;
-    }
-
-    MembershipPlan basic = new MembershipPlan();
-    basic.setName("Basic");
-    basic.setCode("BASIC");
-    basic.setCost(499);
-    basic.setActive(true);
-    basic.setAdFree(false);
-    basic.setHd4KPlayback(false);
-
-    MembershipPlan premium = new MembershipPlan();
-    premium.setName("Premium");
-    premium.setCode("PREMIUM");
-    premium.setCost(999);
-    premium.setActive(true);
-    premium.setAdFree(true);
-    premium.setHd4KPlayback(false);
-
-    MembershipPlan plus = new MembershipPlan();
-    plus.setName("Premium Plus");
-    plus.setCode("PREMIUM_PLUS");
-    plus.setCost(1499);
-    plus.setActive(true);
-    plus.setAdFree(true);
-    plus.setHd4KPlayback(true);
-
-    membershipPlanRepository.save(basic);
-    membershipPlanRepository.save(premium);
-    membershipPlanRepository.save(plus);
-}
-
+    /**
+     * Helper method to seed a user directly.
+     */
     private void seed(String username, String email, String password, String displayName) {
 
         if (userRepository.existsByUsername(username) || userRepository.existsByEmail(email)) {
