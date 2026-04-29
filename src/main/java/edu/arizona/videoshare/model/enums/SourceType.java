@@ -4,5 +4,6 @@ public enum SourceType {
     VIDEO,
     COMMENT,
     REACTION,
+    PLAYLIST,
     SUBSCRIPTION
 }

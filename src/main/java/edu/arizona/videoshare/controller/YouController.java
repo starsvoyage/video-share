@@ -51,6 +51,7 @@ public class YouController {
 
         model.addAttribute("isCreator", user.getRole() == UserRole.CREATOR);
         model.addAttribute("playlists", playlistService.getByUser(user.getId()));
+        model.addAttribute("likedVideosPlaylist", playlistService.findLikedVideosPlaylist(user.getId()).orElse(null));
         model.addAttribute("subscribedVideos", videoService.getSubscribedVideos(user.getId()));
 
         return "you";
