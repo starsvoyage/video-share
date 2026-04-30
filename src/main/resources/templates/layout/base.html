@@ -118,7 +118,7 @@
 <div id="sidebarOverlay" class="sidebar-overlay"></div>
 
 <!-- Page layout -->
-<div class="d-flex">
+<div th:class="${showSidebar} ? 'd-flex' : ''">
 
     <!-- Sidebar -->
     <th:block th:if="${showSidebar}">
@@ -126,7 +126,7 @@
     </th:block>
 
     <!-- Page-specific content -->
-    <main class="flex-grow-1">
+    <main th:class="${showSidebar} ? 'flex-grow-1' : 'w-100'">
         <th:block th:replace="${content}"></th:block>
     </main>
 
