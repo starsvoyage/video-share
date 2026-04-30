@@ -33,7 +33,7 @@ public class MembershipActionController {
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
         }
 
-        return "redirect:/settings/membership";
+        return "redirect:/settings/membership?section=available-plans";
     }
 
     @PostMapping("/membership/cancel")

@@ -90,7 +90,7 @@
                                href="#"
                                data-bs-toggle="modal"
                                data-bs-target="#uploadVideoModal">
-                               Upload video
+                                Upload video
                             </a>
                         </li>
                     </ul>
@@ -110,29 +110,29 @@
                     </button>
 
                     <ul class="dropdown-menu dropdown-menu-end p-0 bg-dark" style="min-width: 340px; max-height: 450px; overflow-y: auto;" id="notificationDropdown">
-                    <li class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
-                        <span class="fw-semibold text-white">Notifications</span>
-                    </li>
-                    <li class="px-3 py-2 border-bottom" onclick="event.stopPropagation();">
-                        <div class="d-flex gap-1 flex-wrap">
-                            <button class="btn btn-sm btn-dark rounded-pill px-2 py-0 notif-filter active" data-filter="ALL" style="font-size:0.75rem;">All</button>
-                            <button class="btn btn-sm btn-outline-light rounded-pill px-2 py-0 notif-filter" data-filter="COMMENT" style="font-size:0.75rem;">Comments</button>
-                            <button class="btn btn-sm btn-outline-light rounded-pill px-2 py-0 notif-filter" data-filter="LIKE_VIDEO" style="font-size:0.75rem;">Video Likes</button>
-                            <button class="btn btn-sm btn-outline-light rounded-pill px-2 py-0 notif-filter" data-filter="LIKE_COMMENT" style="font-size:0.75rem;">Comment Likes</button>
-                            <button class="btn btn-sm btn-outline-light rounded-pill px-2 py-0 notif-filter" data-filter="UPLOAD" style="font-size:0.75rem;">Uploads</button>
-                            <button class="btn btn-sm btn-outline-light rounded-pill px-2 py-0 notif-filter" data-filter="REPLY" style="font-size:0.75rem;">Replies</button>
-                            <button class="btn btn-sm btn-outline-light rounded-pill px-2 py-0 notif-filter" data-filter="SUBSCRIBE" style="font-size:0.75rem;">Subs</button>
-                           <button class="btn btn-sm btn-outline-light rounded-pill px-2 py-0 notif-filter"
-        data-filter="LIKE_PLAYLIST"
-        style="font-size:0.75rem;">
-    Playlist Likes
-</button>
+                        <li class="d-flex justify-content-between align-items-center px-3 py-2 border-bottom">
+                            <span class="fw-semibold text-white">Notifications</span>
+                        </li>
+                        <li class="px-3 py-2 border-bottom" onclick="event.stopPropagation();">
+                            <div class="d-flex gap-1 flex-wrap">
+                                <button class="btn btn-sm btn-dark rounded-pill px-2 py-0 notif-filter active" data-filter="ALL" style="font-size:0.75rem;">All</button>
+                                <button class="btn btn-sm btn-outline-light rounded-pill px-2 py-0 notif-filter" data-filter="COMMENT" style="font-size:0.75rem;">Comments</button>
+                                <button class="btn btn-sm btn-outline-light rounded-pill px-2 py-0 notif-filter" data-filter="LIKE_VIDEO" style="font-size:0.75rem;">Video Likes</button>
+                                <button class="btn btn-sm btn-outline-light rounded-pill px-2 py-0 notif-filter" data-filter="LIKE_COMMENT" style="font-size:0.75rem;">Comment Likes</button>
+                                <button class="btn btn-sm btn-outline-light rounded-pill px-2 py-0 notif-filter" data-filter="UPLOAD" style="font-size:0.75rem;">Uploads</button>
+                                <button class="btn btn-sm btn-outline-light rounded-pill px-2 py-0 notif-filter" data-filter="REPLY" style="font-size:0.75rem;">Replies</button>
+                                <button class="btn btn-sm btn-outline-light rounded-pill px-2 py-0 notif-filter" data-filter="SUBSCRIBE" style="font-size:0.75rem;">Subs</button>
+                                <button class="btn btn-sm btn-outline-light rounded-pill px-2 py-0 notif-filter"
+                                        data-filter="LIKE_PLAYLIST"
+                                        style="font-size:0.75rem;">
+                                    Playlist Likes
+                                </button>
+                            </div>
+                        </li>
+                        <div id="notifList">
+                            <li class="px-3 py-3 small text-center text-light" id="notifEmpty">Loading...</li>
                         </div>
-                    </li>
-                    <div id="notifList">
-                        <li class="px-3 py-3 small text-center text-light" id="notifEmpty">Loading...</li>
-                    </div>
-                </ul>
+                    </ul>
                     <script th:inline="javascript">
                         document.addEventListener("DOMContentLoaded", function () {
                             const notifUserId = /*[[${session.loggedInUserId}]]*/ null;
@@ -239,7 +239,7 @@
                         </li>
 
                         <li>
-                            <a class="dropdown-item" th:href="@{/settings/membership}">Premium</a>
+                            <a class="dropdown-item" th:href="@{/settings/membership}">Subscription</a>
                         </li>
 
                         <li>

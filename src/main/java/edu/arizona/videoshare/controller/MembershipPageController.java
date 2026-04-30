@@ -36,6 +36,10 @@ public class MembershipPageController {
     ) {
         Long userId = (Long) session.getAttribute("loggedInUserId");
 
+        if (userId == null) {
+            return "redirect:/login";
+        }
+
         model.addAttribute("subSection", subSection);
         model.addAttribute("plans",
                 membershipPlanService.getAllActivePlans()
@@ -50,7 +54,6 @@ public class MembershipPageController {
 
                 model.addAttribute("currentMembership", currentMembership);
 
-                // ✅ ADD THIS
                 if (currentMembership.isAutoRenew() && currentMembership.getStartAt() != null) {
                     model.addAttribute("nextPaymentDate",
                             currentMembership.getStartAt().plusMonths(1));
@@ -60,7 +63,7 @@ public class MembershipPageController {
 
             } catch (Exception ex) {
                 model.addAttribute("currentMembership", null);
-                model.addAttribute("nextPaymentDate", null); // also important
+                model.addAttribute("nextPaymentDate", null);
             }
 
             model.addAttribute(
