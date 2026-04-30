@@ -9,23 +9,23 @@
                 <h2 class="h4 mb-0">Recent Videos</h2>
             </div>
 
-            <!-- Loading indicator -->
+            <!-- Loading -->
             <div id="videosLoading" class="text-center py-5">
-                <div class="spinner-border text-dark" role="status"></div>
+                <div class="spinner-border text-dark"></div>
                 <div class="mt-3 text-muted">Loading videos...</div>
             </div>
 
-            <!-- Error message -->
+            <!-- Error -->
             <div id="videosError" class="text-danger d-none">
                 Could not load videos.
             </div>
 
-            <!-- Empty state -->
+            <!-- Empty -->
             <div id="videosEmpty" class="text-muted d-none">
                 No videos available yet.
             </div>
 
-            <!-- Video grid -->
+            <!-- Grid -->
             <div id="videosGrid" class="vs-video-grid d-none"></div>
         </section>
     </div>
@@ -34,6 +34,7 @@
         const showAds = [[${showAds}]];
 
         document.addEventListener("DOMContentLoaded", async function () {
+
             const videosLoading = document.getElementById("videosLoading");
             const videosError = document.getElementById("videosError");
             const videosEmpty = document.getElementById("videosEmpty");
@@ -41,7 +42,7 @@
 
             try {
                 const res = await fetch("/api/videos");
-                if (!res.ok) throw new Error("Failed to load videos");
+                if (!res.ok) throw new Error();
 
                 const videos = await res.json();
 
@@ -52,49 +53,57 @@
                     return;
                 }
 
+                // Render videos
                 videosGrid.innerHTML = videos.map(video => `
-                <a href="/videos/${video.id}" class="text-decoration-none text-dark">
-                    <div class="card h-100 border-0 shadow-sm rounded-4">
-                        <div class="vs-video-thumb rounded-top-4 bg-dark text-white">
-                            <div>
+                    <a href="/videos/${video.id}" class="text-decoration-none text-dark">
+                        <div class="card h-100 border-0 shadow-sm rounded-4">
+                            <div class="vs-video-thumb rounded-top-4 bg-dark text-white d-flex align-items-center justify-content-center">
                                 <i class="bi bi-play-btn fs-1"></i>
                             </div>
-                        </div>
 
-                        <div class="card-body">
-                            <h5 class="card-title mb-2">${escapeHtml(video.title || "Untitled Video")}</h5>
+                            <div class="card-body">
+                                <h5 class="card-title mb-2">
+                                    ${escapeHtml(video.title || "Untitled Video")}
+                                </h5>
 
-                            <div class="text-muted small mb-1">
-                                ${escapeHtml(video.channel?.name || "Unknown Channel")}
-                            </div>
+                                <div class="text-muted small mb-1">
+                                    ${escapeHtml(video.channel?.name || "Unknown Channel")}
+                                </div>
 
-                            <div class="text-muted small">
-                                ${formatUploadedDate(video.createdAt)}
+                                <div class="text-muted small">
+                                    ${formatUploadedDate(video.createdAt)}
+                                </div>
                             </div>
                         </div>
                     </a>
                 `).join("");
 
-                //Add banner ads after every 8 videos
-                const videoCards = videosGrid.querySelectorAll(':scope > a');
-                for (let i = 0; i < videoCards.length; i++) {
-                    if ((i + 1) % 8 === 0 && i + 1 < videoCards.length) {
-                        const adDiv = document.createElement('div');
-                        adDiv.style.gridColumn = '1 / -1';
-                        adDiv.innerHTML = `
-                            <div class="text-center my-4">
-                                <div class="text-muted small mb-2">Advertisement</div>
-                                <img src="https://picsum.photos/728/90"
-                                     alt="Banner Ad"
-                                     class="img-fluid rounded"
-                                     style="max-width: 100%; height: auto;" />
-                            </div>
-                        `;
-                            videoCards[i].parentNode.insertBefore(adDiv, videoCards[i].nextSibling);
+                // Ads (every 8 videos)
+                if (showAds) {
+                    const videoCards = videosGrid.querySelectorAll(':scope > a');
+
+                    for (let i = 0; i < videoCards.length; i++) {
+                        if ((i + 1) % 8 === 0 && i + 1 < videoCards.length) {
+                            const adDiv = document.createElement('div');
+                            adDiv.style.gridColumn = '1 / -1';
+
+                            adDiv.innerHTML = `
+                                <div class="text-center my-4">
+                                    <div class="text-muted small mb-2">Advertisement</div>
+                                    <img src="https://picsum.photos/728/90"
+                                         class="img-fluid rounded">
+                                </div>
+                            `;
+
+                            videoCards[i].parentNode.insertBefore(
+                                adDiv,
+                                videoCards[i].nextSibling
+                            );
                         }
                     }
                 }
 
+                // SHOW GRID
                 videosGrid.classList.remove("d-none");
 
             } catch (e) {
@@ -119,13 +128,14 @@
             }
         });
     </script>
-    <div id="fixedBottomAd" class="vs-fixed-bottom-ad">
+
+    <!-- Bottom Ad -->
+    <div th:if="${showAds}" id="fixedBottomAd" class="vs-fixed-bottom-ad">
         <div class="vs-fixed-bottom-ad-inner">
             <div class="vs-fixed-bottom-ad-label">Advertisement</div>
 
             <img src="https://picsum.photos/728/90"
-                alt="Advertisement"
-                class="vs-fixed-bottom-ad-img">
+                 class="vs-fixed-bottom-ad-img">
 
             <button type="button"
                     class="vs-fixed-bottom-ad-close"
@@ -134,5 +144,6 @@
             </button>
         </div>
     </div>
+
 </th:block>
 </html>
