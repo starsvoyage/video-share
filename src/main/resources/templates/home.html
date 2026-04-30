@@ -72,18 +72,16 @@
                                 ${formatUploadedDate(video.createdAt)}
                             </div>
                         </div>
-                    </div>
-                </a>
-            `).join("");
+                    </a>
+                `).join("");
 
-                if (showAds) {
-                    const videoCards = videosGrid.querySelectorAll(':scope > a');
-
-                    for (let i = 0; i < videoCards.length; i++) {
-                        if ((i + 1) % 8 === 0 && i + 1 < videoCards.length) {
-                            const adDiv = document.createElement('div');
-                            adDiv.style.gridColumn = '1 / -1';
-                            adDiv.innerHTML = `
+                //Add banner ads after every 8 videos
+                const videoCards = videosGrid.querySelectorAll(':scope > a');
+                for (let i = 0; i < videoCards.length; i++) {
+                    if ((i + 1) % 8 === 0 && i + 1 < videoCards.length) {
+                        const adDiv = document.createElement('div');
+                        adDiv.style.gridColumn = '1 / -1';
+                        adDiv.innerHTML = `
                             <div class="text-center my-4">
                                 <div class="text-muted small mb-2">Advertisement</div>
                                 <img src="https://picsum.photos/728/90"
@@ -121,5 +119,20 @@
             }
         });
     </script>
+    <div id="fixedBottomAd" class="vs-fixed-bottom-ad">
+        <div class="vs-fixed-bottom-ad-inner">
+            <div class="vs-fixed-bottom-ad-label">Advertisement</div>
+
+            <img src="https://picsum.photos/728/90"
+                alt="Advertisement"
+                class="vs-fixed-bottom-ad-img">
+
+            <button type="button"
+                    class="vs-fixed-bottom-ad-close"
+                    onclick="document.getElementById('fixedBottomAd').style.display='none'">
+                ×
+            </button>
+        </div>
+    </div>
 </th:block>
 </html>

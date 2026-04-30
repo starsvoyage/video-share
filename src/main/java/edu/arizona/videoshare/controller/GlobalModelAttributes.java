@@ -1,8 +1,10 @@
 package edu.arizona.videoshare.controller;
 
 import edu.arizona.videoshare.model.entity.Channel;
+import edu.arizona.videoshare.model.entity.Subscription;
 import edu.arizona.videoshare.repository.ChannelRepository;
 import edu.arizona.videoshare.repository.NotificationRepository;
+import edu.arizona.videoshare.repository.SubscriptionRepository;
 import edu.arizona.videoshare.service.UserMembershipService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +20,7 @@ public class GlobalModelAttributes {
 
     private final ChannelRepository channelRepository;
     private final NotificationRepository notificationRepository;
+    private final SubscriptionRepository subscriptionRepository;
     private final UserMembershipService userMembershipService;
 
     @ModelAttribute("channels")
@@ -31,12 +34,28 @@ public class GlobalModelAttributes {
         return channelRepository.findByUserId(loggedInUserId);
     }
 
+    @ModelAttribute("followedSubscriptions")
+    public List<Subscription> followedSubscriptions(HttpSession session) {
+        Long loggedInUserId = (Long) session.getAttribute("loggedInUserId");
+
+        if (loggedInUserId == null) {
+            return Collections.emptyList();
+        }
+
+        return subscriptionRepository.findBySubscriberIdAndStatusOrderByCreatedAtDesc(
+                loggedInUserId,
+                Subscription.SubscriptionStatus.ACTIVE
+        );
+    }
+
     @ModelAttribute("unreadNotificationCount")
     public long unreadNotificationCount(HttpSession session) {
         Long loggedInUserId = (Long) session.getAttribute("loggedInUserId");
+
         if (loggedInUserId == null) {
             return 0;
         }
+
         return notificationRepository.countByRecipientIdAndIsReadFalse(loggedInUserId);
     }
 

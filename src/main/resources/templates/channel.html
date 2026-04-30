@@ -30,7 +30,12 @@
                     <h1 class="h2 fw-bold mb-2" th:text="${channel.name}">Channel Name</h1>
 
                     <div class="text-muted mb-2">
-                        by <span th:text="${channel.user.displayName}">Owner Name</span>
+                        by 
+                        <a th:href="@{/users/{username}(username=${channel.user.username})}"
+                        class="text-decoration-none"
+                        th:text="${channel.user.displayName}">
+                            Owner Name
+                        </a>
                         <span class="mx-2">•</span>
                         <span id="subscriberCount" th:text="${channel.subscriberCount}">0</span> subscribers
                     </div>
@@ -152,7 +157,11 @@
 
             <div class="mb-3">
                 <div class="fw-semibold mb-1">Channel Owner</div>
-                <div class="text-muted" th:text="${channel.user.displayName}">Owner Name</div>
+                <a th:href="@{/users/{username}(username=${channel.user.username})}"
+                    class="text-decoration-none"
+                    th:text="${channel.user.displayName}">
+                    Owner Name
+                </a>
             </div>
 
             <div class="mb-3">

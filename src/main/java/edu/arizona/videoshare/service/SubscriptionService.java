@@ -91,6 +91,18 @@ public class SubscriptionService {
     }
 
     @Transactional(readOnly = true)
+    public List<Subscription> getActiveSubscriptionsForUser(Long userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new NotFoundException("User not found: " + userId);
+        }
+
+        return subscriptionRepository.findBySubscriberIdAndStatusOrderByCreatedAtDesc(
+                userId,
+                Subscription.SubscriptionStatus.ACTIVE
+        );
+    }
+
+    @Transactional(readOnly = true)
     public List<Subscription> getUserSubscriptions(Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() ->
                 new NotFoundException("User not found: " + userId));
