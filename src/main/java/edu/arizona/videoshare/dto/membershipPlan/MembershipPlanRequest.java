@@ -10,22 +10,22 @@ import lombok.Data;
 public class MembershipPlanRequest {
     @NotBlank
     @Size(min = 2, max = 50)
-    public String code;
+    private String code;
 
     @NotBlank
     @Size(max = 100)
-    public String name;
+    private String name;
 
     @NotNull
     @Min(0)
-    public Integer cost;
+    private Integer cost;
 
     @NotNull
-    public Boolean adFree;
+    private Boolean adFree;
 
     @NotNull
-    public Boolean active;
+    private Boolean active;
 
     @NotNull
-    public Boolean hd4KPlayback;
+    private Boolean hd4KPlayback;
 }
