@@ -50,4 +50,9 @@ public class ChannelPageController {
 
         return "channel";
     }
+
+    @GetMapping("/deleted-account")
+    public String deletedAccount() {
+        return "deleted-account";
+    }
 }

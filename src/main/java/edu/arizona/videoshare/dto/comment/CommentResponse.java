@@ -24,4 +24,5 @@ public class CommentResponse {
     private int replyCount;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String userStatus;
 }
