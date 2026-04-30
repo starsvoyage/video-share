@@ -11,13 +11,25 @@
                 <div class="bg-dark rounded-4 shadow-sm overflow-hidden d-flex align-items-center justify-content-center"
                      style="aspect-ratio: 16 / 9; width: 100%; max-height: 480px;">
 
-                    <div th:if="${ad != null}" id="adContainer" class="w-100 h-100">
+                    <div th:if="${ad != null}" id="adContainer" class="w-100 h-100 position-relative">
                         <video id="adPlayer"
                             class="w-100 h-100"
                             autoplay
                             style="object-fit: contain; background-color: #000;"
                             th:src="@{${ad.mediaUrl}}">
                         </video>
+
+                        <div id="adBadge"
+                            class="position-absolute top-0 start-0 m-3 px-3 py-2 rounded-pill bg-dark text-white small fw-semibold"
+                            style="z-index: 5; background: rgba(0,0,0,0.75) !important;">
+                            Advertisement
+                        </div>
+
+                        <div id="adCountdown"
+                            class="position-absolute top-0 end-0 m-3 px-3 py-2 rounded-pill bg-dark text-white small fw-semibold"
+                            style="z-index: 5; background: rgba(0,0,0,0.75) !important;">
+                            Ad
+                        </div>
                     </div>
 
                     <video id="videoPlayer"
@@ -76,22 +88,29 @@
                                 </div>
 
                                 <div class="text-muted small">
-                                    by <span th:text="${video.owner != null ? video.owner.displayName : video.channel.user.displayName}">Creator Name</span>
+                                    by
+                                    <a th:href="@{/users/{username}(username=${video.owner != null ? video.owner.username : video.channel.user.username})}"
+                                        class="text-decoration-none"
+                                        th:text="${video.owner != null ? video.owner.displayName : video.channel.user.displayName}">
+                                        Creator Name
+                                    </a>
                                 </div>
                             </div>
                         </div>
 
                         <div class="d-flex align-items-center gap-2">
-                            <div th:if="${loggedInUserId != null}" class="btn-group" role="group">
-                                <button type="button" class="btn btn-outline-dark rounded-pill rounded-end px-3" id="likeBtn" onclick="react('LIKE')">
-                                    <i class="bi bi-hand-thumbs-up me-1"></i><span id="likeCount">0</span>
-                                </button>
-                                <button type="button" class="btn btn-outline-dark rounded-pill rounded-start px-3" id="dislikeBtn" onclick="react('DISLIKE')">
-                                    <i class="bi bi-hand-thumbs-down me-1"></i><span id="dislikeCount">0</span>
-                                </button>
+                            <div th:if="${loggedInUserId != null}" class="d-flex align-items-center gap-2">
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-outline-dark rounded-pill px-3" id="likeBtn" onclick="react('LIKE')">
+                                        <i class="bi bi-hand-thumbs-up me-1"></i><span id="likeCount">0</span>
+                                    </button>
+                                    <button type="button" class="btn btn-outline-dark rounded-pill px-3" id="dislikeBtn" onclick="react('DISLIKE')">
+                                        <i class="bi bi-hand-thumbs-down me-1"></i><span id="dislikeCount">0</span>
+                                    </button>
+                                </div>
 
-                                <div class="dropdown ms-2">
-                                    <button class="btn btn-outline-dark rounded-pill px-3" type="button" data-bs-toggle="dropdown">
+                                <div class="dropdown">
+                                    <button class="btn btn-outline-dark rounded-pill px-3" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                         <i class="bi bi-three-dots"></i>
                                     </button>
                                     <ul class="dropdown-menu">
@@ -102,7 +121,6 @@
                                         </li>
                                     </ul>
                                 </div>
-
                             </div>
 
                             <div th:if="${loggedInUserId == null}" class="text-muted small">
@@ -163,18 +181,52 @@
                 </div>
 
                 <div class="modal-body pt-2">
-                    <div th:if="${playlists == null or #lists.isEmpty(playlists)}" class="text-muted small">
-                        You do not have any playlists yet. Create one first.
+
+                    <div class="card border-0 bg-light rounded-4 mb-3">
+                        <div class="card-body">
+                            <h6 class="fw-semibold mb-3">Create New Playlist</h6>
+
+                            <input type="text"
+                                id="quickPlaylistName"
+                                class="form-control rounded-3 mb-2"
+                                placeholder="Playlist name">
+
+                            <input type="text"
+                                id="quickPlaylistDescription"
+                                class="form-control rounded-3 mb-2"
+                                placeholder="Description (optional)">
+
+                            <select id="quickPlaylistVisibility" class="form-select rounded-3 mb-3">
+                                <option value="PRIVATE">Private</option>
+                                <option value="PUBLIC">Public</option>
+                            </select>
+
+                            <button type="button"
+                                    id="quickCreatePlaylistBtn"
+                                    class="btn btn-dark rounded-pill px-4">
+                                Create and Add Video
+                            </button>
+
+                            <div id="quickPlaylistMessage" class="small mt-2"></div>
+                        </div>
                     </div>
 
-                    <div th:if="${playlists != null and !#lists.isEmpty(playlists)}" class="list-group">
-                        <button type="button"
-                                class="list-group-item list-group-item-action rounded-3 mb-2 add-to-playlist-btn"
-                                th:each="playlist : ${playlists}"
-                                th:attr="data-playlist-id=${playlist.id}"
-                                th:text="${playlist.name}">
-                            Playlist Name
-                        </button>
+                    <div th:if="${playlists == null or #lists.isEmpty(playlists)}" class="text-muted small">
+                        You do not have any playlists yet. Create one above.
+                    </div>
+
+                    <div th:if="${playlists != null and !#lists.isEmpty(playlists)}">
+                        <h6 class="fw-semibold mb-2">Add to Existing Playlist</h6>
+
+                        <div class="list-group" id="playlistList">
+                            <button type="button"
+                                    class="list-group-item list-group-item-action rounded-3 mb-2 add-to-playlist-btn"
+                                    th:each="playlist : ${playlists}"
+                                    th:attr="data-playlist-id=${playlist.id}"
+                                    th:text="${playlist.name}">
+                                Playlist Name
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -198,57 +250,83 @@
             const commentsList = document.getElementById("commentsList");
             const commentHeader = document.getElementById("commentHeader");
             const playlistAddMessage = document.getElementById("playlistAddMessage");
+            const quickCreatePlaylistBtn = document.getElementById("quickCreatePlaylistBtn");
+            const quickPlaylistMessage = document.getElementById("quickPlaylistMessage");
 
 
             const adContainer = document.getElementById("adContainer");
             const adPlayer = document.getElementById("adPlayer");
             const videoPlayer = document.getElementById("videoPlayer");
+            const adCountdown = document.getElementById("adCountdown");
+
+            function updateAdCountdown() {
+                if (!adPlayer || !adCountdown || !isFinite(adPlayer.duration)) {
+                    return;
+                }
+
+                const remaining = Math.max(0, Math.ceil(adPlayer.duration - adPlayer.currentTime));
+                adCountdown.textContent = `Ad ends in ${remaining}s`;
+            }
+
+            function showAd(adUrl, resumeVideoAfterAd) {
+                if (!adContainer || !adPlayer || !videoPlayer || !adUrl) {
+                    return;
+                }
+
+                videoPlayer.pause();
+                videoPlayer.style.display = "none";
+
+                adPlayer.src = adUrl;
+                adContainer.style.display = "block";
+                adPlayer.currentTime = 0;
+                adPlayer.play();
+
+                adPlayer.ontimeupdate = updateAdCountdown;
+                adPlayer.onloadedmetadata = updateAdCountdown;
+
+                adPlayer.onended = function () {
+                    adContainer.style.display = "none";
+                    videoPlayer.style.display = "block";
+
+                    if (resumeVideoAfterAd) {
+                        videoPlayer.play();
+                    }
+                };
+            }
 
             if (adContainer && adPlayer && videoPlayer) {
                 videoPlayer.style.display = "none";
 
+                adPlayer.ontimeupdate = updateAdCountdown;
+                adPlayer.onloadedmetadata = updateAdCountdown;
+
                 adPlayer.addEventListener("ended", function () {
-                    adContainer.style.display = "none"; 
-                    videoPlayer.style.display = "block"; 
+                    adContainer.style.display = "none";
+                    videoPlayer.style.display = "block";
                     videoPlayer.play();
                 });
             }
 
             const midRollUrl = /*[[${midRollAd != null ? midRollAd.mediaUrl : ''}]]*/ '';
+
             if (midRollUrl && videoPlayer) {
                 let midRollPlayed = false;
 
                 videoPlayer.addEventListener("timeupdate", function () {
                     const half = videoPlayer.duration / 2;
-                    if (!midRollPlayed && videoPlayer.currentTime >= half) {
+
+                    if (!midRollPlayed && videoPlayer.duration && videoPlayer.currentTime >= half) {
                         midRollPlayed = true;
-                        videoPlayer.pause();
-
-                        adPlayer.src = midRollUrl;
-                        adContainer.style.display = "block";
-                        videoPlayer.style.display = "none";
-                        adPlayer.play();
-
-                        adPlayer.onended = function () {
-                            adContainer.style.display = "none";
-                            videoPlayer.style.display = "block";
-                            videoPlayer.play();
-                        };
+                        showAd(midRollUrl, true);
                     }
                 });
             }
 
             const postRollUrl = /*[[${postRollAd != null ? postRollAd.mediaUrl : ''}]]*/ '';
+
             if (postRollUrl && videoPlayer) {
                 videoPlayer.addEventListener("ended", function () {
-                    adPlayer.src = postRollUrl;
-                    adContainer.style.display = "block";
-                    videoPlayer.style.display = "none";
-                    adPlayer.play();
-
-                    adPlayer.onended = function () {
-                        adContainer.style.display = "none";
-                    };
+                    showAd(postRollUrl, false);
                 });
             }
 
@@ -578,7 +656,10 @@ loadComments();
 
                         try {
                             const res = await fetch(`/api/videos/${videoId}/comments/${cid}/replies`);
-                            if (!res.ok) throw new Error();
+                            if (!res.ok) {
+                                const message = await readErrorMessage(res, "Could not load replies.");
+                                throw new Error(message);
+                            }
                             const replies = await res.json();
                             await Promise.all(replies.map(async (r) => {
                                 try {
@@ -631,10 +712,9 @@ loadComments();
                             container.classList.remove("d-none");
                             this.dataset.loaded = "true";
 
-                            // ADDED: attach event listeners for reply actions
-                            attachReplyEventListeners(cid);
+                            attachCommentEventListeners();
                         } catch (e) {
-                            container.innerHTML = '<p class="text-danger small">Could not load replies.</p>';
+                            container.innerHTML = `<p class="text-danger small">${e.message || 'Could not load replies.'}</p>`;
                             container.classList.remove("d-none");
                         }
                     });
@@ -807,6 +887,74 @@ loadComments();
                     }
                 });
             });
+
+            if (quickCreatePlaylistBtn) {
+                quickCreatePlaylistBtn.addEventListener("click", async function () {
+                    const nameInput = document.getElementById("quickPlaylistName");
+                    const descriptionInput = document.getElementById("quickPlaylistDescription");
+                    const visibilityInput = document.getElementById("quickPlaylistVisibility");
+
+                    const name = nameInput.value.trim();
+                    const description = descriptionInput.value.trim();
+                    const visibility = visibilityInput.value;
+
+                    if (quickPlaylistMessage) {
+                        quickPlaylistMessage.textContent = "";
+                        quickPlaylistMessage.className = "small mt-2";
+                    }
+
+                    if (!name) {
+                        if (quickPlaylistMessage) {
+                            quickPlaylistMessage.classList.add("text-danger");
+                            quickPlaylistMessage.textContent = "Playlist name is required.";
+                        }
+                        return;
+                    }
+
+                    try {
+                        const createRes = await fetch("/api/playlists", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                userId: userId,
+                                name: name,
+                                description: description,
+                                visibility: visibility
+                            })
+                        });
+
+                        if (!createRes.ok) {
+                            const message = await readErrorMessage(createRes, "Could not create playlist.");
+                            throw new Error(message);
+                        }
+
+                        const playlist = await createRes.json();
+
+                        const addRes = await fetch(`/api/playlists/${playlist.id}/videos`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ videoId: videoId })
+                        });
+
+                        if (!addRes.ok) {
+                            const message = await readErrorMessage(addRes, "Playlist created, but video could not be added.");
+                            throw new Error(message);
+                        }
+
+                        showToast("Playlist created and video added!", "success");
+
+                        const modalEl = document.getElementById("addToPlaylistModal");
+                        const modal = bootstrap.Modal.getInstance(modalEl);
+                        if (modal) modal.hide();
+
+                    } catch (e) {
+                        if (quickPlaylistMessage) {
+                            quickPlaylistMessage.classList.add("text-danger");
+                            quickPlaylistMessage.textContent = e.message || "Could not create playlist.";
+                        }
+                    }
+                });
+            }
 
             async function readErrorMessage(res, fallbackMessage) {
     try {

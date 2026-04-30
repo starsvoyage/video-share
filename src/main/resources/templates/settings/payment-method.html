@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout('VideoShare | Payment Method', ~{::content}, true, true)}">
+
+<th:block th:fragment="content">
+    <div class="settings-page">
+        <div class="container-fluid px-0">
+            <div class="row g-0 settings-layout">
+
+                <!-- Sidebar -->
+                <div class="col-12 col-md-4 col-lg-3 settings-sidebar-column">
+                    <div th:replace="~{fragments/settings-sidebar :: settingsSidebar('payment-method')}"></div>
+                </div>
+
+                <!-- Content -->
+                <div class="col-12 col-md-8 col-lg-9 settings-content-column">
+                    <div class="p-4 p-lg-5 text-dark">
+
+                        <h2 class="fw-bold mb-3">Payment Method</h2>
+                        <p class="text-secondary mb-4">
+                            View, update, or remove your saved payment methods.
+                        </p>
+
+                        <!-- Empty state -->
+                        <div th:if="${paymentMethods == null or #lists.isEmpty(paymentMethods)}"
+                             class="card border-0 shadow-sm rounded-4">
+                            <div class="card-body p-4">
+                                <p class="text-secondary mb-0">
+                                    You do not have any saved payment methods.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Payment list -->
+                        <div class="card border-0 shadow-sm rounded-4 mb-3"
+                             th:each="payment : ${paymentMethods}">
+
+                            <div class="card-body p-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
+
+                                <div>
+                                    <div class="fw-semibold fs-5">
+                                        <i class="bi bi-credit-card me-2"></i>
+                                        <span th:text="${payment.paymentType}">CARD</span>
+
+                                        <span th:if="${payment.defaultPaymentMethod}"
+                                              class="badge bg-success ms-2">
+                                            Default
+                                        </span>
+                                    </div>
+
+                                    <div class="text-secondary small">
+                                        Ending in
+                                        <span th:text="${payment.lastFourDigits}">1234</span>
+                                        · Expires
+                                        <span th:text="${payment.expirationDate}">12/28</span>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex gap-2">
+
+                                    <!-- Set Default -->
+                                    <form th:if="${!payment.defaultPaymentMethod}"
+                                          th:action="@{/settings/payment-method/{id}/default(id=${payment.id})}"
+                                          method="post">
+                                        <button type="submit" class="btn btn-outline-dark rounded-pill px-4">
+                                            Set Default
+                                        </button>
+                                    </form>
+
+                                    <!-- Edit -->
+                                    <button class="btn btn-outline-dark rounded-pill px-4"
+                                            type="button"
+                                            data-bs-toggle="collapse"
+                                            th:data-bs-target="'#editPaymentMethodContainer-' + ${payment.id}">
+                                        Edit
+                                    </button>
+
+                                    <!-- Delete -->
+                                    <form th:action="@{/settings/payment-method/{id}/delete(id=${payment.id})}"
+                                          method="post"
+                                          onsubmit="return confirm('Delete this payment method?');">
+                                        <button type="submit" class="btn btn-outline-danger rounded-pill px-4">
+                                            Delete
+                                        </button>
+                                    </form>
+
+                                </div>
+
+                            </div>
+
+                            <!-- EDIT FORM -->
+                            <div class="collapse border-top"
+                                 th:id="'editPaymentMethodContainer-' + ${payment.id}">
+                                <div class="card-body p-4 bg-light rounded-bottom-4">
+
+                                    <h5 class="fw-semibold mb-3">Edit Payment Method</h5>
+
+                                    <form th:action="@{/settings/payment-method/{id}/edit(id=${payment.id})}" method="post">
+
+                                        <div class="row g-3">
+
+                                            <div class="col-md-6">
+                                                <label class="form-label">Cardholder Name</label>
+                                                <input type="text"
+                                                       name="cardholderName"
+                                                       class="form-control"
+                                                       th:value="${payment.cardholderName}"
+                                                       required>
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <label class="form-label">Payment Type</label>
+                                                <select name="paymentType" class="form-select" required>
+                                                    <option value="CREDIT_CARD"
+                                                            th:selected="${payment.paymentType.name() == 'CREDIT_CARD'}">
+                                                        Credit Card
+                                                    </option>
+                                                    <option value="DEBIT_CARD"
+                                                            th:selected="${payment.paymentType.name() == 'DEBIT_CARD'}">
+                                                        Debit Card
+                                                    </option>
+                                                </select>
+                                            </div>
+
+                                            <div class="col-md-8">
+                                                <label class="form-label">New Card Number</label>
+                                                <input type="text"
+                                                       name="cardNumber"
+                                                       class="form-control"
+                                                       placeholder="Leave blank to keep current card">
+                                            </div>
+
+                                            <div class="col-md-4">
+                                                <label class="form-label">Expiration Date</label>
+                                                <input type="text"
+                                                       name="expirationDate"
+                                                       class="form-control"
+                                                       th:value="${payment.expirationDate}"
+                                                       required>
+                                            </div>
+
+                                            <div class="col-12">
+                                                <input type="hidden" name="defaultPaymentMethod" value="false">
+
+                                                <input type="checkbox"
+                                                       name="defaultPaymentMethod"
+                                                       value="true"
+                                                       class="form-check-input"
+                                                       th:id="'editDefaultPaymentMethod-' + ${payment.id}"
+                                                       th:checked="${payment.defaultPaymentMethod}">
+
+                                                <label class="form-check-label"
+                                                       th:for="'editDefaultPaymentMethod-' + ${payment.id}">
+                                                    Set as default payment method
+                                                </label>
+                                            </div>
+
+                                        </div>
+
+                                        <div class="d-flex gap-2 mt-4">
+                                            <button type="submit" class="btn btn-dark rounded-pill px-4">
+                                                Save Changes
+                                            </button>
+                                        </div>
+
+                                    </form>
+
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- Add Payment Method -->
+                        <div class="mt-4">
+
+                            <button class="btn btn-dark rounded-pill px-4"
+                                    type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#addPaymentMethodContainer">
+                                Add Payment Method
+                            </button>
+
+                            <div class="collapse mt-4" id="addPaymentMethodContainer">
+                                <div class="card border-0 shadow-sm rounded-4">
+                                    <div class="card-body p-4">
+
+                                        <h5 class="fw-semibold mb-3">New Payment Method</h5>
+
+                                        <form th:action="@{/settings/payment-method/new}" method="post">
+
+                                            <div class="row g-3">
+
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Cardholder Name</label>
+                                                    <input type="text"
+                                                           name="cardholderName"
+                                                           class="form-control"
+                                                           placeholder="Full Name"
+                                                           required>
+                                                </div>
+
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Payment Type</label>
+                                                    <select name="paymentType" class="form-select" required>
+                                                        <option value="CREDIT_CARD">Credit Card</option>
+                                                        <option value="DEBIT_CARD">Debit Card</option>
+                                                    </select>
+                                                </div>
+
+                                                <div class="col-md-8">
+                                                    <label class="form-label">Card Number</label>
+                                                    <input type="text"
+                                                           name="cardNumber"
+                                                           class="form-control"
+                                                           placeholder="1234 5678 1234 5678"
+                                                           required>
+                                                </div>
+
+                                                <div class="col-md-4">
+                                                    <label class="form-label">Expiration Date</label>
+                                                    <input type="text"
+                                                           name="expirationDate"
+                                                           class="form-control"
+                                                           placeholder="MM/YY"
+                                                           required>
+                                                </div>
+
+                                                <div class="col-12">
+                                                    <div class="form-check">
+
+                                                        <input type="hidden" name="defaultPaymentMethod" value="false">
+
+                                                        <input type="checkbox"
+                                                               name="defaultPaymentMethod"
+                                                               value="true"
+                                                               class="form-check-input"
+                                                               id="defaultPaymentMethod">
+
+                                                        <label class="form-check-label" for="defaultPaymentMethod">
+                                                            Set as default payment method
+                                                        </label>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+
+                                            <div class="d-flex gap-2 mt-4">
+                                                <button type="submit" class="btn btn-dark rounded-pill px-4">
+                                                    Save Payment Method
+                                                </button>
+
+                                                <button class="btn btn-outline-secondary rounded-pill px-4"
+                                                        type="button"
+                                                        data-bs-toggle="collapse"
+                                                        data-bs-target="#addPaymentMethodContainer">
+                                                    Cancel
+                                                </button>
+                                            </div>
+
+                                        </form>
+
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</th:block>
+</html>

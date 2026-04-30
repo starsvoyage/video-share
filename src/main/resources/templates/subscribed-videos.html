@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout('Subscribed Videos | VideoShare', ~{::content}, true, true)}">
+
+<th:block th:fragment="content">
+    <div class="container py-5">
+
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+            <div>
+                <h2 class="h4 mb-1">Subscribed Videos</h2>
+                <div class="text-muted small">Videos from channels you follow.</div>
+            </div>
+
+            <form method="get" th:action="@{/subscriptions/videos}">
+                <select class="form-select rounded-pill px-3"
+                        name="channelId"
+                        onchange="this.form.submit()">
+                    <option value="">All channels</option>
+
+                    <option th:each="sub : ${subscriptions}"
+                            th:value="${sub.channel.id}"
+                            th:selected="${selectedChannelId != null and selectedChannelId == sub.channel.id}"
+                            th:text="${sub.channel.name}">
+                        Channel
+                    </option>
+                </select>
+            </form>
+        </div>
+
+        <div th:if="${videosByChannel == null or videosByChannel.isEmpty()}" class="text-muted">
+            No subscribed videos found.
+        </div>
+
+        <div th:each="entry : ${videosByChannel}" class="mb-5">
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <a th:href="@{/{username}/channel/{channelName}(username=${entry.key.user.username}, channelName=${entry.key.name})}"
+                   class="text-decoration-none text-dark d-flex align-items-center gap-3">
+                    <img th:if="${entry.key.avatarUrl != null and !#strings.isEmpty(entry.key.avatarUrl)}"
+                         th:src="${entry.key.avatarUrl}"
+                         class="rounded-circle border"
+                         style="width:48px; height:48px; object-fit:cover;"
+                         alt="Channel avatar">
+
+                    <div th:if="${entry.key.avatarUrl == null or #strings.isEmpty(entry.key.avatarUrl)}"
+                         class="rounded-circle bg-dark text-white d-flex align-items-center justify-content-center fw-bold"
+                         style="width:48px; height:48px;"
+                         th:text="${#strings.substring(entry.key.name,0,1).toUpperCase()}">
+                    </div>
+
+                    <div>
+                        <h3 class="h6 mb-0" th:text="${entry.key.name}">Channel</h3>
+                        <div class="text-muted small">
+                            <span th:text="${entry.key.subscriberCount}">0</span> subscribers
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="vs-video-grid">
+                <a th:each="video : ${entry.value}"
+                   th:href="@{/videos/{id}(id=${video.id})}"
+                   class="text-decoration-none text-dark vs-video-card-link">
+                    <div class="card h-100 border-0 shadow-sm rounded-4 vs-video-card">
+                        <div class="vs-video-thumb rounded-top-4 bg-dark text-white">
+                            <div>
+                                <i class="bi bi-play-btn fs-1"></i>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <h5 class="card-title mb-2" th:text="${video.title}">Video Title</h5>
+                            <div class="text-muted small mb-1" th:text="${video.channel.name}">Channel</div>
+                            <div class="text-muted small"
+                                 th:if="${video.createdAt != null}"
+                                 th:text="'Uploaded ' + ${#temporals.format(video.createdAt, 'MMM d, yyyy')}">
+                                Uploaded date
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+    </div>
+</th:block>
+</html>

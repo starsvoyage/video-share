@@ -57,7 +57,9 @@ public class AuthController {
             @Valid @ModelAttribute("registerForm") RegisterForm form,
             BindingResult bindingResult,
             RedirectAttributes redirectAttributes,
-            Model model) {
+            Model model,
+            HttpSession session) {
+
         if (!form.getPassword().equals(form.getConfirmPassword())) {
             bindingResult.rejectValue("confirmPassword", "mismatch", "Passwords do not match");
         }
@@ -67,12 +69,18 @@ public class AuthController {
         }
 
         try {
-            authService.register(form);
+            User user = authService.register(form);
+
+            session.setAttribute("loggedInUserId", user.getId());
+            session.setAttribute("loggedInUsername", user.getUsername());
+            session.setAttribute("loggedInDisplayName", user.getDisplayName());
 
             redirectAttributes.addFlashAttribute(
                     "successMessage",
-                    "Account created successfully.");
-            return "redirect:/login";
+                    "Account created successfully. Choose a plan to continue."
+            );
+
+            return "redirect:/choose-plan";
 
         } catch (ConflictException ex) {
             String msg = ex.getMessage();
@@ -110,7 +118,9 @@ public class AuthController {
     public String login(
             @Valid @ModelAttribute("loginForm") LoginForm form,
             BindingResult bindingResult,
+            @RequestParam(name = "registered", required = false) String registered,
             HttpSession session) {
+
         if (bindingResult.hasErrors()) {
             return "auth/login";
         }
@@ -121,8 +131,14 @@ public class AuthController {
             session.setAttribute("loggedInUserId", user.getId());
             session.setAttribute("loggedInUsername", user.getUsername());
             session.setAttribute("loggedInDisplayName", user.getDisplayName());
+            session.setAttribute("loggedInRole", user.getRole());
+
+            if ("true".equalsIgnoreCase(registered)) {
+                return "redirect:/choose-plan";
+            }
 
             return "redirect:/";
+
         } catch (IllegalArgumentException ex) {
             bindingResult.reject("login.failed", ex.getMessage());
             return "auth/login";

@@ -18,6 +18,7 @@ public class UserMembershipResponse {
     private LocalDateTime endAt;
     private boolean autoRenew;
     private LocalDateTime createdAt;
+    private int amountPaid;
 
     public static UserMembershipResponse of(UserMembership m) {
         UserMembershipResponse r = new UserMembershipResponse();
@@ -26,6 +27,7 @@ public class UserMembershipResponse {
         r.planId = m.getMembershipPlan().getId();
         r.planCode = m.getMembershipPlan().getCode();
         r.planName = m.getMembershipPlan().getName();
+        r.amountPaid = m.getMembershipPlan().getCost();
         r.status = m.getStatus();
         r.startAt = m.getStartAt();
         r.endAt = m.getEndAt();

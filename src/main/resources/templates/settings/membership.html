@@ -67,14 +67,28 @@
 
                                             <div class="col-md-4">
                                                 <div class="mb-3">
-                                                    <div class="text-secondary small">Auto Renew</div>
-                                                    <div class="fw-semibold"
-                                                         th:text="${currentMembership.autoRenew ? 'Enabled' : 'Disabled'}">
-                                                        Enabled
-                                                    </div>
+                                                    <div class="text-secondary small mb-1">Auto Renew</div>
+
+                                                    <form th:action="@{/membership/auto-renew}" method="post">
+                                                        <input type="hidden" name="autoRenew" th:value="${!currentMembership.autoRenew}">
+
+                                                        <div class="form-check form-switch">
+                                                            <input class="form-check-input"
+                                                                   type="checkbox"
+                                                                   role="switch"
+                                                                   id="autoRenewSwitch"
+                                                                   th:checked="${currentMembership.autoRenew}"
+                                                                   onchange="this.form.submit()">
+
+                                                            <label class="form-check-label ms-2 fw-semibold"
+                                                                   for="autoRenewSwitch"
+                                                                   th:text="${currentMembership.autoRenew ? 'Enabled' : 'Disabled'}">
+                                                                Enabled
+                                                            </label>
+                                                        </div>
+                                                    </form>
                                                 </div>
                                             </div>
-
                                         </div>
                                     </div>
 
@@ -83,6 +97,7 @@
                                             You do not currently have an active membership.
                                         </p>
                                     </div>
+
                                 </div>
                             </div>
 
@@ -195,8 +210,34 @@
                                                 <input type="hidden" name="membershipPlanId" th:value="${plan.id}">
                                                 <input type="hidden" name="autoRenew" value="true">
 
+                                                <!-- Premium active -->
+                                                <button type="button"
+                                                        class="btn btn-success rounded-pill px-4"
+                                                        disabled
+                                                        th:if="${currentMembership != null
+                                                                and currentMembership.status.name() == 'ACTIVE'
+                                                                and currentMembership.planCode == plan.code}">
+                                                    Active
+                                                </button>
+
+                                                <!-- Free/default plan -->
+                                                <button type="button"
+                                                        class="btn btn-outline-secondary rounded-pill px-4"
+                                                        disabled
+                                                        th:if="${plan.code == 'FREE'
+                                                                and !(currentMembership != null
+                                                                and currentMembership.status.name() == 'ACTIVE'
+                                                                and currentMembership.planCode == plan.code)}">
+                                                    Default Plan
+                                                </button>
+
+                                                <!-- Paid selectable plans only -->
                                                 <button type="submit"
                                                         class="btn btn-dark rounded-pill px-4"
+                                                        th:if="${plan.code != 'FREE'
+                                                                and !(currentMembership != null
+                                                                and currentMembership.status.name() == 'ACTIVE'
+                                                                and currentMembership.planCode == plan.code)}"
                                                         th:disabled="${!plan.active}">
                                                     Select Plan
                                                 </button>
@@ -232,7 +273,7 @@
                                                 <th>Status</th>
                                                 <th>Started</th>
                                                 <th>Ended</th>
-                                                <th>Auto Renew</th>
+                                                <th>Amount Paid</th>
                                             </tr>
                                             </thead>
                                             <tbody>
@@ -242,11 +283,17 @@
                                                     <div class="small text-secondary" th:text="${item.planCode}">GOLD</div>
                                                 </td>
                                                 <td>
-                                                <span class="badge rounded-pill px-3 py-2 fw-semibold"
-                                                      th:classappend="${item.status.name() == 'ACTIVE'} ? ' text-bg-success' : (${item.status.name() == 'CANCELED'} ? ' text-bg-warning' : ' text-bg-secondary')"
-                                                      th:text="${item.status}">
-                                                    ACTIVE
-                                                </span>
+                                                    <span th:if="${item.endAt != null and item.planCode != 'FREE'}"
+                                                          class="badge rounded-pill px-3 py-2 fw-semibold text-bg-primary">
+                                                        PAID
+                                                    </span>
+
+                                                    <span th:if="${!(item.endAt != null and item.planCode != 'FREE')}"
+                                                          class="badge rounded-pill px-3 py-2 fw-semibold"
+                                                          th:classappend="${item.status.name() == 'ACTIVE'} ? ' text-bg-success' : (${item.status.name() == 'CANCELED'} ? ' text-bg-warning' : ' text-bg-secondary')"
+                                                          th:text="${item.status.name()}">
+                                                        ACTIVE
+                                                    </span>
                                                 </td>
                                                 <td th:text="${#temporals.format(item.startAt, 'MMM dd, yyyy hh:mm a')}">
                                                     Jan 01, 2026 12:00 PM
@@ -254,7 +301,7 @@
                                                 <td th:text="${item.endAt != null ? #temporals.format(item.endAt, 'MMM dd, yyyy hh:mm a') : '-'}">
                                                     -
                                                 </td>
-                                                <td th:text="${item.autoRenew ? 'Yes' : 'No'}">Yes</td>
+                                                <td th:text="${'$' + #numbers.formatDecimal(item.amountPaid / 100.0, 1, 2)}">$9.99</td>
                                             </tr>
                                             </tbody>
                                         </table>
