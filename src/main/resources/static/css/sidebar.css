@@ -8,7 +8,12 @@
 .sidebar {
     width: 240px;
     min-width: 240px;
-    transition: width var(--vs-transition-base), transform var(--vs-transition-base);
+    flex: 0 0 240px;
+    transition:
+            width var(--vs-transition-base),
+            min-width var(--vs-transition-base),
+            flex-basis var(--vs-transition-base),
+            transform var(--vs-transition-base);
     overflow-x: hidden;
     min-height: calc(100vh - 56px);
     padding-left: 12px;
@@ -19,6 +24,7 @@
 .sidebar.collapsed {
     width: 72px;
     min-width: 72px;
+    flex: 0 0 72px;
     padding-left: 0;
     padding-right: 0;
 }
@@ -141,4 +147,11 @@
 
 .navbar-brand {
     margin-left: 0;
+}
+#sidebar {
+    max-width: 240px;
+}
+
+#sidebar.collapsed {
+    max-width: 72px;
 }
