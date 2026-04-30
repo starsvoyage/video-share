@@ -45,12 +45,22 @@ public class MembershipPageController {
 
         if (userId != null) {
             try {
-                model.addAttribute(
-                        "currentMembership",
-                        UserMembershipResponse.of(userMembershipService.getCurrentMembership(userId))
-                );
+                UserMembershipResponse currentMembership =
+                        UserMembershipResponse.of(userMembershipService.getCurrentMembership(userId));
+
+                model.addAttribute("currentMembership", currentMembership);
+
+                // ✅ ADD THIS
+                if (currentMembership.isAutoRenew() && currentMembership.getStartAt() != null) {
+                    model.addAttribute("nextPaymentDate",
+                            currentMembership.getStartAt().plusMonths(1));
+                } else {
+                    model.addAttribute("nextPaymentDate", null);
+                }
+
             } catch (Exception ex) {
                 model.addAttribute("currentMembership", null);
+                model.addAttribute("nextPaymentDate", null); // also important
             }
 
             model.addAttribute(
@@ -167,4 +177,26 @@ public class MembershipPageController {
             return "redirect:/checkout/" + membershipPlanId;
         }
     }
+    @PostMapping("/membership/auto-renew")
+    public String updateAutoRenew(
+            @RequestParam Boolean autoRenew,
+            HttpSession session,
+            RedirectAttributes redirectAttributes
+    ) {
+        Long userId = (Long) session.getAttribute("loggedInUserId");
+
+        if (userId == null) {
+            return "redirect:/login";
+        }
+
+        try {
+            userMembershipService.updateCurrentAutoRenew(userId, autoRenew);
+            redirectAttributes.addFlashAttribute("successMessage", "Auto-renew updated.");
+        } catch (Exception ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+        }
+
+        return "redirect:/settings/membership";
+    }
+
 }

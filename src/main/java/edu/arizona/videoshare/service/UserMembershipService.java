@@ -228,6 +228,16 @@ public class UserMembershipService {
         return access.isAdFree();
     }
 
+    @Transactional
+    public UserMembership updateCurrentAutoRenew(Long userId, Boolean autoRenew) {
+        UserMembership membership = memberships
+                .findFirstByUserIdAndStatusOrderByStartAtDesc(userId, MembershipStatus.ACTIVE)
+                .orElseThrow(() -> new NotFoundException(
+                        "Exception: no active membership for user: " + userId));
+
+        membership.setAutoRenew(autoRenew);
+        return memberships.save(membership);
+    }
 
 }
 

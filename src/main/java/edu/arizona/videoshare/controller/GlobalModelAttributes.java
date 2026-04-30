@@ -50,4 +50,19 @@ public class GlobalModelAttributes {
 
         return !userMembershipService.isAdFreeUser(loggedInUserId);
     }
+
+    @ModelAttribute("isPremiumUser")
+    public boolean isPremiumUser(HttpSession session) {
+        Long loggedInUserId = (Long) session.getAttribute("loggedInUserId");
+
+        if (loggedInUserId == null) {
+            return false;
+        }
+
+        try {
+            return userMembershipService.getCurrentMembership(loggedInUserId) != null;
+        } catch (Exception ex) {
+            return false;
+        }
+    }
 }
