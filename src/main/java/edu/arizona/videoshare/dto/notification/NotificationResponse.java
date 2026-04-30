@@ -16,6 +16,8 @@ public class NotificationResponse {
 
     private String message;
 
+    private String link;
+
     private LocalDateTime createdAt;
 
     private boolean isRead;
@@ -28,6 +30,7 @@ public class NotificationResponse {
     r.id = n.getId();
     r.setType(n.getType());
     r.setMessage(n.getMessage());
+    r.setLink(n.getLink());
     r.setCreatedAt(n.getCreatedAt());
     r.setRead(n.isRead());
 

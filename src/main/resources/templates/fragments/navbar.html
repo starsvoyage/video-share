@@ -75,7 +75,7 @@
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li>
                             <a class="dropdown-item"
-                               href="#"
+                               href="${n.link || '#'}"
                                data-bs-toggle="modal"
                                data-bs-target="#uploadVideoModal">
                                Upload video
@@ -107,7 +107,7 @@
                             <button class="btn btn-sm btn-dark rounded-pill px-2 py-0 notif-filter active" data-filter="ALL" style="font-size:0.75rem;">All</button>
                             <button class="btn btn-sm btn-outline-light rounded-pill px-2 py-0 notif-filter" data-filter="COMMENT" style="font-size:0.75rem;">Comments</button>
                             <button class="btn btn-sm btn-outline-light rounded-pill px-2 py-0 notif-filter" data-filter="LIKE_VIDEO" style="font-size:0.75rem;">Video Likes</button>
-<button class="btn btn-sm btn-outline-light rounded-pill px-2 py-0 notif-filter" data-filter="LIKE_COMMENT" style="font-size:0.75rem;">Comment Likes</button>
+                            <button class="btn btn-sm btn-outline-light rounded-pill px-2 py-0 notif-filter" data-filter="LIKE_COMMENT" style="font-size:0.75rem;">Comment Likes</button>
                             <button class="btn btn-sm btn-outline-light rounded-pill px-2 py-0 notif-filter" data-filter="UPLOAD" style="font-size:0.75rem;">Uploads</button>
                             <button class="btn btn-sm btn-outline-light rounded-pill px-2 py-0 notif-filter" data-filter="REPLY" style="font-size:0.75rem;">Replies</button>
                             <button class="btn btn-sm btn-outline-light rounded-pill px-2 py-0 notif-filter" data-filter="SUBSCRIBE" style="font-size:0.75rem;">Subs</button>
@@ -154,24 +154,34 @@
                                     }
                                     notifs.forEach(n => {
                                         const li = document.createElement("li");
-                                        li.innerHTML = `<a class="dropdown-item px-3 py-2 small d-flex align-items-start gap-2 ${n.read ? '' : 'fw-semibold'}" href="#" data-notif-id="${n.id}" style="color:#fff;">
+                                        li.innerHTML = `<a class="dropdown-item px-3 py-2 small d-flex align-items-start gap-2 ${n.read ? '' : 'fw-semibold'}" href="${n.link || '#'}" data-notif-id="${n.id}" style="color:#fff;">
                                             <div class="flex-grow-1">
                                                 <div>${escN(n.message)}</div>
                                                 <div style="font-size:0.7rem; color:#aaa;">${fmtDate(n.createdAt)}</div>
                                             </div>
                                             ${!n.read ? '<span class="bg-primary rounded-circle flex-shrink-0 mt-1" style="width:8px;height:8px;display:inline-block;"></span>' : ''}
                                         </a>`;
-                                        li.querySelector("a").addEventListener("click", function (e) {
+                                        li.querySelector("a").addEventListener("click", async function (e) {
                                             e.preventDefault();
                                             e.stopPropagation();
+
                                             if (!n.read) {
-                                                fetch(`/api/notifications/${n.id}/read`, { method: 'PATCH' }).then(() => {
+                                                try {
+                                                    await fetch(`/api/notifications/${n.id}/read`, { method: 'PATCH' });
+
                                                     this.classList.remove("fw-semibold");
                                                     const dot = this.querySelector(".bg-primary");
                                                     if (dot) dot.remove();
+
                                                     updateBadge(-1);
                                                     n.read = true;
-                                                });
+                                                } catch (err) {
+                                                    console.error("Failed to mark notification read");
+                                                }
+                                            }
+
+                                            if (n.link) {
+                                                window.location.href = n.link;
                                             }
                                         });
                                         notifList.appendChild(li);

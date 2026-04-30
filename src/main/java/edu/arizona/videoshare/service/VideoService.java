@@ -1,5 +1,16 @@
 package edu.arizona.videoshare.service;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
 import edu.arizona.videoshare.exception.NotFoundException;
 import edu.arizona.videoshare.model.entity.Channel;
 import edu.arizona.videoshare.model.entity.Subscription;
@@ -8,23 +19,12 @@ import edu.arizona.videoshare.model.entity.Video;
 import edu.arizona.videoshare.model.enums.NotificationType;
 import edu.arizona.videoshare.model.enums.SourceType;
 import edu.arizona.videoshare.model.enums.UserRole;
-import edu.arizona.videoshare.model.enums.UserStatus;
 import edu.arizona.videoshare.model.enums.VideoVisibility;
 import edu.arizona.videoshare.repository.ChannelRepository;
 import edu.arizona.videoshare.repository.SubscriptionRepository;
 import edu.arizona.videoshare.repository.UserRepository;
 import edu.arizona.videoshare.repository.VideoRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -97,7 +97,7 @@ public class VideoService {
         videoRepository.deleteById(id);
     }
 
-    public Video createVideoForUser(Long userId, Long channelId, String title, MultipartFile file) {
+    public Video createVideoForUser(Long userId, Long channelId, String title, String description, MultipartFile file) {
         if (userId == null) {
             throw new IllegalArgumentException("You must be logged in to upload a video.");
         }
@@ -136,6 +136,7 @@ public class VideoService {
 
         Video video = new Video();
         video.setTitle(title.trim());
+        video.setDescription(description != null ? description.trim() : null);
         video.setOwner(user);
         video.setChannel(channel);
         video.setVisibility(VideoVisibility.PUBLIC);
@@ -153,7 +154,9 @@ public class VideoService {
                     user,
                     NotificationType.UPLOAD,
                     SourceType.VIDEO,
-                    user.getDisplayName() + " uploaded \"" + title.trim() + "\" to " + channel.getName());
+                    user.getDisplayName() + " uploaded \"" + title.trim() + "\" to " + channel.getName(),
+                    "/videos/" + saved.getId()
+                );
         }
 
         return saved;

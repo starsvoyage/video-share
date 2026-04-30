@@ -1,9 +1,17 @@
 package edu.arizona.videoshare.service;
 
+import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import edu.arizona.videoshare.dto.reaction.ReactResponse;
 import edu.arizona.videoshare.dto.reaction.ReactionCountResponse;
 import edu.arizona.videoshare.exception.NotFoundException;
-import edu.arizona.videoshare.model.entity.*;
+import edu.arizona.videoshare.model.entity.Comment;
+import edu.arizona.videoshare.model.entity.Reaction;
+import edu.arizona.videoshare.model.entity.User;
+import edu.arizona.videoshare.model.entity.Video;
 import edu.arizona.videoshare.model.enums.NotificationType;
 import edu.arizona.videoshare.model.enums.ReactionAction;
 import edu.arizona.videoshare.model.enums.ReactionType;
@@ -13,10 +21,6 @@ import edu.arizona.videoshare.repository.ReactionRepository;
 import edu.arizona.videoshare.repository.UserRepository;
 import edu.arizona.videoshare.repository.VideoRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -79,10 +83,14 @@ public class ReactionService {
                 if (type == ReactionType.LIKE) {
                         Video video = videoRepository.findById(videoId).orElse(null);
                         if (video != null && video.getOwner() != null) {
-                                notificationService.notify(video.getOwner(), user, NotificationType.LIKE_VIDEO,
-                                                SourceType.REACTION,
-                                                user.getDisplayName() + " liked your video \"" + video.getTitle()
-                                                                + "\"");
+                                notificationService.notify(
+                                        video.getOwner(),
+                                        user,
+                                        NotificationType.LIKE_VIDEO,
+                                        SourceType.REACTION,
+                                        user.getDisplayName() + " liked your video \"" + video.getTitle() + "\"",
+                                        "/videos/" + video.getId()
+                                );
                         }
                 }
 
@@ -146,13 +154,15 @@ public class ReactionService {
                 Reaction saved = reactionRepository.save(reaction);
 
                 if (type == ReactionType.LIKE && comment.getUser() != null
-                                && !comment.getUser().getId().equals(userId)) {
+                        && !comment.getUser().getId().equals(userId)) {
                         notificationService.notify(
-                                        comment.getUser(),
-                                        user,
-                                        NotificationType.LIKE_COMMENT,
-                                        SourceType.REACTION,
-                                        user.getDisplayName() + " liked your comment");
+                                comment.getUser(),
+                                user,
+                                NotificationType.LIKE_COMMENT,
+                                SourceType.REACTION,
+                                user.getDisplayName() + " liked your comment",
+                                "/video/" + comment.getVideoId() + "#comment-" + comment.getId()
+                        );
                 }
 
                 return ReactResponse.builder()

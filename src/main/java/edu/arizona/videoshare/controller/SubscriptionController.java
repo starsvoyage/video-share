@@ -1,18 +1,28 @@
 package edu.arizona.videoshare.controller;
 
+import java.util.List;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import edu.arizona.videoshare.dto.subscription.SubscribeRequest;
 import edu.arizona.videoshare.model.entity.Channel;
 import edu.arizona.videoshare.model.entity.Subscription;
-import edu.arizona.videoshare.model.entity.User;
 import edu.arizona.videoshare.model.entity.Subscription.SubscriptionStatus;
+import edu.arizona.videoshare.model.entity.User;
 import edu.arizona.videoshare.repository.ChannelRepository;
 import edu.arizona.videoshare.repository.SubscriptionRepository;
 import edu.arizona.videoshare.repository.UserRepository;
+import edu.arizona.videoshare.service.SubscriptionService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
@@ -20,6 +30,7 @@ import java.util.List;
 public class SubscriptionController {
 
     private final SubscriptionRepository subscriptionRepository;
+    private final SubscriptionService subscriptionService;
     private final UserRepository userRepository;
     private final ChannelRepository channelRepository;
 
@@ -54,7 +65,9 @@ public class SubscriptionController {
     }
 
     @PostMapping("/channels/{channelId}")
-    public String toggleSubscription(@PathVariable Long channelId, HttpSession session) {
+    public String toggleSubscription(@PathVariable Long channelId,
+                                    HttpSession session,
+                                    @RequestHeader(value = "Referer", required = false) String referer) {
 
         Long loggedInUserId = (Long) session.getAttribute("loggedInUserId");
 
@@ -62,40 +75,25 @@ public class SubscriptionController {
             return "redirect:/login";
         }
 
-        User user = userRepository.findById(loggedInUserId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
         Channel channel = channelRepository.findById(channelId)
                 .orElseThrow(() -> new RuntimeException("Channel not found"));
 
-        // prevent self-subscription
         if (channel.getUser().getId().equals(loggedInUserId)) {
             return "redirect:/" + channel.getUser().getUsername() + "/channel/" + channel.getName();
         }
 
-        // check if already subscribed
-        var existing = subscriptionRepository.findBySubscriberIdAndChannelIdAndStatus(
-                loggedInUserId,
-                channelId,
-                Subscription.SubscriptionStatus.ACTIVE);
+        boolean isSubscribed = subscriptionService.isSubscribed(loggedInUserId, channelId);
 
-        if (existing.isPresent()) {
-            subscriptionRepository.delete(existing.get());
-
-            channel.setSubscriberCount(Math.max(0, channel.getSubscriberCount() - 1));
+        if (isSubscribed) {
+            subscriptionService.unsubscribe(loggedInUserId, channelId);
         } else {
-            Subscription sub = new Subscription();
-            sub.setSubscriber(user);
-            sub.setChannel(channel);
-            sub.setStatus(Subscription.SubscriptionStatus.ACTIVE);
-
-            subscriptionRepository.save(sub);
-            channel.setSubscriberCount(channel.getSubscriberCount() + 1);
+            SubscribeRequest request = new SubscribeRequest();
+            request.setSubscriberId(loggedInUserId);
+            request.setChannelId(channelId);
+            subscriptionService.subscribe(request);
         }
 
-        channelRepository.save(channel);
-
-        return "redirect:/" + channel.getUser().getUsername() + "/channel/" + channel.getName();
+        return "redirect:" + (referer != null ? referer : "/");
     }
 
     @ResponseBody

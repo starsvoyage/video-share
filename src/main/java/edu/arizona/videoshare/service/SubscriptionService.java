@@ -1,5 +1,13 @@
 package edu.arizona.videoshare.service;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import edu.arizona.videoshare.dto.subscription.SubscribeRequest;
 import edu.arizona.videoshare.dto.subscription.SubscriptionResponse;
 import edu.arizona.videoshare.exception.ConflictException;
@@ -12,12 +20,7 @@ import edu.arizona.videoshare.model.enums.SourceType;
 import edu.arizona.videoshare.repository.ChannelRepository;
 import edu.arizona.videoshare.repository.SubscriptionRepository;
 import edu.arizona.videoshare.repository.UserRepository;
-import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -66,8 +69,14 @@ public class SubscriptionService {
 
         syncSubscriberCount(channel);
 
-        notificationService.notify(channel.getUser(), subscriber, NotificationType.SUBSCRIBE, SourceType.SUBSCRIPTION,
-                subscriber.getDisplayName() + " subscribed to your channel \"" + channel.getName() + "\"");
+        notificationService.notify(
+            channel.getUser(),
+            subscriber,
+            NotificationType.SUBSCRIBE,
+            SourceType.SUBSCRIPTION,
+            subscriber.getDisplayName() + " subscribed to your channel \"" + channel.getName() + "\"",
+            "/" + channel.getUser().getUsername() + "/channel/" + URLEncoder.encode(channel.getName(), StandardCharsets.UTF_8)
+        );
 
         return toResponse(saved, channel);
     }

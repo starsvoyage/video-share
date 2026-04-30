@@ -1,16 +1,18 @@
 package edu.arizona.videoshare.controller;
 
-import edu.arizona.videoshare.exception.ForbiddenException;
-import edu.arizona.videoshare.model.entity.Video;
-import edu.arizona.videoshare.model.enums.VideoVisibility;
-import edu.arizona.videoshare.service.VideoService;
-import edu.arizona.videoshare.service.PlaylistService;
-import jakarta.servlet.http.HttpSession;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+
+import edu.arizona.videoshare.exception.ForbiddenException;
+import edu.arizona.videoshare.model.entity.Video;
+import edu.arizona.videoshare.model.enums.VideoVisibility;
+import edu.arizona.videoshare.service.PlaylistService;
+import edu.arizona.videoshare.service.SubscriptionService;
+import edu.arizona.videoshare.service.VideoService;
+import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
 
 @Controller
 @RequiredArgsConstructor
@@ -18,6 +20,7 @@ public class VideoPageController {
 
     private final VideoService videoService;
     private final PlaylistService playlistService;
+    private final SubscriptionService subscriptionService;
 
     @GetMapping("/videos/{videoId}")
     public String showVideoPage(
@@ -42,6 +45,8 @@ public class VideoPageController {
 
         if (loggedInUserId != null) {
             model.addAttribute("playlists", playlistService.getByUser(loggedInUserId));
+            boolean isSubscribed = subscriptionService.isSubscribed(loggedInUserId, video.getChannel().getId());
+            model.addAttribute("isSubscribed", isSubscribed);
         }
 
         return "video";

@@ -45,6 +45,9 @@ public class Notification {
 
     private String message;
 
+    @Column(length = 500)
+    private String link;
+
     private LocalDateTime createdAt;
 
     private boolean isRead;
