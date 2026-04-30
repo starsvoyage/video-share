@@ -30,7 +30,9 @@
         </section>
     </div>
 
-    <script>
+    <script th:inline="javascript">
+        const showAds = [[${showAds}]];
+
         document.addEventListener("DOMContentLoaded", async function () {
             const videosLoading = document.getElementById("videosLoading");
             const videosError = document.getElementById("videosError");
@@ -51,24 +53,23 @@
                 }
 
                 videosGrid.innerHTML = videos.map(video => `
-                    <a href="/videos/${video.id}" class="text-decoration-none text-dark">
-                        <div class="card h-100 border-0 shadow-sm rounded-4">
-                            <div class="vs-video-thumb rounded-top-4 bg-dark text-white">
-                                <div>
-                                    <i class="bi bi-play-btn fs-1"></i>
-                                </div>
+                <a href="/videos/${video.id}" class="text-decoration-none text-dark">
+                    <div class="card h-100 border-0 shadow-sm rounded-4">
+                        <div class="vs-video-thumb rounded-top-4 bg-dark text-white">
+                            <div>
+                                <i class="bi bi-play-btn fs-1"></i>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <h5 class="card-title mb-2">${escapeHtml(video.title || "Untitled Video")}</h5>
+
+                            <div class="text-muted small mb-1">
+                                ${escapeHtml(video.channel?.name || "Unknown Channel")}
                             </div>
 
-                            <div class="card-body">
-                                <h5 class="card-title mb-2">${escapeHtml(video.title || "Untitled Video")}</h5>
-
-                                <div class="text-muted small mb-1">
-                                    ${escapeHtml(video.channel?.name || "Unknown Channel")}
-                                </div>
-
-                                <div class="text-muted small">
-                                    ${formatUploadedDate(video.createdAt)}
-                                </div>
+                            <div class="text-muted small">
+                                ${formatUploadedDate(video.createdAt)}
                             </div>
                         </div>
                     </a>
@@ -83,14 +84,19 @@
                         adDiv.innerHTML = `
                             <div class="text-center my-4">
                                 <div class="text-muted small mb-2">Advertisement</div>
-                                <img src="https://picsum.photos/728/90" alt="Banner Ad" class="img-fluid rounded" style="max-width: 100%; height: auto;" />
+                                <img src="https://picsum.photos/728/90"
+                                     alt="Banner Ad"
+                                     class="img-fluid rounded"
+                                     style="max-width: 100%; height: auto;" />
                             </div>
                         `;
-                        videoCards[i].parentNode.insertBefore(adDiv, videoCards[i].nextSibling);
+                            videoCards[i].parentNode.insertBefore(adDiv, videoCards[i].nextSibling);
+                        }
                     }
                 }
 
                 videosGrid.classList.remove("d-none");
+
             } catch (e) {
                 videosLoading.classList.add("d-none");
                 videosError.classList.remove("d-none");

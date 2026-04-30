@@ -23,10 +23,22 @@
         </button>
 
         <!-- Project logo-->
-        <a class="navbar-brand d-flex align-items-center gap-2" th:href="@{/}">
+        <a class="navbar-brand d-flex align-items-center" th:href="@{/}">
             <img th:src="@{/images/vs-title-logo.svg}"
                  alt="VideoShare"
                  height="36">
+
+            <i th:if="${isPremiumUser}"
+               class="bi bi-stars"
+               style="
+               margin-left: -35px;
+               margin-top: -2px;
+               font-size: 1.5rem;
+               background: linear-gradient(135deg, #6366f1, #8b5cf6);
+               -webkit-background-clip: text;
+               -webkit-text-fill-color: transparent;
+           ">
+            </i>
         </a>
 
         <!-- Search bar -->
