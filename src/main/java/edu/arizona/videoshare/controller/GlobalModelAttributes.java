@@ -3,6 +3,7 @@ package edu.arizona.videoshare.controller;
 import edu.arizona.videoshare.model.entity.Channel;
 import edu.arizona.videoshare.repository.ChannelRepository;
 import edu.arizona.videoshare.repository.NotificationRepository;
+import edu.arizona.videoshare.service.UserMembershipService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -17,6 +18,7 @@ public class GlobalModelAttributes {
 
     private final ChannelRepository channelRepository;
     private final NotificationRepository notificationRepository;
+    private final UserMembershipService userMembershipService;
 
     @ModelAttribute("channels")
     public List<Channel> channels(HttpSession session) {
@@ -36,5 +38,31 @@ public class GlobalModelAttributes {
             return 0;
         }
         return notificationRepository.countByRecipientIdAndIsReadFalse(loggedInUserId);
+    }
+
+    @ModelAttribute("showAds")
+    public boolean showAds(HttpSession session) {
+        Long loggedInUserId = (Long) session.getAttribute("loggedInUserId");
+
+        if (loggedInUserId == null) {
+            return true;
+        }
+
+        return !userMembershipService.isAdFreeUser(loggedInUserId);
+    }
+
+    @ModelAttribute("isPremiumUser")
+    public boolean isPremiumUser(HttpSession session) {
+        Long loggedInUserId = (Long) session.getAttribute("loggedInUserId");
+
+        if (loggedInUserId == null) {
+            return false;
+        }
+
+        try {
+            return userMembershipService.getCurrentMembership(loggedInUserId) != null;
+        } catch (Exception ex) {
+            return false;
+        }
     }
 }

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout('VideoShare | Choose Plan', ~{::content}, false, false)}">
+
+<th:block th:fragment="content">
+    <div class="login-page d-flex align-items-start justify-content-center">
+        <div class="container py-5">
+
+            <div class="text-center mb-5">
+                <img th:src="@{/images/vs-logo.svg}"
+                     alt="VideoShare"
+                     height="64"
+                     style="margin-bottom:16px;">
+
+                <h1 class="fw-bold text-white display-5 mb-2">Choose Your Plan</h1>
+                <p class="text-white-50 fs-5 mb-0">
+                    Start by selecting the plan that's right for you.
+                </p>
+            </div>
+
+            <div class="row g-4 justify-content-center">
+                <div class="col-12 col-md-6 col-lg-4" th:each="plan : ${plans}">
+                    <div class="card border-0 shadow-sm rounded-4 h-100 bg-dark text-white">
+
+<!--                        <div th:if="${plan.code == 'PREMIUM'}"-->
+<!--                             class="text-center fw-bold py-2 rounded-top-4"-->
+<!--                             style="background:#69b3e7; color:#000;">-->
+<!--                            BEST VALUE-->
+<!--                        </div>-->
+
+                        <div class="card-body p-4 d-flex flex-column">
+
+                            <div class="text-center mb-4">
+                                <h3 class="fw-bold mb-2" th:text="${plan.name}">Premium</h3>
+
+                                <div class="text-white-50 mb-3" th:text="${plan.code}">
+                                    PREMIUM
+                                </div>
+
+                                <div class="fw-bold display-6">
+                                    <span th:text="${'$' + #numbers.formatDecimal(plan.cost / 100.0, 1, 2)}">
+                                        $9.99
+                                    </span>
+                                </div>
+
+                                <div class="text-white-50">
+                                    / month
+                                </div>
+                            </div>
+
+                            <ul class="mb-4 flex-grow-1">
+                                <li class="mb-2">
+                                    <span th:text="${plan.adFree ? 'Ad-free playback' : 'Ads included'}">
+                                        Ad-free playback
+                                    </span>
+                                </li>
+
+                                <li class="mb-2">
+                                    <span th:text="${plan.hd4KPlayback ? 'HD / 4K playback included' : 'Standard playback only'}">
+                                        HD / 4K playback included
+                                    </span>
+                                </li>
+
+                                <li>
+                                    <span th:text="${plan.code == 'FREE' ? 'Default starter plan' : 'Premium membership benefits'}">
+                                        Membership benefits
+                                    </span>
+                                </li>
+                            </ul>
+
+                            <!-- PREMIUM PLAN -->
+                            <a th:if="${plan.code != 'FREE'}"
+                               th:href="@{/checkout/{id}(id=${plan.id})}"
+                               class="btn btn-light rounded-pill w-100 py-2 fw-semibold"
+                               th:classappend="${!plan.active} ? ' disabled' : ''">
+                                Select Plan
+                            </a>
+
+                            <!-- FREE PLAN -->
+                            <a th:if="${plan.code == 'FREE'}"
+                               th:href="@{/}"
+                               class="btn btn-outline-light rounded-pill w-100 py-2 fw-semibold">
+                                Continue Free
+                            </a>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</th:block>
+</html>

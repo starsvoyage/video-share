@@ -33,27 +33,42 @@ public class PaymentInformationController {
                 .toList();
     }
 
-    @GetMapping("/{paymentInformationId}/users/{userId}")
+    @GetMapping("/users/{userId}/{paymentInformationId}")
     public PaymentInformationResponse getById(
-            @PathVariable Long paymentInformationId,
-            @PathVariable Long userId
+            @PathVariable Long userId,
+            @PathVariable Long paymentInformationId
     ) {
-        return PaymentInformationResponse.of(paymentInformationService.getById(userId, paymentInformationId));
+        return PaymentInformationResponse.of(
+                paymentInformationService.getById(userId, paymentInformationId)
+        );
     }
 
-    @PatchMapping("/{paymentInformationId}/users/{userId}/default")
+    @PatchMapping("/users/{userId}/{paymentInformationId}")
+    public PaymentInformationResponse update(
+            @PathVariable Long userId,
+            @PathVariable Long paymentInformationId,
+            @Valid @RequestBody PaymentInformationRequest request
+    ) {
+        return PaymentInformationResponse.of(
+                paymentInformationService.update(userId, paymentInformationId, request)
+        );
+    }
+
+    @PatchMapping("/users/{userId}/{paymentInformationId}/default")
     public PaymentInformationResponse setDefault(
-            @PathVariable Long paymentInformationId,
-            @PathVariable Long userId
+            @PathVariable Long userId,
+            @PathVariable Long paymentInformationId
     ) {
-        return PaymentInformationResponse.of(paymentInformationService.setDefault(userId, paymentInformationId));
+        return PaymentInformationResponse.of(
+                paymentInformationService.setDefault(userId, paymentInformationId)
+        );
     }
 
-    @DeleteMapping("/{paymentInformationId}/users/{userId}")
+    @DeleteMapping("/users/{userId}/{paymentInformationId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(
-            @PathVariable Long paymentInformationId,
-            @PathVariable Long userId
+            @PathVariable Long userId,
+            @PathVariable Long paymentInformationId
     ) {
         paymentInformationService.delete(userId, paymentInformationId);
     }

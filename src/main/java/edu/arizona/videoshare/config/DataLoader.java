@@ -228,27 +228,29 @@ seedMembershipPlans();
      * Seed the two membership plans used by the app.
      */
     private void seedMembershipPlans() {
-        if (!membershipPlanRepository.existsByCode("FREE")) {
-            MembershipPlan free = new MembershipPlan();
-            free.setCode("FREE");
-            free.setName("Free");
-            free.setCost(0);
-            free.setAdFree(false);
-            free.setActive(true);
-            free.setHd4KPlayback(false);
-            membershipPlanRepository.save(free);
-        }
 
-        if (!membershipPlanRepository.existsByCode("PREMIUM")) {
-            MembershipPlan premium = new MembershipPlan();
-            premium.setCode("PREMIUM");
-            premium.setName("Premium");
-            premium.setCost(999);
-            premium.setAdFree(true);
-            premium.setActive(true);
-            premium.setHd4KPlayback(true);
-            membershipPlanRepository.save(premium);
-        }
+        MembershipPlan free = membershipPlanRepository.findByCode("FREE")
+                .orElse(new MembershipPlan());
+
+        free.setCode("FREE");
+        free.setName("Free");
+        free.setCost(0);
+        free.setAdFree(false);
+        free.setActive(true);
+        free.setHd4KPlayback(false);
+        membershipPlanRepository.save(free);
+
+
+        MembershipPlan premium = membershipPlanRepository.findByCode("PREMIUM")
+                .orElse(new MembershipPlan());
+
+        premium.setCode("PREMIUM");
+        premium.setName("Premium");
+        premium.setCost(999);
+        premium.setAdFree(true);
+        premium.setActive(true); // 🔥 FORCE TRUE
+        premium.setHd4KPlayback(true);
+        membershipPlanRepository.save(premium);
     }
 
     //Helper functions to create channels, videos, subscriptions
