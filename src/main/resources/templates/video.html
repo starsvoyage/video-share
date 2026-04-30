@@ -99,18 +99,18 @@
                         </div>
 
                         <div class="d-flex align-items-center gap-2">
-                            <div th:if="${loggedInUserId != null}" class="d-flex align-items-center gap-2">
-                                <div class="btn-group" role="group">
-                                    <button type="button" class="btn btn-outline-dark rounded-pill px-3" id="likeBtn" onclick="react('LIKE')">
-                                        <i class="bi bi-hand-thumbs-up me-1"></i><span id="likeCount">0</span>
-                                    </button>
-                                    <button type="button" class="btn btn-outline-dark rounded-pill px-3" id="dislikeBtn" onclick="react('DISLIKE')">
-                                        <i class="bi bi-hand-thumbs-down me-1"></i><span id="dislikeCount">0</span>
-                                    </button>
-                                </div>
+                            <div th:if="${loggedInUserId != null}" class="btn-group" role="group">
+                                <button type="button" class="btn btn-outline-dark rounded-pill rounded-end px-3" id="likeBtn" onclick="react('LIKE')">
+                                    <i class="bi bi-hand-thumbs-up me-1"></i><span id="likeCount">0</span>
+                                </button>
+                                <button type="button" class="btn btn-outline-dark rounded-pill rounded-start px-3" id="dislikeBtn" onclick="react('DISLIKE')">
+                                    <i class="bi bi-hand-thumbs-down me-1"></i><span id="dislikeCount">0</span>
+                                </button>
 
-                                <div class="dropdown">
-                                    <button class="btn btn-outline-dark rounded-pill px-3" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            </div>
+
+                            <div th:if="${loggedInUserId != null}" class="dropdown">
+                                <button class="btn btn-outline-dark rounded-pill px-3" type="button" data-bs-toggle="dropdown">
                                         <i class="bi bi-three-dots"></i>
                                     </button>
                                     <ul class="dropdown-menu">
@@ -120,7 +120,6 @@
                                             </button>
                                         </li>
                                     </ul>
-                                </div>
                             </div>
 
                             <div th:if="${loggedInUserId == null}" class="text-muted small">
