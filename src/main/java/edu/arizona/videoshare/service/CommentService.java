@@ -190,13 +190,10 @@ public class CommentService {
                         .parentId(c.getParent() != null ? c.getParent().getId() : null)
                         .content(c.getContent())
                         .status(c.getStatus())
+                        .userStatus(c.getUser().getStatus().name())
                         .likeCount(c.getLikeCount())
                         .dislikeCount(c.getDislikeCount())
-                        .replyCount(c.getReplies() != null
-                                ? (int) c.getReplies().stream()
-                                .filter(r -> r.getStatus() == CommentStatus.ACTIVE)
-                                .count()
-                                : 0)
+                        .replyCount(commentRepository.countByParent_IdAndStatus(c.getId(), CommentStatus.ACTIVE))
                         .createdAt(c.getCreatedAt())
                         .updatedAt(c.getUpdatedAt())
                         .build();

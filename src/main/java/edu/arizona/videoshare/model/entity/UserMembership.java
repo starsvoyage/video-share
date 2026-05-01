@@ -19,9 +19,9 @@ public class UserMembership {
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
 
-    //TODO: Need to create many to one relationship to entity User
-    @Column(nullable = false)
-    private Long userId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name= "membership_plan_id", nullable = false)
@@ -46,8 +46,12 @@ public class UserMembership {
     @PrePersist
     protected void onCreated() {
         this.createdAt = LocalDateTime.now();
+
         if (this.status == null) {
             this.status = MembershipStatus.ACTIVE;
+        }
+        if (this.startAt == null) {
+            this.startAt = LocalDateTime.now();
         }
     }
 }

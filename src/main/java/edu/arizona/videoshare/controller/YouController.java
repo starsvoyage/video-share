@@ -42,7 +42,11 @@ public class YouController {
 
         model.addAttribute("user", user);
         model.addAttribute("channels", channels);
-        model.addAttribute("history", viewEventService.getUserHistory(user.getId()));
+        model.addAttribute("historyPreview", viewEventService.getUserHistory(user.getId())
+                .stream()
+                .limit(6)
+                .toList());
+
         model.addAttribute("isVerified", user.getStatus() == UserStatus.ACTIVE);
 
         //FIXME: Changed to true for demo purposes, previous line commented below this lines
@@ -51,7 +55,11 @@ public class YouController {
 
         model.addAttribute("isCreator", user.getRole() == UserRole.CREATOR);
         model.addAttribute("playlists", playlistService.getByUser(user.getId()));
-        model.addAttribute("subscribedVideos", videoService.getSubscribedVideos(user.getId()));
+        model.addAttribute("likedVideosPlaylist", playlistService.findLikedVideosPlaylist(user.getId()).orElse(null));
+        model.addAttribute("subscribedVideosPreview", videoService.getSubscribedVideos(user.getId())
+                .stream()
+                .limit(6)
+                .toList());
 
         return "you";
     }

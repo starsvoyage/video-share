@@ -26,6 +26,10 @@
                     <!-- Login form -->
                     <form th:action="@{/login}" th:object="${loginForm}" method="post" novalidate>
 
+                        <input type="hidden"
+                               name="registered"
+                               th:value="${param.registered != null ? param.registered[0] : ''}">
+
                         <!-- Success message -->
                         <div th:if="${successMessage}" class="alert alert-success" th:text="${successMessage}"></div>
 
