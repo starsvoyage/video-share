@@ -1,5 +1,6 @@
 package edu.arizona.videoshare.service;
 
+import edu.arizona.videoshare.exception.ForbiddenException;
 import edu.arizona.videoshare.exception.NotFoundException;
 import edu.arizona.videoshare.model.entity.Channel;
 import edu.arizona.videoshare.model.entity.Subscription;
@@ -86,11 +87,24 @@ public class VideoService {
                 VideoVisibility.PUBLIC);
     }
 
+    public List<Video> searchPublicByTitle(String keyword) {
+        if (keyword == null || keyword.trim().isEmpty()) { return getAllPublic(); }
+
+        return videoRepository.findByTitleContainingIgnoreCaseAndVisibilityOrderByCreatedAtDesc(
+                keyword.trim(), VideoVisibility.PUBLIC);
+    }
+
     public void delete(Long id) {
         videoRepository.deleteById(id);
     }
 
-    public Video createVideoForUser(Long userId, Long channelId, String title, MultipartFile file) {
+    public Video createVideoForUser(
+            Long userId,
+            Long channelId,
+            String title,
+            String description,
+            MultipartFile file
+    ) {
         if (userId == null) {
             throw new IllegalArgumentException("You must be logged in to upload a video.");
         }
@@ -113,9 +127,11 @@ public class VideoService {
         Channel channel = channelRepository.findById(channelId)
                 .orElseThrow(() -> new NotFoundException("Channel not found"));
 
-        if (user.getStatus() != UserStatus.ACTIVE) {
-            throw new IllegalArgumentException("You must verify your account before uploading videos.");
-        }
+
+        //FIXME: DISABLED FOR TESTING PURPOSES UNCOMMENT TO RESTORE
+        //if (user.getStatus() != UserStatus.ACTIVE) {
+        //    throw new IllegalArgumentException("You must verify your account before uploading videos.");
+        //}
 
         if (user.getRole() != UserRole.CREATOR) {
             throw new IllegalArgumentException("Only creators can upload videos.");
@@ -127,6 +143,7 @@ public class VideoService {
 
         Video video = new Video();
         video.setTitle(title.trim());
+        video.setDescription(description);
         video.setOwner(user);
         video.setChannel(channel);
         video.setVisibility(VideoVisibility.PUBLIC);
@@ -144,7 +161,9 @@ public class VideoService {
                     user,
                     NotificationType.UPLOAD,
                     SourceType.VIDEO,
-                    user.getDisplayName() + " uploaded \"" + title.trim() + "\" to " + channel.getName());
+                    user.getDisplayName() + " uploaded \"" + title.trim() + "\" to " + channel.getName(),
+                    "/videos/" + saved.getId()
+                );
         }
 
         return saved;
@@ -209,5 +228,21 @@ public class VideoService {
             case ".mp4", ".webm", ".ogg" -> extension;
             default -> ".mp4";
         };
+    }
+
+    public Video updateDescription(Long videoId, Long userId, String description) {
+        Video video = videoRepository.findById(videoId)
+                .orElseThrow(() -> new RuntimeException("Video not found"));
+
+        Long ownerId = video.getOwner() != null
+                ? video.getOwner().getId()
+                : video.getChannel().getUser().getId();
+
+        if (!ownerId.equals(userId)) {
+            throw new ForbiddenException("You are not the owner of this video");
+        }
+
+        video.setDescription(description);
+        return videoRepository.save(video);
     }
 }

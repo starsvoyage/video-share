@@ -60,6 +60,12 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundException("User not found: " + id));
     }
 
+    @Transactional(readOnly = true)
+    public User getByUsername(String username) {
+        return users.findByUsernameIgnoreCase(username)
+                .orElseThrow(() -> new NotFoundException("User not found: " + username));
+    }
+
     /**
      * UPDATE: Updates mutable profile fields for a user.
      */
@@ -85,6 +91,24 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundException("User not found: " + id));
 
         user.setStatus(UserStatus.DELETED);
+        return users.save(user);
+    }
+
+    @Transactional
+    public User suspend(Long id) {
+        User user = users.findById(id)
+                .orElseThrow(() -> new NotFoundException("User not found: " + id));
+
+        user.setStatus(UserStatus.SUSPENDED);
+        return users.save(user);
+    }
+
+    @Transactional
+    public User unlock(Long id) {
+        User user = users.findById(id)
+                .orElseThrow(() -> new NotFoundException("User not found: " + id));
+
+        user.setStatus(UserStatus.ACTIVE);
         return users.save(user);
     }
 

@@ -4,6 +4,7 @@ import edu.arizona.videoshare.model.entity.Channel;
 import edu.arizona.videoshare.model.entity.Subscription;
 import edu.arizona.videoshare.repository.SubscriptionRepository;
 import edu.arizona.videoshare.service.ChannelService;
+import edu.arizona.videoshare.service.PlaylistService;
 import edu.arizona.videoshare.service.VideoService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ public class ChannelPageController {
 
     private final ChannelService channelService;
     private final VideoService videoService;
+    private final PlaylistService playlistService;
     private final SubscriptionRepository subscriptionRepository;
 
     @GetMapping("/{username}/channel/{channelName}")
@@ -47,7 +49,13 @@ public class ChannelPageController {
         model.addAttribute("videos", isOwner
                 ? channel.getVideosOnChannel()
                 : videoService.getPublicVideosForChannel(channel.getId()));
+        model.addAttribute("playlists", playlistService.getPublicByUser(channel.getUser().getId()));
 
         return "channel";
+    }
+
+    @GetMapping("/deleted-account")
+    public String deletedAccount() {
+        return "deleted-account";
     }
 }

@@ -66,17 +66,24 @@ public class CommentService {
 
                 if (parent != null) {
                         notificationService.notify(
-                                parent.getUser(), user,
-                                NotificationType.REPLY, SourceType.COMMENT,user.getDisplayName() +
-                                        " replied to your comment");
+                                parent.getUser(),
+                                user,
+                                NotificationType.REPLY,
+                                SourceType.COMMENT,user.getDisplayName() + " replied to your comment",
+                                "/videos/" + videoId + "#comment-" + saved.getId()
+                        );
                 }
 
                 else {
                         
                         if (video != null && video.getOwner() != null) {
-                                notificationService.notify(video.getOwner(), user, NotificationType.COMMENT,
-                                        SourceType.COMMENT,user.getDisplayName() +
-                                                " commented on your video \"" + video.getTitle() + "\"");
+                                notificationService.notify(
+                                        video.getOwner(),
+                                        user,
+                                        NotificationType.COMMENT,
+                                        SourceType.COMMENT,user.getDisplayName() + " commented on your video \"" + video.getTitle() + "\"",
+                                        "/videos/" + videoId + "#comment-" + saved.getId()
+                        );
                         }
                 }
 
@@ -178,13 +185,10 @@ public class CommentService {
                         .parentId(c.getParent() != null ? c.getParent().getId() : null)
                         .content(c.getContent())
                         .status(c.getStatus())
+                        .userStatus(c.getUser().getStatus().name())
                         .likeCount(c.getLikeCount())
                         .dislikeCount(c.getDislikeCount())
-                        .replyCount(c.getReplies() != null
-                                ? (int) c.getReplies().stream()
-                                .filter(r -> r.getStatus() == CommentStatus.ACTIVE)
-                                .count()
-                                : 0)
+                        .replyCount(commentRepository.countByParent_IdAndStatus(c.getId(), CommentStatus.ACTIVE))
                         .createdAt(c.getCreatedAt())
                         .updatedAt(c.getUpdatedAt())
                         .build();

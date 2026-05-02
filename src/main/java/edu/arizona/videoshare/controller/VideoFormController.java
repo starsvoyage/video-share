@@ -1,13 +1,14 @@
 package edu.arizona.videoshare.controller;
 
-import edu.arizona.videoshare.model.entity.Video;
-import edu.arizona.videoshare.service.VideoService;
-import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import edu.arizona.videoshare.model.entity.Video;
+import edu.arizona.videoshare.service.VideoService;
+import jakarta.servlet.http.HttpSession;
 
 @Controller
 public class VideoFormController {
@@ -21,6 +22,7 @@ public class VideoFormController {
     @PostMapping("/videos/create")
     public String createVideo(
             @RequestParam(required = false) String title,
+            @RequestParam(required = false) String description,
             @RequestParam(required = false) Long channelId,
             @RequestParam(required = false, name = "file") MultipartFile file,
             HttpSession session,
@@ -38,6 +40,7 @@ public class VideoFormController {
                     loggedInUserId,
                     channelId,
                     title,
+                    description,
                     file);
 
             redirectAttributes.addFlashAttribute(

@@ -15,10 +15,10 @@ public class MembershipPlan {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true)
-    private String code; //TODO: identifies code of membership type, codes and types tbd
+    @Column(nullable = false, unique = true, length = 10)
+    private String code;
 
-    @Column(nullable = false)
+    @Column(nullable = false,length = 100)
     private String name; //name of plan type
 
     @Column(nullable = false)

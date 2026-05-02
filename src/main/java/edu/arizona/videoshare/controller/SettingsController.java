@@ -214,11 +214,16 @@ public class SettingsController {
     }
 
     @GetMapping("/settings/premium")
-    public String premiumSettings(HttpSession session, Model model) {
-        if (notLoggedIn(session)) return "redirect:/login";
-        model.addAttribute("activeSection", "premium");
-        return "settings/premium";
-    }
+public String premiumSettings(HttpSession session, Model model) {
+    if (notLoggedIn(session)) return "redirect:/login";
+
+    Long loggedInUserId = (Long) session.getAttribute("loggedInUserId");
+
+    model.addAttribute("activeSection", "premium");
+    model.addAttribute("loggedInUserId", loggedInUserId);
+
+    return "settings/premium";
+}
 
     @GetMapping("/settings/followed-channels")
     public String followedChannelsSettings(HttpSession session, Model model) {

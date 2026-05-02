@@ -1,5 +1,11 @@
 package edu.arizona.videoshare.service;
 
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import edu.arizona.videoshare.dto.subscription.SubscribeRequest;
 import edu.arizona.videoshare.dto.subscription.SubscriptionResponse;
 import edu.arizona.videoshare.exception.ConflictException;
@@ -12,12 +18,7 @@ import edu.arizona.videoshare.model.enums.SourceType;
 import edu.arizona.videoshare.repository.ChannelRepository;
 import edu.arizona.videoshare.repository.SubscriptionRepository;
 import edu.arizona.videoshare.repository.UserRepository;
-import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -66,8 +67,14 @@ public class SubscriptionService {
 
         syncSubscriberCount(channel);
 
-        notificationService.notify(channel.getUser(), subscriber, NotificationType.SUBSCRIBE, SourceType.SUBSCRIPTION,
-                subscriber.getDisplayName() + " subscribed to your channel \"" + channel.getName() + "\"");
+        notificationService.notify(
+            channel.getUser(),
+            subscriber,
+            NotificationType.SUBSCRIBE,
+            SourceType.SUBSCRIPTION,
+            subscriber.getDisplayName() + " subscribed to your channel \"" + channel.getName() + "\"",
+            "/" + channel.getUser().getUsername() + "/channel/" + channel.getName()
+        );
 
         return toResponse(saved, channel);
     }
@@ -78,7 +85,7 @@ public class SubscriptionService {
                 .orElseThrow(() -> new NotFoundException("Subscription not found"));
 
         if (sub.getStatus() == Subscription.SubscriptionStatus.CANCELLED) {
-            throw new ConflictException("You have alread unsubscribed from this channel");
+            throw new ConflictException("You have already unsubscribed from this channel");
         }
 
         sub.setStatus(Subscription.SubscriptionStatus.CANCELLED);
@@ -88,6 +95,18 @@ public class SubscriptionService {
         syncSubscriberCount(channel);
 
         return toResponse(saved, channel);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Subscription> getActiveSubscriptionsForUser(Long userId) {
+        if (!userRepository.existsById(userId)) {
+            throw new NotFoundException("User not found: " + userId);
+        }
+
+        return subscriptionRepository.findBySubscriberIdAndStatusOrderByCreatedAtDesc(
+                userId,
+                Subscription.SubscriptionStatus.ACTIVE
+        );
     }
 
     @Transactional(readOnly = true)
