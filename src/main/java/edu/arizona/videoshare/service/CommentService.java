@@ -1,18 +1,11 @@
 package edu.arizona.videoshare.service;
 
-import java.util.List;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import edu.arizona.videoshare.dto.comment.CommentResponse;
 import edu.arizona.videoshare.dto.comment.CreateCommentResponse;
 import edu.arizona.videoshare.exception.ConflictException;
 import edu.arizona.videoshare.exception.ForbiddenException;
 import edu.arizona.videoshare.exception.NotFoundException;
-import edu.arizona.videoshare.model.entity.Comment;
-import edu.arizona.videoshare.model.entity.User;
-import edu.arizona.videoshare.model.entity.Video;
+import edu.arizona.videoshare.model.entity.*;
 import edu.arizona.videoshare.model.enums.CommentStatus;
 import edu.arizona.videoshare.model.enums.NotificationType;
 import edu.arizona.videoshare.model.enums.SourceType;
@@ -20,6 +13,10 @@ import edu.arizona.videoshare.repository.CommentRepository;
 import edu.arizona.videoshare.repository.UserRepository;
 import edu.arizona.videoshare.repository.VideoRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -72,8 +69,7 @@ public class CommentService {
                                 parent.getUser(),
                                 user,
                                 NotificationType.REPLY,
-                                SourceType.COMMENT,
-                                user.getDisplayName() + " replied to your comment",
+                                SourceType.COMMENT,user.getDisplayName() + " replied to your comment",
                                 "/videos/" + videoId + "#comment-" + saved.getId()
                         );
                 }
@@ -85,10 +81,9 @@ public class CommentService {
                                         video.getOwner(),
                                         user,
                                         NotificationType.COMMENT,
-                                        SourceType.COMMENT,
-                                        user.getDisplayName() + " commented on your video \"" + video.getTitle() + "\"",
+                                        SourceType.COMMENT,user.getDisplayName() + " commented on your video \"" + video.getTitle() + "\"",
                                         "/videos/" + videoId + "#comment-" + saved.getId()
-                                );
+                        );
                         }
                 }
 

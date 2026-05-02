@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import edu.arizona.videoshare.dto.subscription.SubscribeRequest;
 import edu.arizona.videoshare.model.entity.Channel;
@@ -23,11 +24,6 @@ import edu.arizona.videoshare.repository.UserRepository;
 import edu.arizona.videoshare.service.SubscriptionService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
-import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
@@ -70,7 +66,10 @@ public class SubscriptionController {
     }
 
     @PostMapping("/channels/{channelId}")
-    public String toggleSubscription(@PathVariable Long channelId, HttpSession session, RedirectAttributes redirectAttributes) {
+    public String toggleSubscription(@PathVariable Long channelId,
+                                        HttpSession session,
+                                        @RequestHeader(value="Referer", required=false) String referer,
+                                        RedirectAttributes redirectAttributes) {
 
         Long loggedInUserId = (Long) session.getAttribute("loggedInUserId");
 
@@ -96,27 +95,25 @@ public class SubscriptionController {
                 Subscription.SubscriptionStatus.ACTIVE);
 
         if (existing.isPresent()) {
-            subscriptionRepository.delete(existing.get());
+            subscriptionService.unsubscribe(loggedInUserId, channelId);
 
-            channel.setSubscriberCount(Math.max(0, channel.getSubscriberCount() - 1));
+            redirectAttributes.addFlashAttribute("successMessage",
+                "Unsubscribed from \"" + channel.getName() + "\".");
 
-            redirectAttributes.addFlashAttribute("successMessage","Unsubscribed from \"" +
-                    channel.getName() + "\".");
         } else {
-            Subscription sub = new Subscription();
-            sub.setSubscriber(user);
-            sub.setChannel(channel);
-            sub.setStatus(Subscription.SubscriptionStatus.ACTIVE);
+            SubscribeRequest request = new SubscribeRequest();
+            request.setSubscriberId(loggedInUserId);
+            request.setChannelId(channelId);
 
-            subscriptionRepository.save(sub);
-            channel.setSubscriberCount(channel.getSubscriberCount() + 1);
+            subscriptionService.subscribe(request);
 
-            redirectAttributes.addFlashAttribute("successMessage","Subscribed to \"" + channel.getName() + "\"!");
+            redirectAttributes.addFlashAttribute("successMessage",
+                "Subscribed to \"" + channel.getName() + "\"!");
         }
 
         channelRepository.save(channel);
 
-        return "redirect:/" + channel.getUser().getUsername() + "/channel/" + channel.getName();
+        return "redirect:" + (referer != null ? referer : "/");
     }
 
     @ResponseBody

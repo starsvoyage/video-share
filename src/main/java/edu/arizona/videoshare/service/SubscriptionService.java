@@ -1,7 +1,5 @@
 package edu.arizona.videoshare.service;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 
@@ -75,7 +73,7 @@ public class SubscriptionService {
             NotificationType.SUBSCRIBE,
             SourceType.SUBSCRIPTION,
             subscriber.getDisplayName() + " subscribed to your channel \"" + channel.getName() + "\"",
-            "/" + channel.getUser().getUsername() + "/channel/" + URLEncoder.encode(channel.getName(), StandardCharsets.UTF_8)
+            "/" + channel.getUser().getUsername() + "/channel/" + channel.getName()
         );
 
         return toResponse(saved, channel);
@@ -87,7 +85,7 @@ public class SubscriptionService {
                 .orElseThrow(() -> new NotFoundException("Subscription not found"));
 
         if (sub.getStatus() == Subscription.SubscriptionStatus.CANCELLED) {
-            throw new ConflictException("You have alread unsubscribed from this channel");
+            throw new ConflictException("You have already unsubscribed from this channel");
         }
 
         sub.setStatus(Subscription.SubscriptionStatus.CANCELLED);

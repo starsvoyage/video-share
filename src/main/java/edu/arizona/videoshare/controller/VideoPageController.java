@@ -11,11 +11,11 @@ import edu.arizona.videoshare.model.entity.Ad;
 import edu.arizona.videoshare.model.entity.Video;
 import edu.arizona.videoshare.model.enums.AdPlacement;
 import edu.arizona.videoshare.model.enums.VideoVisibility;
-import edu.arizona.videoshare.service.SubscriptionService;
-import edu.arizona.videoshare.service.VideoService;
 import edu.arizona.videoshare.service.AdService;
 import edu.arizona.videoshare.service.PlaylistService;
+import edu.arizona.videoshare.service.SubscriptionService;
 import edu.arizona.videoshare.service.UserMembershipService;
+import edu.arizona.videoshare.service.VideoService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 

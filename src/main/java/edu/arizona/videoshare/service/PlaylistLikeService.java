@@ -46,8 +46,8 @@ public class PlaylistLikeService {
                             user,
                             NotificationType.LIKE_PLAYLIST,
                             SourceType.PLAYLIST,
-                            playlist.getId().toString(),
-                            user.getDisplayName() + " liked your playlist: " + playlist.getName()
+                            user.getDisplayName() + " liked your playlist: " + playlist.getName(),
+                            "/playlists/" + playlist.getId()
                     );
 
                     return true;
