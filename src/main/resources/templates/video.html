@@ -94,6 +94,32 @@
                                 </div>
                             </div>
 
+                            <!-- Subscribe button -->
+                            <div class="ms-3"
+                                 th:if="${loggedInUserId == null or loggedInUserId != video.channel.user.id}">
+
+                                <!-- Logged-in user: subscribe/unsubscribe -->
+                                <form th:if="${loggedInUserId != null}"
+                                      th:action="@{/subscriptions/channels/{channelId}(channelId=${video.channel.id})}"
+                                      method="post"
+                                      class="m-0">
+
+                                    <button type="submit"
+                                            class="btn rounded-pill px-4"
+                                            th:classappend="${isSubscribed != null and isSubscribed ? 'btn-outline-dark' : 'btn-dark'}"
+                                            th:text="${isSubscribed != null and isSubscribed ? 'Unsubscribe' : 'Subscribe'}">
+                                        Subscribe
+                                    </button>
+                                </form>
+
+                                <!-- Guest user: send to login -->
+                                <a th:if="${loggedInUserId == null}"
+                                   th:href="@{/login}"
+                                   class="btn btn-dark rounded-pill px-4">
+                                    Subscribe
+                                </a>
+                            </div>
+
                         </div>
 
                         <div class="d-flex align-items-center gap-2">
