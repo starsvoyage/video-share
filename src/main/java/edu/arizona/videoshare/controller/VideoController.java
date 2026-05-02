@@ -75,4 +75,19 @@ public class VideoController {
         requireAdmin(request);
         videoService.delete(id);
     }
+
+    @PatchMapping("/{id}/description")
+        public Video updateDescription(
+                @PathVariable Long id,
+                @RequestBody String description,
+                HttpServletRequest request) {
+
+            Long userId = (Long) request.getSession().getAttribute("loggedInUserId");
+
+            if (userId == null) {
+                throw new ForbiddenException("Authentication required");
+            }
+
+            return videoService.updateDescription(id, userId, description);
+        }
 }

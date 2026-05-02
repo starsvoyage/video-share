@@ -1,5 +1,6 @@
 package edu.arizona.videoshare.service;
 
+import edu.arizona.videoshare.exception.ForbiddenException;
 import edu.arizona.videoshare.exception.NotFoundException;
 import edu.arizona.videoshare.model.entity.Channel;
 import edu.arizona.videoshare.model.entity.Subscription;
@@ -153,7 +154,9 @@ public class VideoService {
                     user,
                     NotificationType.UPLOAD,
                     SourceType.VIDEO,
-                    user.getDisplayName() + " uploaded \"" + title.trim() + "\" to " + channel.getName());
+                    user.getDisplayName() + " uploaded \"" + title.trim() + "\" to " + channel.getName(),
+                    "/videos/" + saved.getId()
+                );
         }
 
         return saved;
@@ -218,5 +221,21 @@ public class VideoService {
             case ".mp4", ".webm", ".ogg" -> extension;
             default -> ".mp4";
         };
+    }
+
+    public Video updateDescription(Long videoId, Long userId, String description) {
+        Video video = videoRepository.findById(videoId)
+                .orElseThrow(() -> new RuntimeException("Video not found"));
+
+        Long ownerId = video.getOwner() != null
+                ? video.getOwner().getId()
+                : video.getChannel().getUser().getId();
+
+        if (!ownerId.equals(userId)) {
+            throw new ForbiddenException("You are not the owner of this video");
+        }
+
+        video.setDescription(description);
+        return videoRepository.save(video);
     }
 }

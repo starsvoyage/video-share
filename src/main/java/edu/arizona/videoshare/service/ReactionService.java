@@ -85,10 +85,14 @@ public class ReactionService {
                         playlistService.syncLikedVideo(userId, videoId, true);
                         Video video = videoRepository.findById(videoId).orElse(null);
                         if (video != null && video.getOwner() != null) {
-                                notificationService.notify(video.getOwner(), user, NotificationType.LIKE_VIDEO,
-                                                SourceType.REACTION,
-                                                user.getDisplayName() + " liked your video \"" + video.getTitle()
-                                                                + "\"");
+                                notificationService.notify(
+                                        video.getOwner(),
+                                        user,
+                                        NotificationType.LIKE_VIDEO,
+                                        SourceType.REACTION,
+                                        user.getDisplayName() + " liked your video \"" + video.getTitle() + "\"",
+                                        "/videos/" + video.getId()
+                                );
                         }
                 }
 
@@ -158,7 +162,9 @@ public class ReactionService {
                                         user,
                                         NotificationType.LIKE_COMMENT,
                                         SourceType.REACTION,
-                                        user.getDisplayName() + " liked your comment");
+                                        user.getDisplayName() + " liked your comment",
+                                        "/videos/" + comment.getVideoId() + "#comment-" + comment.getId()
+                                );
                 }
 
                 return ReactResponse.builder()
