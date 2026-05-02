@@ -98,7 +98,13 @@ public class VideoService {
         videoRepository.deleteById(id);
     }
 
-    public Video createVideoForUser(Long userId, Long channelId, String title, MultipartFile file) {
+    public Video createVideoForUser(
+            Long userId,
+            Long channelId,
+            String title,
+            String description,
+            MultipartFile file
+    ) {
         if (userId == null) {
             throw new IllegalArgumentException("You must be logged in to upload a video.");
         }
@@ -137,6 +143,7 @@ public class VideoService {
 
         Video video = new Video();
         video.setTitle(title.trim());
+        video.setDescription(description);
         video.setOwner(user);
         video.setChannel(channel);
         video.setVisibility(VideoVisibility.PUBLIC);
