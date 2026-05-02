@@ -7,7 +7,7 @@
     <div class="container py-4">
         <div class="row g-4">
             <!-- Main Video Area -->
-            <div class="col-lg-12">
+            <div class="col-lg-8">
                 <div class="bg-dark rounded-4 shadow-sm overflow-hidden d-flex align-items-center justify-content-center"
                      style="aspect-ratio: 16 / 9; width: 100%; max-height: 480px;">
 
@@ -49,35 +49,32 @@
                     </div>
                 </div>
 
-                <div th:if="${bannerAd != null}" class="my-3 text-center bg-light rounded-3 p-2">
-                    <div class="text-muted small mb-1">Advertisement</div>
-                    <img th:if="${bannerAd.mediaUrl != null}"
-                        th:src="@{${bannerAd.mediaUrl}}"
-                        class="img-fluid rounded"
-                        alt="Advertisement"/>
-                    <div class="small mt-1" th:text="${bannerAd.title}"></div>
-                </div>
-
                 <!-- Video Details -->
                 <div class="mt-4">
                     <h1 class="h3 fw-bold mb-3" th:text="${video.title}">Video Title</h1>
 
                     <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 border-bottom pb-3 mb-4">
                         <div class="d-flex align-items-center gap-3">
-                            <a th:href="@{/{username}/channel/{channelName}(username=${video.channel.user.username}, channelName=${video.channel.name})}"
-                               class="text-decoration-none">
+
+                            <!-- Channel Avatar -->
+                            <a th:href="@{/{username}/channel/{channelName}(username=${video.channel.user.username}, channelName=${video.channel.name})}">
+
+                                <!-- If avatar exists -->
                                 <img th:if="${video.channel.avatarUrl != null and !#strings.isEmpty(video.channel.avatarUrl)}"
                                      th:src="${video.channel.avatarUrl}"
-                                     alt="Channel Avatar"
-                                     class="rounded-circle border"
-                                     style="width: 56px; height: 56px; object-fit: cover;">
+                                     class="rounded-circle"
+                                     style="width:48px; height:48px; object-fit:cover; border:1px solid #ddd;" />
+
+                                <!-- Fallback (letter avatar) -->
                                 <div th:if="${video.channel.avatarUrl == null or #strings.isEmpty(video.channel.avatarUrl)}"
-                                     class="rounded-circle bg-dark text-white d-flex align-items-center justify-content-center fw-bold"
-                                     style="width: 56px; height: 56px; font-size: 1.25rem;"
-                                     th:text="${#strings.substring(video.channel.name, 0, 1).toUpperCase()}">
+                                     class="rounded-circle d-flex align-items-center justify-content-center bg-dark text-white fw-semibold"
+                                     style="width:48px; height:48px;">
+                                    <span th:text="${#strings.substring(video.channel.name,0,1).toUpperCase()}">C</span>
                                 </div>
+
                             </a>
 
+                            <!-- Channel name + creator -->
                             <div>
                                 <div class="fw-semibold">
                                     <a th:href="@{/{username}/channel/{channelName}(username=${video.channel.user.username}, channelName=${video.channel.name})}"
@@ -90,12 +87,13 @@
                                 <div class="text-muted small">
                                     by
                                     <a th:href="@{/users/{username}(username=${video.owner != null ? video.owner.username : video.channel.user.username})}"
-                                        class="text-decoration-none"
-                                        th:text="${video.owner != null ? video.owner.displayName : video.channel.user.displayName}">
+                                       class="text-decoration-none"
+                                       th:text="${video.owner != null ? video.owner.displayName : video.channel.user.displayName}">
                                         Creator Name
                                     </a>
                                 </div>
                             </div>
+
                         </div>
 
                         <div class="d-flex align-items-center gap-2">
@@ -135,36 +133,94 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Video Description -->
+                    <div class="mt-3 p-3 bg-light rounded-3">
+                        <h6 class="fw-semibold mb-2">Description</h6>
+
+                        <!-- Normal view -->
+                        <div id="descriptionDisplay">
+                            <p class="mb-2"
+                            th:text="${video.description != null and !#strings.isEmpty(video.description) ? video.description : 'No description yet.'}">
+                            </p>
+
+                            <button th:if="${loggedInUserId != null and loggedInUserId == video.channel.user.id}"
+                                    type="button"
+                                    class="btn btn-sm btn-outline-dark rounded-pill"
+                                    onclick="showEditDescription()">
+                                Edit Description
+                            </button>
+                        </div>
+
+                        <!-- Edit view -->
+                        <div id="descriptionEditor" class="d-none">
+                            <textarea id="descriptionInput"
+                                    class="form-control mb-2"
+                                    rows="4"
+                                    th:text="${video.description}"></textarea>
+
+                            <button type="button"
+                                    class="btn btn-sm btn-dark rounded-pill"
+                                    onclick="saveDescription()">
+                                Save
+                            </button>
+
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-secondary rounded-pill"
+                                    onclick="cancelEditDescription()">
+                                Cancel
+                            </button>
+
+                            <div id="descriptionMessage" class="small mt-2"></div>
+                        </div>
+                    </div>
+                    
                 </div>
 
-                <!-- Comments Section -->
-                <div class="mt-4">
-                    <h5 class="mb-3" id="commentHeader">Comments</h5>
-
-                    <div th:if="${loggedInUserId != null}">
-                        <textarea
-                                id="commentInput"
-                                class="form-control"
-                                rows="3"
-                                placeholder="Add a comment..."></textarea>
-
-                        <button
-                                id="submitComment"
-                                class="btn btn-dark mt-2">
-                            Post Comment
-                        </button>
-
-                        <div id="commentMessage" class="mt-2 small"></div>
-                    </div>
-
-                    <div th:if="${loggedInUserId == null}" class="text-muted">
-                        Please log in to comment.
-                    </div>
-
-                    <div id="commentsList" class="mt-4"></div>
+                <div class="mb-4 text-muted small" th:if="${loggedInUserId == null}">
+                    Please log in to save this video to a playlist.
                 </div>
             </div>
 
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm rounded-4 position-sticky" style="top: 70px;">
+                    <div class="card-body d-flex flex-column" style="height: 75vh;">
+                    
+                    <h5 class="mb-3" id="commentHeader">Comments</h5>
+
+                        <div th:if="${loggedInUserId != null}">
+                            <textarea
+                                    id="commentInput"
+                                    class="form-control"
+                                    rows="3"
+                                    placeholder="Add a comment..."></textarea>
+
+                            <button
+                                    id="submitComment"
+                                    class="btn btn-dark mt-2">
+                                Post Comment
+                            </button>
+
+                            <div id="commentMessage" class="mt-2 small"></div>
+                        </div>
+
+                        <div th:if="${loggedInUserId == null}" class="text-muted">
+                            Please log in to comment.
+                        </div>
+
+                        <div id="commentsList" class="mt-4 overflow-auto flex-grow-1"></div>
+
+                    </div>
+                </div>
+                <div th:if="${bannerAd != null}" class="my-3 text-center bg-light rounded-3 p-2">
+                    <div class="text-muted small mb-1">Advertisement</div>
+                    <img th:if="${bannerAd.mediaUrl != null}"
+                         th:src="@{${bannerAd.mediaUrl}}"
+                         class="img-fluid rounded"
+                         alt="Advertisement"/>
+                    <div class="small mt-1" th:text="${bannerAd.title}"></div>
+                </div>
+            </div>
         </div>
 
     </div>
@@ -252,10 +308,9 @@
             const quickCreatePlaylistBtn = document.getElementById("quickCreatePlaylistBtn");
             const quickPlaylistMessage = document.getElementById("quickPlaylistMessage");
 
-
+            const videoPlayer = document.getElementById("videoPlayer");
             const adContainer = document.getElementById("adContainer");
             const adPlayer = document.getElementById("adPlayer");
-            const videoPlayer = document.getElementById("videoPlayer");
             const adCountdown = document.getElementById("adCountdown");
 
             function updateAdCountdown() {
@@ -331,59 +386,58 @@
 
            loadComments();
 
+            let viewEventId = null;
+            let maxSecondsWatched = 0;
 
-let viewEventId = null;
-let maxSecondsWatched = 0;
+            if (userId && videoPlayer) {
+                // create view event
+                fetch('/api/views', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: userId, videoId: videoId })
+                })
+                .then(res => {
+                    if (!res.ok) throw new Error();
+                    return res.json();
+                })
+                .then(data => {
+                    viewEventId = data.id;
+                })
+                .catch(() => {});
 
-if (userId && videoPlayer) {
-    // create view event
-    fetch('/api/views', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: userId, videoId: videoId })
-    })
-    .then(res => {
-        if (!res.ok) throw new Error();
-        return res.json();
-    })
-    .then(data => {
-        viewEventId = data.id;
-    })
-    .catch(() => {});
+                // track watch time
+                videoPlayer.addEventListener("timeupdate", function () {
+                    const seconds = Math.floor(videoPlayer.currentTime);
+                    if (seconds > maxSecondsWatched) {
+                        maxSecondsWatched = seconds;
+                    }
+                });
 
-    // track watch time
-    videoPlayer.addEventListener("timeupdate", function () {
-        const seconds = Math.floor(videoPlayer.currentTime);
-        if (seconds > maxSecondsWatched) {
-            maxSecondsWatched = seconds;
-        }
-    });
+                // send to backend
+                function sendWatchDuration() {
+                    if (!viewEventId) return;
 
-    // send to backend
-    function sendWatchDuration() {
-        if (!viewEventId) return;
+                    fetch(`/api/views/${viewEventId}/duration`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ watchDuration: maxSecondsWatched })
+                    }).catch(() => {});
+                }
 
-        fetch(`/api/views/${viewEventId}/duration`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ watchDuration: maxSecondsWatched })
-        }).catch(() => {});
-    }
+                function sendWatchDurationBeacon() {
+                    if (!viewEventId || maxSecondsWatched === 0) return;
 
-    function sendWatchDurationBeacon() {
-        if (!viewEventId || maxSecondsWatched === 0) return;
+                    const data = JSON.stringify({ watchDuration: maxSecondsWatched });
+                    navigator.sendBeacon(
+                        `/api/views/${viewEventId}/duration`,
+                        new Blob([data], { type: 'application/json' })
+                    );
+                }
 
-        const data = JSON.stringify({ watchDuration: maxSecondsWatched });
-        navigator.sendBeacon(
-            `/api/views/${viewEventId}/duration`,
-            new Blob([data], { type: 'application/json' })
-        );
-    }
-
-    videoPlayer.addEventListener("pause", sendWatchDuration);
-    videoPlayer.addEventListener("ended", sendWatchDuration);
-    window.addEventListener("beforeunload", sendWatchDurationBeacon);
-}
+                videoPlayer.addEventListener("pause", sendWatchDuration);
+                videoPlayer.addEventListener("ended", sendWatchDuration);
+                window.addEventListener("beforeunload", sendWatchDurationBeacon);
+            }
 
             // Reactions
             loadReactions();
@@ -400,40 +454,40 @@ if (userId && videoPlayer) {
                 } catch (e) {}
             }
 
-           window.react = async function(type) {
-    if (!userId) return;
+            window.react = async function(type) {
+                if (!userId) return;
 
-    const msgBox = document.getElementById("commentMessage");
-    if (msgBox) {
-        msgBox.textContent = "";
-        msgBox.className = "mt-2 small";
-    }
+                const msgBox = document.getElementById("commentMessage");
+                if (msgBox) {
+                    msgBox.textContent = "";
+                    msgBox.className = "mt-2 small";
+                }
 
-    try {
-        const res = await fetch(`/api/videos/${videoId}/reactions`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId: userId, type: type })
-        });
+                try {
+                    const res = await fetch(`/api/videos/${videoId}/reactions`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userId: userId, type: type })
+                    });
 
-        if (!res.ok) {
-            const message = await readErrorMessage(res, "Could not update video reaction.");
-            throw new Error(message);
-        }
+                    if (!res.ok) {
+                        const message = await readErrorMessage(res, "Could not update video reaction.");
+                        throw new Error(message);
+                    }
 
-        loadReactions();
+                    loadReactions();
 
-        if (msgBox) {
-            msgBox.classList.add("text-success");
-            msgBox.textContent = "Reaction updated.";
-        }
-    } catch (e) {
-        if (msgBox) {
-            msgBox.classList.add("text-danger");
-            msgBox.textContent = e.message || "Could not update video reaction.";
-        }
-    }
-};
+                    if (msgBox) {
+                        msgBox.classList.add("text-success");
+                        msgBox.textContent = "Reaction updated.";
+                    }
+                } catch (e) {
+                    if (msgBox) {
+                        msgBox.classList.add("text-danger");
+                        msgBox.textContent = e.message || "Could not update video reaction.";
+                    }
+                }
+            };
 
             const submitBtn = document.getElementById("submitComment");
             if (submitBtn) {
@@ -457,10 +511,10 @@ if (userId && videoPlayer) {
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({ userId: userId, content: content, parentId: null })
                         });
-                       if (!res.ok) {
-    const message = await readErrorMessage(res, "Could not post comment.");
-    throw new Error(message);
-}
+                        if (!res.ok) {
+                            const message = await readErrorMessage(res, "Could not post comment.");
+                            throw new Error(message);
+                        }
                         input.value = "";
                         msgBox.textContent = "";
                         showToast("Comment posted!", "success");
@@ -473,36 +527,46 @@ if (userId && videoPlayer) {
             }
 
             async function loadComments() {
-    try {
-        const res = await fetch(`/api/videos/${videoId}/comments`);
-        if (!res.ok) throw new Error();
+                try {
+                    const res = await fetch(`/api/videos/${videoId}/comments`);
+                    if (!res.ok) throw new Error();
 
-        const comments = await res.json();
+                    const comments = await res.json();
 
-        await Promise.all(comments.map(async (c) => {
-            try {
-                const countRes = await fetch(`/api/comments/${c.id}/reactions/count`);
-                if (countRes.ok) {
-                    const counts = await countRes.json();
-                    c.likes = counts.likes;
-                    c.dislikes = counts.dislikes;
-                } else {
-                    c.likes = 0;
-                    c.dislikes = 0;
+                    await Promise.all(comments.map(async (c) => {
+                        try {
+                            const countRes = await fetch(`/api/comments/${c.id}/reactions/count`);
+                            if (countRes.ok) {
+                                const counts = await countRes.json();
+                                c.likes = counts.likes;
+                                c.dislikes = counts.dislikes;
+                            } else {
+                                c.likes = 0;
+                                c.dislikes = 0;
+                            }
+                        } catch {
+                            c.likes = 0;
+                            c.dislikes = 0;
+                        }
+                    }));
+
+                    commentHeader.textContent = `Comments (${comments.length})`;
+                    renderComments(comments);
+
+                    if (window.location.hash) {
+                        const target = document.querySelector(window.location.hash);
+                        if (target) {
+                            target.scrollIntoView({
+                                behavior: "smooth",
+                                block: "center"
+                            });
+                        }
+                    }
+
+                } catch (e) {
+                    commentsList.innerHTML = '<p class="text-muted">Could not load comments.</p>';
                 }
-            } catch {
-                c.likes = 0;
-                c.dislikes = 0;
             }
-        }));
-
-        commentHeader.textContent = `Comments (${comments.length})`;
-        renderComments(comments);
-
-    } catch (e) {
-        commentsList.innerHTML = '<p class="text-muted">Could not load comments.</p>';
-    }
-}
 
             async function updateCommentCounts(commentId) {
                 try {
@@ -534,35 +598,36 @@ if (userId && videoPlayer) {
                 }
 
                 commentsList.innerHTML = comments.map(c => `
-                    <div class="border rounded-3 p-3 mb-3" id="comment-${c.id}">
+                    <div class="border rounded-3 p-2 mb-3" id="comment-${c.id}">
                         <div class="d-flex justify-content-between align-items-start">
                             <div>
                                 <span class="fw-semibold">${c.userStatus === 'DELETED' ? 'Deleted Account' : escHtml(c.displayName || c.username)}</span>
                                 <span class="text-muted small ms-2">${formatDate(c.createdAt)}</span>
                             </div>
                         </div>
+
                         <div class="mt-2">${c.status === 'REMOVED' ? '<span class="text-muted fst-italic">[Removed]</span>' : escHtml(c.content)}</div>
 
                         <div class="mt-2 d-flex align-items-center gap-3">
-                       ${userId && c.status !== 'REMOVED'
-    ? `<button class="btn btn-sm btn-link text-decoration-none p-0 react-comment-btn"
-               data-comment-id="${c.id}"
-               data-type="LIKE">
-           <i class="bi bi-hand-thumbs-up me-1"></i>Like (${c.likes ?? 0})
-       </button>
-       <button class="btn btn-sm btn-link text-decoration-none p-0 react-comment-btn"
-               data-comment-id="${c.id}"
-               data-type="DISLIKE">
-           <i class="bi bi-hand-thumbs-down me-1"></i>Dislike (${c.dislikes ?? 0})
-       </button>`
-    : ''}
-                            ${
-                            !userId && c.status !== 'REMOVED'
-    ? `<span class="text-muted small">
-           <i class="bi bi-hand-thumbs-up me-1"></i><span id="comment-likes-anon-${c.id}">${c.likes ?? 0}</span>
-           <i class="bi bi-hand-thumbs-down ms-2 me-1"></i><span id="comment-dislikes-anon-${c.id}">${c.dislikes ?? 0}</span>
-       </span>`
-    : ''}
+                        ${userId && c.status !== 'REMOVED'
+                            ? `<button class="btn btn-sm btn-link text-decoration-none p-0 react-comment-btn"
+                                    data-comment-id="${c.id}"
+                                    data-type="LIKE">
+                                <i class="bi bi-hand-thumbs-up me-1"></i>Like (${c.likes ?? 0})
+                            </button>
+                            <button class="btn btn-sm btn-link text-decoration-none p-0 react-comment-btn"
+                                    data-comment-id="${c.id}"
+                                    data-type="DISLIKE">
+                                <i class="bi bi-hand-thumbs-down me-1"></i>Dislike (${c.dislikes ?? 0})
+                            </button>`
+                            : ''}
+                                                    ${
+                                                    !userId && c.status !== 'REMOVED'
+                            ? `<span class="text-muted small">
+                                <i class="bi bi-hand-thumbs-up me-1"></i><span id="comment-likes-anon-${c.id}">${c.likes ?? 0}</span>
+                                <i class="bi bi-hand-thumbs-down ms-2 me-1"></i><span id="comment-dislikes-anon-${c.id}">${c.dislikes ?? 0}</span>
+                            </span>`
+                            : ''}
                             ${c.replyCount > 0
                                 ? `<button class="btn btn-sm btn-link text-decoration-none p-0 toggle-replies-btn"
                                            data-comment-id="${c.id}"
@@ -610,66 +675,67 @@ if (userId && videoPlayer) {
 
             function attachCommentEventListeners() {
                 document.querySelectorAll(".react-comment-btn").forEach(btn => {
-    btn.addEventListener("click", async function () {
-        const cid = this.dataset.commentId;
-        const type = this.dataset.type;
+                    btn.addEventListener("click", async function () {
+                    const cid = this.dataset.commentId;
+                    const type = this.dataset.type;
 
-        try {
-            const res = await fetch(`/api/comments/${cid}/reactions`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    userId: userId,
-                    type: type
-                })
+                    try {
+                        const res = await fetch(`/api/comments/${cid}/reactions`, {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                userId: userId,
+                                type: type
+                            })
+                        });
+
+                    if (!res.ok) {
+                        const message = await readErrorMessage(res, "Could not react to comment.");
+                        throw new Error(message);
+                    }
+
+                    loadComments();
+                    } catch (e) {
+                        const msgBox = document.getElementById("commentMessage");
+                        if (msgBox) {
+                            msgBox.className = "mt-2 small text-danger";
+                            msgBox.textContent = e.message || "Could not react to comment.";
+                        }
+                    }
+                });
             });
 
-           if (!res.ok) {
-    const message = await readErrorMessage(res, "Could not react to comment.");
-    throw new Error(message);
-}
+            document.querySelectorAll(".toggle-replies-btn").forEach(btn => {
+                btn.addEventListener("click", async function () {
+                    const cid = this.dataset.commentId;
+                    const container = document.getElementById(`replies-${cid}`);
 
-loadComments();
-} catch (e) {
-    const msgBox = document.getElementById("commentMessage");
-    if (msgBox) {
-        msgBox.className = "mt-2 small text-danger";
-        msgBox.textContent = e.message || "Could not react to comment.";
-    }
-}
-    });
-});
-                document.querySelectorAll(".toggle-replies-btn").forEach(btn => {
-                    btn.addEventListener("click", async function () {
-                        const cid = this.dataset.commentId;
-                        const container = document.getElementById(`replies-${cid}`);
+                    if (container.classList.contains("d-none") && this.dataset.loaded === "true") {
+                        container.classList.remove("d-none");
+                        return;
+                    }
+                    if (!container.classList.contains("d-none") && this.dataset.loaded === "true") {
+                        container.classList.add("d-none");
+                        return;
+                    }
 
-                        if (container.classList.contains("d-none") && this.dataset.loaded === "true") {
-                            container.classList.remove("d-none");
-                            return;
+                    try {
+                        const res = await fetch(`/api/videos/${videoId}/comments/${cid}/replies`);
+                        if (!res.ok) {
+                            const message = await readErrorMessage(res, "Could not load replies.");
+                            throw new Error(message);
                         }
-                        if (!container.classList.contains("d-none") && this.dataset.loaded === "true") {
-                            container.classList.add("d-none");
-                            return;
-                        }
-
-                        try {
-                            const res = await fetch(`/api/videos/${videoId}/comments/${cid}/replies`);
-                            if (!res.ok) {
-                                const message = await readErrorMessage(res, "Could not load replies.");
-                                throw new Error(message);
-                            }
-                            const replies = await res.json();
-                            await Promise.all(replies.map(async (r) => {
-                                try {
-                                    const countRes = await fetch(`/api/comments/${r.id}/reactions/count`);
-                                    if (countRes.ok) {
-                                        const counts = await countRes.json();
-                                        r.likes = counts.likes;
-                                        r.dislikes = counts.dislikes;
-                                    } else { r.likes = 0; r.dislikes = 0; }
-                                } catch { r.likes = 0; r.dislikes = 0; }
-                            }));
+                        const replies = await res.json();
+                        await Promise.all(replies.map(async (r) => {
+                            try {
+                                const countRes = await fetch(`/api/comments/${r.id}/reactions/count`);
+                                if (countRes.ok) {
+                                    const counts = await countRes.json();
+                                    r.likes = counts.likes;
+                                    r.dislikes = counts.dislikes;
+                                } else { r.likes = 0; r.dislikes = 0; }
+                            } catch { r.likes = 0; r.dislikes = 0; }
+                        }));
 
                             container.innerHTML = replies.map(r => `
                                 <div class="border-start ps-3 py-2 mb-2" id="reply-${r.id}">
@@ -854,28 +920,28 @@ loadComments();
 });
             }
 
-                        document.querySelectorAll(".add-to-playlist-btn").forEach(btn => {
-                btn.addEventListener("click", async function () {
-                    const playlistId = this.dataset.playlistId;
+            document.querySelectorAll(".add-to-playlist-btn").forEach(btn => {
+            btn.addEventListener("click", async function () {
+                const playlistId = this.dataset.playlistId;
 
-                    if (playlistAddMessage) {
-                        playlistAddMessage.textContent = "";
-                        playlistAddMessage.className = "small mt-2";
+                if (playlistAddMessage) {
+                    playlistAddMessage.textContent = "";
+                    playlistAddMessage.className = "small mt-2";
+                }
+
+                try {
+                    const res = await fetch(`/api/playlists/${playlistId}/videos`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ videoId: videoId })
+                    });
+
+                    if (!res.ok) {
+                        const err = await res.json().catch(() => null);
+                        throw new Error(err?.message || "Could not add video to playlist.");
                     }
 
-                    try {
-                        const res = await fetch(`/api/playlists/${playlistId}/videos`, {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ videoId: videoId })
-                        });
-
-                        if (!res.ok) {
-                            const err = await res.json().catch(() => null);
-                            throw new Error(err?.message || "Could not add video to playlist.");
-                        }
-
-                        showToast("Video added to playlist!", "success");
+                    showToast("Video added to playlist!", "success");
 
                         const modalEl = document.getElementById("addToPlaylistModal");
                         const modal = bootstrap.Modal.getInstance(modalEl);
@@ -955,27 +1021,68 @@ loadComments();
                 });
             }
 
-            async function readErrorMessage(res, fallbackMessage) {
-    try {
-        const err = await res.json();
-        return err.message || fallbackMessage;
-    } catch {
-        return fallbackMessage;
-    }
-}
-            
-            function escHtml(str) {
-                const d = document.createElement("div");
-                d.textContent = str || "";
-                return d.innerHTML;
-            }
+        window.showEditDescription = function () {
+            document.getElementById("descriptionDisplay").classList.add("d-none");
+            document.getElementById("descriptionEditor").classList.remove("d-none");
+        };
 
-            function formatDate(iso) {
-                if (!iso) return "";
-                const d = new Date(iso);
-                return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+        window.cancelEditDescription = function () {
+            document.getElementById("descriptionEditor").classList.add("d-none");
+            document.getElementById("descriptionDisplay").classList.remove("d-none");
+        };
+
+        window.saveDescription = async function () {
+            const videoId = /*[[${video.id}]]*/ 0;
+            const newDescription = document.getElementById("descriptionInput").value;
+            const msgBox = document.getElementById("descriptionMessage");
+
+            msgBox.textContent = "";
+            msgBox.className = "small mt-2";
+
+            try {
+                const res = await fetch(`/api/videos/${videoId}/description`, {
+                    method: "PATCH",
+                    headers: { "Content-Type": "text/plain" },
+                    body: newDescription
+                });
+
+                if (!res.ok) throw new Error();
+
+                location.reload();
+
+                } catch (e) {
+                msgBox.classList.add("text-danger");
+                msgBox.textContent = "Could not update description.";
             }
-        });
+        };
+            
+        function escHtml(str) {
+            const d = document.createElement("div");
+            d.textContent = str || "";
+            return d.innerHTML;
+        }
+            
+        function escHtml(str) {
+            const d = document.createElement("div");
+            d.textContent = str || "";
+            return d.innerHTML;
+        }
+
+        function formatDate(iso) {
+            if (!iso) return "";
+            const d = new Date(iso);
+            return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+        }
+
+        async function readErrorMessage(res, fallbackMessage) {
+            try {
+                const err = await res.json();
+                return err.message || fallbackMessage;
+            } catch {
+                return fallbackMessage;
+            }
+        }
+    });
     </script>
 </th:block>
 </html>

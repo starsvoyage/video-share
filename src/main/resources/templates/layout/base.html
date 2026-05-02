@@ -157,6 +157,17 @@
                                th:value="${videoTitleValue}">
                     </div>
 
+                    <!-- New Video Description Text Area-->
+                    <div class="mb-3">
+                        <label class="form-label small text-muted">Description</label>
+                        <textarea
+                            name="description"
+                            maxlength="1000"
+                            class="form-control rounded-4 px-3"
+                            rows="4"
+                            placeholder="Describe your video..."></textarea>
+                    </div>
+
                     <div class="mb-3">
                         <label class="form-label small text-muted">Video File</label>
                         <input type="file"

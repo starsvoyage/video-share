@@ -2,18 +2,18 @@ package edu.arizona.videoshare.service;
 
 import java.util.List;
 
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import edu.arizona.videoshare.dto.notification.NotificationRequest;
 import edu.arizona.videoshare.dto.notification.NotificationResponse;
 import edu.arizona.videoshare.exception.NotFoundException;
+import edu.arizona.videoshare.model.entity.Notification;
 import edu.arizona.videoshare.model.entity.User;
 import edu.arizona.videoshare.model.enums.NotificationType;
 import edu.arizona.videoshare.model.enums.SourceType;
-import edu.arizona.videoshare.repository.UserRepository;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.stereotype.Service;
-
-import edu.arizona.videoshare.model.entity.Notification;
 import edu.arizona.videoshare.repository.NotificationRepository;
+import edu.arizona.videoshare.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -105,13 +105,14 @@ public class NotificationService {
         r.setId(n.getId());
         r.setType(n.getType());
         r.setMessage(n.getMessage());
+        r.setLink(n.getLink());
         r.setCreatedAt(n.getCreatedAt());
         r.setRead(n.isRead());
         r.setSourceType(n.getSourceType());
         return r;
     }
 
-    public void notify(User recipient, User actor, NotificationType type, SourceType sourceType, String message) {
+    public void notify(User recipient, User actor, NotificationType type, SourceType sourceType, String message, String link) {
         if (recipient.getId().equals(actor.getId())) return;
         Notification n = new Notification();
         n.setRecipient(recipient);
@@ -119,6 +120,7 @@ public class NotificationService {
         n.setType(type);
         n.setSourceType(sourceType);
         n.setMessage(message);
+        n.setLink(link);
         notificationRepository.save(n);
     }
 }

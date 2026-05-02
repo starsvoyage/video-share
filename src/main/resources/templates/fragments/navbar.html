@@ -87,7 +87,7 @@
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li>
                             <a class="dropdown-item"
-                               href="#"
+                               href="${n.link || '#'}"
                                data-bs-toggle="modal"
                                data-bs-target="#uploadVideoModal">
                                 Upload video
@@ -170,24 +170,34 @@
                                     }
                                     notifs.forEach(n => {
                                         const li = document.createElement("li");
-                                        li.innerHTML = `<a class="dropdown-item px-3 py-2 small d-flex align-items-start gap-2 ${n.read ? '' : 'fw-semibold'}" href="#" data-notif-id="${n.id}" style="color:#fff;">
+                                        li.innerHTML = `<a class="dropdown-item px-3 py-2 small d-flex align-items-start gap-2 ${n.read ? '' : 'fw-semibold'}" href="${n.link || '#'}" data-notif-id="${n.id}" style="color:#fff;">
                                             <div class="flex-grow-1">
                                                 <div>${escN(n.message)}</div>
                                                 <div style="font-size:0.7rem; color:#aaa;">${fmtDate(n.createdAt)}</div>
                                             </div>
                                             ${!n.read ? '<span class="bg-primary rounded-circle flex-shrink-0 mt-1" style="width:8px;height:8px;display:inline-block;"></span>' : ''}
                                         </a>`;
-                                        li.querySelector("a").addEventListener("click", function (e) {
+                                        li.querySelector("a").addEventListener("click", async function (e) {
                                             e.preventDefault();
                                             e.stopPropagation();
+
                                             if (!n.read) {
-                                                fetch(`/api/notifications/${n.id}/read`, { method: 'PATCH' }).then(() => {
+                                                try {
+                                                    await fetch(`/api/notifications/${n.id}/read`, { method: 'PATCH' });
+
                                                     this.classList.remove("fw-semibold");
                                                     const dot = this.querySelector(".bg-primary");
                                                     if (dot) dot.remove();
+
                                                     updateBadge(-1);
                                                     n.read = true;
-                                                });
+                                                } catch (err) {
+                                                    console.error("Failed to mark notification read");
+                                                }
+                                            }
+
+                                            if (n.link) {
+                                                window.location.href = n.link;
                                             }
                                         });
                                         notifList.appendChild(li);
